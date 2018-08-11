@@ -1,0 +1,15 @@
+{
+  "name": "EASL",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^10.5.3",
+    "mocha": "^5.2.0",
+    "typescript": "^3.0.1"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "mocha"
+  }
+}

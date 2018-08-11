@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "strict": true,
+    "removeComments": true,
+    "sourceMap": false,
+    "outFile": "index.js"
+  },
+  "include": [
+    "./src/**/*"
+  ],
+}
