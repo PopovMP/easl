@@ -38,8 +38,7 @@ class Interpreter {
             const procId     = expr[1][0];
             const procParams = expr[1].slice(1);
             const procBody   = expr.slice(2);
-            // env = ["define-proc", proc-id, [par1, par2, ...], [expr1, expr2, ...], env]
-            return ["define-proc", procId, procParams, procBody];
+            return [procId, ["closure", procParams, procBody, env.slice()]];
         }
 
         return env; // No define
@@ -68,28 +67,6 @@ class Interpreter {
 
         if (env[0] === "let-proc") {
             // env = ["let-proc", proc-id, [par1, par2 ...], [expr1, expr2 ...], env]
-            if (env[1] === symbol) {
-                const closure =  ["closure", env[2], env[3], env];
-                if (this.isDebug) console.log("lookup closure found:", JSON.stringify(symbol), "value:", JSON.stringify(closure));
-                return closure;
-            } else {
-                return this.lookup(symbol, env[4]);
-            }
-        }
-
-        if (env[0] === "define-var") {
-            // env = ["define-var", var-id, expr, env]
-            if (env[1] === symbol) {
-                const val =  this.evalExpr(env[2], env[3]);
-                if (this.isDebug) console.log("lookup define-var found:", JSON.stringify(symbol), "value:", JSON.stringify(val));
-                return val;
-            } else {
-                return this.lookup(symbol, env[3]);
-            }
-        }
-
-        if (env[0] === "define-proc") {
-            // env = ["define-proc", proc-id, [par1, par2 ...], [expr1, expr2 ...], env]
             if (env[1] === symbol) {
                 const closure =  ["closure", env[2], env[3], env];
                 if (this.isDebug) console.log("lookup closure found:", JSON.stringify(symbol), "value:", JSON.stringify(closure));

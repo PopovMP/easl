@@ -27,22 +27,60 @@ describe('define', function () {
 
 
     describe('define lambda', function () {
-        it('{define double {lambda (a) (* 2 a)}} (double 2) → 4', function () {
-            assert.strictEqual(app.evaluate(`    {define double {lambda (a) (* 2 a)}} (double 2)   `), 4);
+        it('no arguments', function () {
+            assert.strictEqual(app.evaluate(` 
+                                                {define answer
+                                                    {lambda () 42}}
+                                                (answer)                                `), 42);
+        });
+
+        it('one argument', function () {
+            assert.strictEqual(app.evaluate(` 
+                                                {define double
+                                                    {lambda (a) (* 2 a)}}
+                                                (double 2)                              `), 4);
+        });
+        it('two arguments', function () {
+            assert.strictEqual(app.evaluate(`    
+                                                {define sum
+                                                    {lambda (a b) (+ a b)}}
+                                                (sum 2 3)                               `), 5);
         });
     });
 
 
-    // describe('define proc', function () {
-    //     it('define proc', function () {
-    //         assert.strictEqual(app.evaluate(`
-    //
-    //             {define (sum a b) (+ a b)}
-    //             (sum 2 3)
-    //
-    //
-    //                                                                 `), 7);
-    //     });
-    // });
+    describe('define proc', function () {
+        it('no arguments', function () {
+            assert.strictEqual(app.evaluate(`
+                                                {define (answer) 42}
+                                                (answer)
+                                                                                        `), 42);
+        });
+
+        it('one arguments', function () {
+            assert.strictEqual(app.evaluate(`
+                                                {define (double a)
+                                                    (* 2 a)}
+                                                (double 2)
+                                                                                        `), 4);
+        });
+
+        it('two arguments', function () {
+            assert.strictEqual(app.evaluate(`
+                                                {define (sum a b)
+                                                    (+ a b)}
+                                                (sum 2 3)
+                                                                                        `), 5);
+        });
+
+        it('two expressions in the body', function () {
+            assert.strictEqual(app.evaluate(`
+                                                {define (sum a b)
+                                                    (+ a b)}
+                                                (sum 2 3)
+                                                                                        `), 5);
+        });
+
+    });
 
 });
