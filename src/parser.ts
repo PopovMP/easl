@@ -117,7 +117,9 @@ class Parser {
     }
 
     private static tokenize(lexText: string): any[] {
-        const codeTree = JSON.parse(lexText);
+        // const fixedTree = lexText[0] === "[" ? lexText : "[" + lexText + "]";
+        const fixedTree = "[" + lexText + "]";
+        const codeTree = JSON.parse(fixedTree);
         return codeTree;
     }
 

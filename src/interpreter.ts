@@ -4,7 +4,37 @@ class Interpreter {
     private isDebug = false;
 
     public evalCodeTree(codeTree: any[]): any {
-        return this.evalExpr(codeTree, ["empty-env"]);
+        return this.evalExprLst(codeTree, ["empty-env"]);
+    }
+
+    private evalExprLst(exprLst: any[], env: any): any[] {
+        const newEnv = this.assocDefines(exprLst, env);
+        const res = this.mapExprLst(exprLst, newEnv);
+        return res[res.length - 1];
+    }
+
+    private mapExprLst(exprLst: any[], env: any): any[] {
+        return exprLst.map((expr: any) => this.evalExpr(expr, env), exprLst);
+    }
+
+    private assocDefines(exprLst: any[], env: any[]): any[] {
+        const res: any[] = env.slice();
+        for (const expr of exprLst) {
+            if (Array.isArray(expr) && expr[0] === "define") {
+                res.push(this.manageDefine(expr, env));
+            }
+        }
+        return res;
+    }
+
+    private manageDefine(expr: any, env: any[]): any[] {
+        if (Array.isArray(expr[1])) {
+            // expr = [define, [proc-id, par1, par2, ...], expr1, expr2, ...]
+            return ["define-proc", expr[1][0], expr[1].slice(1), expr.slice(2), env];
+        }
+
+        // expr = [define, var-id, expr]
+        return ["define-var", expr[1], expr[2], env];
     }
 
     private lookup(symbol: string, env: any[]): any {
@@ -39,6 +69,28 @@ class Interpreter {
             }
         }
 
+        if (env[0] === "define-var") {
+            // env = ["define-var", var-id, expr, env]
+            if (env[1] === symbol) {
+                const val =  this.evalExpr(env[2], env[3]);
+                if (this.isDebug) console.log("lookup define-var found:", JSON.stringify(symbol), "value:", JSON.stringify(val));
+                return val;
+            } else {
+                return this.lookup(symbol, env[3]);
+            }
+        }
+
+        if (env[0] === "define-proc") {
+            // env = ["define-proc", proc-id, [par1, par2 ...], [expr1, expr2 ...], env]
+            if (env[1] === symbol) {
+                const closure =  ["closure", env[2], env[3], env];
+                if (this.isDebug) console.log("lookup closure found:", JSON.stringify(symbol), "value:", JSON.stringify(closure));
+                return closure;
+            } else {
+                return this.lookup(symbol, env[4]);
+            }
+        }
+
         if (symbol === env[0][0]) {
             const val = env[0][1];
             if (this.isDebug) console.log("lookup symbol found:", JSON.stringify(symbol), "value:", JSON.stringify(val));
@@ -46,15 +98,6 @@ class Interpreter {
         }
 
         return this.lookup(symbol, env.slice(1));
-    }
-
-    private mapExprLst(exprLst: any[], env: any): any[] {
-        return exprLst.map((expr: any) => this.evalExpr(expr, env), exprLst);
-    }
-
-    private evalExprLst(exprLst: any[], env: any): any[] {
-        const res = this.mapExprLst(exprLst, env);
-        return res[res.length - 1];
     }
 
     public evalExpr(expr: any, env: any[]): any {

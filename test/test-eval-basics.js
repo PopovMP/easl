@@ -185,4 +185,14 @@ describe('Eval basics', function () {
             assert.deepStrictEqual(app.evaluate("(cons 1 [2 3])"), [1, 2, 3]);
         });
     });
+
+    describe('Eval multiple expressions', function () {
+        it('1 2 → 2', function () {
+            assert.deepStrictEqual(app.evaluate("1 2"), 2);
+        });
+        it('3 (+ 1 1) → 2', function () {
+            assert.deepStrictEqual(app.evaluate("1 2"), 2);
+        });
+     });
+
 });
