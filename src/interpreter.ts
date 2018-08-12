@@ -11,14 +11,14 @@ class Interpreter {
         if (this.isDebug) console.log("lookup symbol:", JSON.stringify(symbol), "env:", JSON.stringify(env));
 
         if (this.not(this.isPair(env))) {
-            Error("lookup unbound symbol: " + JSON.stringify(symbol));
+            new Error(`lookup unbound symbol: ${JSON.stringify(symbol)}`);
             return [];
         }
 
         if (env[0] === "letrec-env") {
-            // ("letrec-env" (letrec-proc ...) env)
+            // ["letrec-env", [letrec-proc ...] env]
             const proc = this.getPair(symbol, env[1]);
-            // proc = (proc-id "letrec-proc" (par1 par2 ...) (expr1 expr2 ...)))
+            // proc = [proc-id, "letrec-proc", [par1, par2 ...], [expr1, expr2 ...]]
             if (proc[0] === symbol) {
                 const closure =  ["closure", proc[2], proc[3], env];
                 if (this.isDebug) console.log("lookup closure found:", JSON.stringify(symbol), "value:", JSON.stringify(closure));
@@ -29,7 +29,7 @@ class Interpreter {
         }
 
         if (env[0] === "let-proc") {
-            // ("let-proc" proc-id (par1 par2 ...) (expr1 expr2 ...) env))
+            // env = ["let-proc", proc-id, [par1, par2 ...], [expr1, expr2 ...], env]
             if (env[1] === symbol) {
                 const closure =  ["closure", env[2], env[3], env];
                 if (this.isDebug) console.log("lookup closure found:", JSON.stringify(symbol), "value:", JSON.stringify(closure));
@@ -78,7 +78,7 @@ class Interpreter {
         if (this.isString(expr)) {
             const val = this.lookup(expr, env);
             if (typeof val === "undefined") {
-                Error("lookup returns 'undefined' for symbol: " + JSON.stringify(expr));
+                new Error(`lookup returns 'undefined' for symbol: ${JSON.stringify(expr)}`);
             }
             return val;
         }
@@ -121,13 +121,13 @@ class Interpreter {
             case "not" : return this.not(this.evalExpr(expr[1], env));
 
             // (list expr1 expr2 ...) → list
-            case "list" : return this.mapExprLst(this.cdr(expr), env);
+            case "list" : return this.mapExprLst(expr.slice(1), env);
 
             // (length lst) → int
-            case "length" : return this.length(this.cadr(expr));
+            case "length" : return this.length(expr[1]);
 
             // ((cons expr1 expr2) → pair
-            case "cons" : return this.evalCons(this.cdr(expr), env);
+            case "cons" : return this.evalCons(expr.slice(1), env);
 
             // c*r
             case "car"   : return this.car(this.evalExpr(expr[1], env));
@@ -158,7 +158,7 @@ class Interpreter {
             case "for" : return this.evalFor(expr, env);
 
             // (lambda (par1 par2 ...) expr1 expr2 ...)
-            case "lambda" : return ["closure", this.cadr(expr), this.caddr(expr), env];
+            case "lambda" : return ["closure", expr[1], expr[2], env];
 
             case "let"    : return this.evalLet(expr, env);
             case "let*"   : return this.evalLetStar(expr, env);
@@ -186,19 +186,20 @@ class Interpreter {
             case "print" : return console.log(this.evalExpr(expr.slice(1).join(""), env));
         }
 
-        return this.applyProcedure(this.evalExpr(this.car(expr),   env),
-                                   this.mapExprLst(this.cdr(expr), env));
+        return this.applyProcedure(this.evalExpr(expr[0], env), this.mapExprLst(expr.slice(1), env));
     }
 
     private applyProcedure(proc: any, argsList: any[]): any {
-        if (this.isDebug) console.log("applyProcedure proc     :", JSON.stringify(proc));
-        if (this.isDebug) console.log("applyProcedure argsList :", JSON.stringify(argsList));
+        if (this.isDebug) console.log("applyProcedure proc     :", JSON.stringify(proc),
+            "\napplyProcedure argsList :", JSON.stringify(argsList));
 
         if (this.isPair(proc) && proc[0] === "closure") {
-            const paramsList = this.cadr(proc);
-            const exprList = this.caddr(proc);
-            const closureEnv = this.car(this.cdddr(proc));
-            const exprEnv = this.assocList(paramsList, argsList).concat(closureEnv);
+            // proc = ["closure", [par1, par2 ...], [expr1, expr2 ...], env]
+            const paramsList = proc[1];
+            const exprList   = proc[2];
+            const closureEnv = proc[3];
+
+            const exprEnv    = this.assocList(paramsList, argsList).concat(closureEnv);
             return this.evalExpr(exprList, exprEnv);
         }
 
@@ -232,24 +233,24 @@ class Interpreter {
     }
 
     private evalCons(argsLst: any[], env: any[]): any[] {
-        const a = this.evalExpr(this.car(argsLst), env);
-        const b = this.evalExpr(this.cadr(argsLst), env);
+        const a = this.evalExpr(argsLst[0], env);
+        const b = this.evalExpr(argsLst.slice(1), env);
         return this.cons(a, b);
     }
 
     private evalCond(expr: any, env: any[]): any {
-        return this.evalCondLoop(this.cdr(expr), env);
+        return this.evalCondLoop(expr.slice(1), env);
     }
 
     private evalCondLoop(condClauses: any, env: any): any {
-        const clause = this.car(condClauses);
-        if (this.car(clause) === "else"){
-            return this.evalExprLst(this.cdr(clause), env);
+        const clause = condClauses[0];
+        if (clause[0] === "else"){
+            return this.evalExprLst(clause.slice(1), env);
         } else {
-            if (this.evalExpr(this.car(clause), env)) {
-                return this.evalExprLst(this.cdr(clause), env);
+            if (this.evalExpr(clause[0], env)) {
+                return this.evalExprLst(clause.slice(1), env);
             } else {
-                return this.evalCondLoop(this.cdr(condClauses), env);
+                return this.evalCondLoop(condClauses.slice(1), env);
             }
         }
     }
