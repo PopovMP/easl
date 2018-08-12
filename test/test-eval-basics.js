@@ -191,7 +191,7 @@ describe('Eval basics', function () {
             assert.deepStrictEqual(app.evaluate("1 2"), 2);
         });
         it('3 (+ 1 1) → 2', function () {
-            assert.deepStrictEqual(app.evaluate("1 2"), 2);
+            assert.deepStrictEqual(app.evaluate("3 (+ 1 1)"), 2);
         });
      });
 

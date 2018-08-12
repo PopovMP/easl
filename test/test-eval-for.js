@@ -12,7 +12,7 @@ describe('cycle for', function () {
             assert.strictEqual(app.evaluate(`    {for (i 0) (< i 3) (+ i 1) i} `), 2);
         });
 
-        it(' {for (i 0) (<= i 100) (+ i 1) i} → 100', function () {
+        it('{for (i 0) (<= i 100) (+ i 1) i} → 100', function () {
             assert.strictEqual(app.evaluate(`    {for (i 0) (<= i 100) (+ i 1)
                                                       (* 5 i)
                                                       (/ i 5)
