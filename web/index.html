@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EASL</title>
+    <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<h1>EASL</h1>
+<p>EASL is a functional programming language for JavaScript integration.</p>
+
+
+<div class="wrapper">
+    <div class="box">
+        <h2>Try EASL</h2>
+        <form>
+            <label for="code-area" style="display: none">Try EASL</label>
+            <textarea id="code-area" name="code"></textarea><br/>
+            <button id="run-button">Run</button>
+        </form>
+
+        <form>
+            <p>Output</p>
+            <label for="code-output" style="display: none">output</label>
+            <textarea id="code-output" name="code"></textarea>
+        </form>
+    </div>
+
+    <div class="box">
+        <h2>Examples</h2>
+        <div id="select-examples"></div>
+    </div>
+</div>
+
+
+
+
+<h2 id="grammar">Grammar</h2>
+
+<h3 id="null">Null</h3>
+
+<p>Null can be represented with the keyword <code>null</code> or with an empty list <code>[]</code></p>
+
+<h3 id="booleanconstant">Boolean constant</h3>
+
+<p>Faulty values are:</p>
+
+<pre><code> false - reserved keyword,
+ null  - reserved keyword,
+ []    - an empty list,
+ ""    - an empty string,
+ 0     - zero
+</code></pre>
+
+<p>Truthy values are:</p>
+
+<pre><code> true     - reserved keyword,
+ [1 2 3]  - a non empty list,
+ "hello"  - a non empty string,
+ 42       - a number. As well as a rela number like 3.14
+</code></pre>
+
+<h3 id="valuetypes">Value types</h3>
+
+<pre><code>boolean  - true, false
+number   - 0, 42, 3.14
+string   - "Hello World!"
+null     - the "null" keyword
+function - a function
+list     - a list of values in square brackets: [1 2 3] , ["white", "red", "green"]
+</code></pre>
+
+<p>We can check the type with the predicates:</p>
+
+<pre><code>boolean?
+number?
+string?
+null?
+function?
+list?
+pair?
+</code></pre>
+
+<p>Also we can sue the function <code>get-type</code>. Example: <code>(get-type [1 2 3]) → "list"</code></p>
+
+<h2 id="reservedkeywords">Reserved keywords</h2>
+
+<p><code>and</code>    - logical <code>and</code>. Example: <code>(and true false) → false</code>   </p>
+
+<p><code>begin</code>  - defines a block of several expressions. The block return the value of the last expression.
+    Example <code>{begin (+ 2 4) (+ 1 2)} → 3</code>. We use curly braces for the code blocks.   </p>
+
+<p><code>boolean</code> - denotes teh <code>boolean</code> a data type. <code>(get-type true) → boolean</code>   </p>
+
+<p><code>case</code> - used with <code>switch</code>  </p>
+
+<p><code>cond</code> -
+    <code>define</code> - <br />
+    <code>do</code> - <br />
+    <code>double</code> - <br />
+    <code>else</code> - <br />
+    <code>false</code> - <br />
+    <code>for</code> - <br />
+    <code>function</code> - <br />
+    <code>if</code> - <br />
+    <code>int</code> - <br />
+    <code>lambda</code> - <br />
+    <code>let</code> - <br />
+    <code>let*</code> - <br />
+    <code>letrec</code> - <br />
+    <code>list</code> - <br />
+    <code>not</code> - <br />
+    <code>null</code> - <br />
+    <code>number</code> - <br />
+    <code>or</code> - <br />
+    <code>quote</code> - <br />
+    <code>set!</code> - <br />
+    <code>string</code> - <br />
+    <code>switch</code> - <br />
+    <code>symbol</code> - <br />
+    <code>true</code> - <br />
+    <code>while</code> -    </p>
+
+<h3 id="variabledefinition">Variable definition</h3>
+
+<p>EASL defines variables with the keyword <code>let</code>.</p>
+
+<p>There are three possible syntax:</p>
+
+<h5 id="definitionandinitializationofavariablewithaconstantvalue">Definition and initialization of a variable with a constant value</h5>
+
+<pre><code>{let n 5}
+{let is-member true}
+{let lst [1 2 3 4]}
+{let indicator-name "Moving Avergae"}
+</code></pre>
+
+<h4 id="initializationfromanexpression">Initialization from an expression</h4>
+
+<pre><code>{let one-day-ms  (* 1000 60 60 24)}
+{let full-name (str.append "John" " " "Smith")}
+{let ma (fx.moving-average (eas.get-data "EURUSD H1"))}
+</code></pre>
+
+<h2 id="if">if</h2>
+
+<pre><code>{if (clause) (then-expression) (else-expression) }
+</code></pre>
+
+<h2 id="cond">cond</h2>
+
+<pre><code>{cond
+   [(clause)  (expression)]
+   [(clause)  (expression)]
+   [else (expression)]}
+</code></pre>
+
+<h2 id="for">for</h2>
+
+<pre><code>{for (i 0) (&lt; i 10) (+ i 1) expr1 expr2 ...}
+</code></pre>
+
+<h2 id="lists">Lists</h2>
+
+<p>EASL defines lists in square brackets. Examples: <code>[1 2 3]</code> - a list of numbers, <code>[ "I" "am" "a" "list" "of" "strings"]</code>. A list can contain values from different types.</p>
+
+<p>List functions:</p>
+
+<p><code>list.empty</code> - gets an empty list: <code>(list.empty) → []</code></p>
+
+<p><code>list.length</code> - gives the length of an list: <code>(list.length [1 2 3])  → 3</code></p>
+
+<p><code>list.first</code> - gets the first element: <code>(list.first [1 2 3]) → 1</code>, <code>(list.first []) → null</code></p>
+
+<p><code>list.rest</code> - gets the all elements without the first one: <code>(list.rest [1 2 3]) → [2 3]</code>, <code>(list.rest []) → []</code></p>
+
+<p><code>list.last</code> - gets the last element: <code>(list.first [1 2 3]) → 3</code>, <code>(list.first []) → []</code></p>
+
+<p><code>list.least</code> - gets the all elements without the last one: <code>(list.least [1 2 3]) → [1 2]</code>, <code>(list.least []) → []</code></p>
+
+<p><code>list.add</code> - adds an element to the end: <code>(list.add 4 [1 2 3]) → [1 2 3 4]</code>, <code>(list.add 1 []) → [1]</code></p>
+
+<p><code>list.push</code> - adds an element at the beginning: <code>(list.push 0 [1 2 3]) → [0 1 2 3]</code>, <code>(list.push 1 []) → [1]</code></p>
+
+<p><code>list.has</code> - check if a list contains an element: <code>(list.has 3 [1 2 3]) → true</code>, <code>(list.has 1 []) → false</code></p>
+
+<p><code>list.index</code> - gets the index of an element or -1: <code>(list.index 3 [1 2 3]) → 2</code>, <code>(list.has 1 [3 4 5]) → -1</code></p>
+
+<p><code>list.get</code> - gets an element at an index: <code>(list.get 1 [1 2 3]) → 2</code>. The index is within the range of the list.</p>
+
+<p><code>list.set</code> - sets an element at an index: <code>(list.set 4 0 [1 2 3]) → [4 2 3]</code>. The index is within the range of the list.</p>
+
+<p><code>list.append</code> - appends lists: <code>(list.append [1 2 3] [4 5 6]) → [1 2 3 4 5 6]</code>.</p>
+
+<p><code>list.slice</code> - gets a subset of a list from index to index (not inclusive): <code>(list.slice 1 3 [1 2 3 4 5 6]) → [2 3]</code>.</p>
+
+<p><code>list.flatten</code> - flattens a nested lists: <code>(list.append [1 2 [3 4] 5 6]) → [1 2 3 4 5 6]</code>.</p>
+
+<p><code>list.join</code> - joins the list elements into a string: <code>(list.join ", " [1 2 3]) → "1, 2, 3"</code>.</p>
+
+<h2 id="strings">Strings</h2>
+
+<p>A string is closed within quotation marks: <code>"Hello World!"</code></p>
+
+<p><code>str.lenght</code></p>
+
+<p><code>str.append</code></p>
+
+<p><code>str.sub-string</code></p>
+
+<p><code>str.to-lower</code></p>
+
+<p><code>str.to-upper</code></p>
+
+<p><code>str.contains</code></p>
+
+<p><code>str.starts-with</code></p>
+
+<p><code>str.ends-with</code></p>
+
+<p><code>str.to-char-list</code></p>
+
+<h2 id="numbers">Numbers</h2>
+
+<p><code>numb.parse</code> - converts string to number. Returns <code>null</code> if the string cannot be converted</p>
+
+<h2 id="math">Math</h2>
+
+<p><code>math.abs</code></p>
+
+<p><code>math.ceil</code></p>
+
+<p><code>math.exp</code></p>
+
+<p><code>math.floor</code></p>
+
+<p><code>math.log</code></p>
+
+<p><code>math.min</code></p>
+
+<p><code>math.max</code></p>
+
+<p><code>math.pow</code></p>
+
+<p><code>math.random</code></p>
+
+<p><code>math.round</code></p>
+
+<p><code>math.sqrt</code></p>
+
+<p><code>math.even</code></p>
+
+<p><code>math.odd</code></p>
+
+<p><code>math.zero</code></p>
+
+<h2 id="functiondefinition">function definition</h2>
+
+<pre><code>{function sum [a b] (+ a b)}
+{function pi [] (/ 22.0 7.0)}
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>const module = {exports: {}};</script>
+<script src="js/easl.js"></script>
+<script src="js/code-examples.js"></script>
+<script src="js/index.js"></script>
+<script>
+    initialize();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,34 @@
+
+.wrapper {
+  display: grid;
+  grid-template-columns: auto 33%;
+  grid-gap: 10px;
+  background-color: #fff;
+  color: #444;
+}
+
+.box {
+  background-color: #cadfec;
+  color: #000000;
+  border-radius: 5px;
+  padding: 20px;
+}
+
+#code-area {
+  width: 100%;
+  min-height: 200px;
+}
+
+#code-output {
+  width: 100%;
+  min-height: 20px;
+}
+
+pre {
+  padding: 10px;
+  background-color: #e8e8e8;
+}
+
+code {
+  background-color: #e8e8e8;
+}
