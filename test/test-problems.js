@@ -1,15 +1,15 @@
 "use strict";
 
 const assert = require("assert");
-const Application = require("../bin/easl.js").Application;
+const Easl = require("../bin/easl.js").Easl;
 
-const app = new Application();
+const easl = new Easl();
 
 describe('problems', function () {
 
     describe('Fibonacci', function () {
         it('Fibonacci tail optimized', function () {
-            assert.strictEqual(app.evaluate(`   
+            assert.strictEqual(easl.evaluate(`   
              
                                   {let fib ( {n 10} )
                                     {let loop ( {i     2}
@@ -26,7 +26,7 @@ describe('problems', function () {
 
     describe('List sum', function () {
         it('Sum elements tail optimized', function () {
-            assert.strictEqual(app.evaluate(`   
+            assert.strictEqual(easl.evaluate(`   
              
                                   {let list.sum { (lst [1 2 3 4 5 6 7 8 9]) }
                                     {let loop { (i   (list.length lst))
@@ -41,7 +41,7 @@ describe('problems', function () {
 
     describe('Make sequences', function () {
         it('Range', function () {
-            assert.deepStrictEqual(app.evaluate(`   
+            assert.deepStrictEqual(easl.evaluate(`   
              
                                   {let make-range { (start     0)
                                                     (length   10)
@@ -57,7 +57,7 @@ describe('problems', function () {
 
 
         it('Arithmetic progression', function () {
-            assert.deepStrictEqual(app.evaluate(`   
+            assert.deepStrictEqual(easl.evaluate(`   
              
                                   {let make-range { (start     0)
                                                     (length   10)
@@ -74,7 +74,7 @@ describe('problems', function () {
 
 
         it('Geometric  progression', function () {
-            assert.deepStrictEqual(app.evaluate(`   
+            assert.deepStrictEqual(easl.evaluate(`   
              
                                   {let make-range { (start     3)
                                                     (length   10)

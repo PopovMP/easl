@@ -1,47 +1,47 @@
 "use strict";
 
 const assert = require("assert");
-const Application = require("../bin/easl.js").Application;
+const Easl = require("../bin/easl.js").Easl;
 
-const app = new Application();
+const easl = new Easl();
 
 describe('define', function () {
 
     describe('define var', function () {
         it('{define a 2} a → 2', function () {
-            assert.strictEqual(app.evaluate(`    {define a 2} a  `), 2);
+            assert.strictEqual(easl.evaluate(`    {define a 2} a  `), 2);
         });
         it('{define a 2} {define b 3} a → 2', function () {
-            assert.strictEqual(app.evaluate(`    {define a 2} {define b 3} a  `), 2);
+            assert.strictEqual(easl.evaluate(`    {define a 2} {define b 3} a  `), 2);
         });
         it('{define a 2} {define b 3} b → 3', function () {
-            assert.strictEqual(app.evaluate(`    {define a 2} {define b 3} 3  `), 3);
+            assert.strictEqual(easl.evaluate(`    {define a 2} {define b 3} 3  `), 3);
         });
         it('{define a 2} {define b (* a 2)} b → 4', function () {
-            assert.strictEqual(app.evaluate(`    {define a 2} {define b (* a 2)} b → 4  `), 4);
+            assert.strictEqual(easl.evaluate(`    {define a 2} {define b (* a 2)} b → 4  `), 4);
         });
         it('{define m 2} ({lambda (a) (* m a)}  2) → 4', function () {
-            assert.strictEqual(app.evaluate(`    {define m 2} ({lambda (a) (* m a)}  2) `), 4);
+            assert.strictEqual(easl.evaluate(`    {define m 2} ({lambda (a) (* m a)}  2) `), 4);
         });
     });
 
 
     describe('define lambda', function () {
         it('no arguments', function () {
-            assert.strictEqual(app.evaluate(` 
+            assert.strictEqual(easl.evaluate(` 
                                                 {define answer
                                                     {lambda () 42}}
                                                 (answer)                                `), 42);
         });
 
         it('one argument', function () {
-            assert.strictEqual(app.evaluate(` 
+            assert.strictEqual(easl.evaluate(` 
                                                 {define double
                                                     {lambda (a) (* 2 a)}}
                                                 (double 2)                              `), 4);
         });
         it('two arguments', function () {
-            assert.strictEqual(app.evaluate(`    
+            assert.strictEqual(easl.evaluate(`    
                                                 {define sum
                                                     {lambda (a b) (+ a b)}}
                                                 (sum 2 3)                               `), 5);
@@ -51,14 +51,14 @@ describe('define', function () {
 
     describe('define proc', function () {
         it('no arguments', function () {
-            assert.strictEqual(app.evaluate(`
+            assert.strictEqual(easl.evaluate(`
                                                 {define (answer) 42}
                                                 (answer)
                                                                                         `), 42);
         });
 
         it('one arguments', function () {
-            assert.strictEqual(app.evaluate(`
+            assert.strictEqual(easl.evaluate(`
                                                 {define (double a)
                                                     (* 2 a)}
                                                 (double 2)
@@ -66,7 +66,7 @@ describe('define', function () {
         });
 
         it('two arguments', function () {
-            assert.strictEqual(app.evaluate(`
+            assert.strictEqual(easl.evaluate(`
                                                 {define (sum a b)
                                                     (+ a b)}
                                                 (sum 2 3)
@@ -74,7 +74,7 @@ describe('define', function () {
         });
 
         it('two expressions in the body', function () {
-            assert.strictEqual(app.evaluate(`
+            assert.strictEqual(easl.evaluate(`
                                                 {define (sum a b)
                                                     (+ a b)}
                                                 (sum 2 3)

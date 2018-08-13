@@ -1,6 +1,6 @@
 "use strict";
 
-class Application {
+class Easl {
 
     private interpreter: Interpreter;
 
@@ -21,4 +21,4 @@ class Application {
     }
 }
 
-module.exports.Application = Application;
+module.exports.Easl = Easl;

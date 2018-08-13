@@ -1,27 +1,27 @@
 "use strict";
 
 const assert = require("assert");
-const Application = require("../bin/easl.js").Application;
+const Easl = require("../bin/easl.js").Easl;
 
-const app = new Application();
+const easl = new Easl();
 
 describe('let', function () {
 
     describe('let proc-id', function () {
         it('{let f ((a 1)) a} → 1', function () {
-            assert.strictEqual(app.evaluate(`    {let f ((a 1)) a}   `), 1);
+            assert.strictEqual(easl.evaluate(`    {let f ((a 1)) a}   `), 1);
         });
 
         it('{let f ((a (+ 1 2)) a} → 3', function () {
-            assert.strictEqual(app.evaluate(`    {let f ( (a (+ 1 2)) ) a}   `), 3);
+            assert.strictEqual(easl.evaluate(`    {let f ( (a (+ 1 2)) ) a}   `), 3);
         });
 
         it('{let f ((a [1 2 3])) a} → [1, 2, 3]', function () {
-            assert.deepStrictEqual(app.evaluate(`    {let f ((a [1 2 3])) a}   `), [1, 2, 3]);
+            assert.deepStrictEqual(easl.evaluate(`    {let f ((a [1 2 3])) a}   `), [1, 2, 3]);
         });
 
         it('count of list elements', function () {
-            assert.strictEqual(app.evaluate(`   
+            assert.strictEqual(easl.evaluate(`   
                                                  {let count ( (lst [1 2 3 4 5])
                                                               (cnt 0) )
                                                    {if (null? lst)
@@ -31,7 +31,7 @@ describe('let', function () {
         });
 
         it('factorial 5  → 120', function () {
-            assert.strictEqual(app.evaluate(`   
+            assert.strictEqual(easl.evaluate(`   
                                                {let fac ( (n 5) )
                                                   (if (= n 0)
                                                       1
@@ -39,7 +39,7 @@ describe('let', function () {
         });
 
         it('nested let proc', function () {
-            assert.strictEqual(app.evaluate(`   
+            assert.strictEqual(easl.evaluate(`   
                                                {let f1 ( {a 1} )
                                                   {let f2 ( {b 2} )
                                                       (+ a b) }}               `), 3);
@@ -50,15 +50,15 @@ describe('let', function () {
 
     describe('let', function () {
         it('(let ((a 5)) (+ a a)) → 10', function () {
-            assert.strictEqual(app.evaluate(`   (let ((a 5)) (+ a a))   `), 10);
+            assert.strictEqual(easl.evaluate(`   (let ((a 5)) (+ a a))   `), 10);
         });
 
         it('(let ((a 5)) 5 (+ a a)) → 10', function () {
-            assert.strictEqual(app.evaluate(`   (let ((a 5)) 5 (+ a a))  `), 10);
+            assert.strictEqual(easl.evaluate(`   (let ((a 5)) 5 (+ a a))  `), 10);
         });
 
         it('Two variables', function () {
-            assert.strictEqual(app.evaluate(`  
+            assert.strictEqual(easl.evaluate(`  
                                                 {let ((a 5) 
                                                       (c (+ 20 10)))
                                                   (+ a a)
@@ -66,13 +66,13 @@ describe('let', function () {
         });
 
         it('lambda', function () {
-            assert.strictEqual(app.evaluate(`  
+            assert.strictEqual(easl.evaluate(`  
                                                 {let ({f (lambda (a b) (+ a b))})
                                                    (f 2 3)}                               `), 5);
         });
 
         it('lambda lambda', function () {
-            assert.strictEqual(app.evaluate(`  
+            assert.strictEqual(easl.evaluate(`  
                                                 (let ( {a 1} )
                                                      (({lambda () 
                                                           {lambda (b) (+ b a)}}) 2))      `), 3);
@@ -82,7 +82,7 @@ describe('let', function () {
 
     describe('let*', function () {
         it('One proc', function () {
-            assert.strictEqual(app.evaluate(`  
+            assert.strictEqual(easl.evaluate(`  
                                                    {let* ( {sum (lambda (a b) (+ a b))}
                                                            {a 1}
                                                            {b 2}
@@ -92,7 +92,7 @@ describe('let', function () {
         });
 
         it('let* in let', function () {
-            assert.strictEqual(app.evaluate(`  
+            assert.strictEqual(easl.evaluate(`  
                                                   {let ( {x 2}
                                                          {y 3} )
                                                      (let* ( {x 7}
@@ -103,16 +103,16 @@ describe('let', function () {
 
     describe('letrec', function () {
         it('one proc', function () {
-            assert.strictEqual(app.evaluate(`  
+            assert.strictEqual(easl.evaluate(`  
                                    {letrec ( {f (lambda () 5)} ) (f)}             `), 5);
         });
         it('one proc, one param', function () {
-            assert.strictEqual(app.evaluate(`  
+            assert.strictEqual(easl.evaluate(`  
                                    {letrec ( {f (lambda (a) (+ 2 a))} ) (f 1)}     `), 3);
         });
 
         it('factorial', function () {
-            assert.strictEqual(app.evaluate(`  
+            assert.strictEqual(easl.evaluate(`  
                                    {letrec ( {fac {lambda (n)
                                                      {if (= n 0)
                                                          1
@@ -121,7 +121,7 @@ describe('let', function () {
         });
 
         it('mutual recursion', function () {
-            assert.strictEqual(app.evaluate(`  
+            assert.strictEqual(easl.evaluate(`  
                                     {letrec
                                         ( {is-even? (lambda (n) (or  (zero? n)
                                                                      (is-odd? (sub1 n))))}
