@@ -128,4 +128,16 @@ describe('list', function () {
         });
     });
 
+    describe('list.set', function () {
+        it('set element:  (list.set 42 1 [1 2 3]) → [1 42 3]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.set 42 1 [1 2 3])     `), [ 1, 42, 3 ]);
+        });
+    });
+
+    describe('list.swap', function () {
+        it('set element:  (list.swap 0 2 [1 2 3]) → [ 3, 2, 1 ]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.swap 0 2 [1 2 3])     `), [ 3, 2, 1 ]);
+        });
+    });
+
 });

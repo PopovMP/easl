@@ -153,6 +153,8 @@ List functions:
 
 `list.set` - sets an element at an index: `(list.set 4 0 [1 2 3]) → [4 2 3]`. The index is within the range of the list.
 
+`list.swap` - swaps two elements of a list: `(list.swap 0 1 [1 2 3]) → [ 2, 1, 3 ]`
+
 `list.append` - appends lists: `(list.append [1 2 3] [4 5 6]) → [1 2 3 4 5 6]`.
 
 `list.slice` - gets a subset of a list from index to index (not inclusive): `(list.slice 1 3 [1 2 3 4 5 6]) → [2 3]`.

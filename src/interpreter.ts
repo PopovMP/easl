@@ -184,6 +184,7 @@ class Interpreter {
             case "list.has"    : return this.listHas(expr, env);
             case "list.get"    : return this.listGet(expr, env);
             case "list.set"    : return this.listSet(expr, env);
+            case "list.swap"   : return this.listSwap(expr, env);
             case "list.append" : return this.listAppend(expr, env);
             case "list.slice"  : return this.listSlice(expr, env);
             case "list.flatten": return this.listFlatten(expr, env);
@@ -487,6 +488,21 @@ class Interpreter {
         if (Array.isArray(lst) && index >= 0 && index < lst.length) {
             const newLst = lst.slice();
             newLst[index] = elm;
+            return newLst;
+        }
+
+        return lst;
+    }
+
+    private listSwap(expr: any[], env: any): any[] {
+        const i1: any = this.evalExpr(expr[1], env);
+        const i2: any = this.evalExpr(expr[2], env);
+        const lst: any[] = this.evalExpr(expr[3], env);
+
+        if (Array.isArray(lst) && i1 >= 0 && i1 < lst.length &&  i2 >= 0 && i2 < lst.length) {
+            const newLst = lst.slice();
+            newLst[i1] = lst[i2];
+            newLst[i2] = lst[i1];
             return newLst;
         }
 
