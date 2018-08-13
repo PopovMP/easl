@@ -52,7 +52,7 @@ describe('problems', function () {
                                           lst
                                           (loop (list.add (next (list.last lst)) lst) (+ i 1)) }}}
                                               
-                                                                       `), [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]);
+                                                                       `), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
         });
 
 
@@ -68,9 +68,8 @@ describe('problems', function () {
                                           lst
                                           (loop (list.add (next (list.last lst)) lst) (+ i 1)) }}}
                                               
-                                                                       `), [ 0, 10, 20, 30, 40, 50, 60, 70, 80, 90 ]);
+                                                                       `), [0, 10, 20, 30, 40, 50, 60, 70, 80, 90]);
         });
-
 
 
         it('Geometric  progression', function () {
@@ -85,7 +84,27 @@ describe('problems', function () {
                                           lst
                                           (loop (list.add (next (list.last lst)) lst) (+ i 1)) }}}
                                               
-                                                             `), [ 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049 ]);
+                                                             `), [3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049]);
+        });
+
+
+        it('Swap elements of a list', function () {
+            assert.deepStrictEqual(easl.evaluate(`   
+             
+
+{define lst [1 2 3]}
+
+{define swap {lambda (i1 i2 lst)
+                (list.set (list.get i1 lst)
+                          i2
+                          (list.set (list.get i2 lst)
+                                    i1
+                                    lst)) }}
+
+(swap 0 2 lst)
+
+                                              
+                                                             `), [3, 2, 1]);
         });
 
     });

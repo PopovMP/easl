@@ -2,6 +2,24 @@
 
 const examplesList = [
     {
+        name: "Swap list elements non destructive",
+        code:
+            `
+{define lst [1 2 3]}
+
+{define swap {lambda (i1 i2 lst)
+                (list.set (list.get i1 lst)
+                          i2
+                          (list.set (list.get i2 lst)
+                                    i1
+                                    lst)) }}
+
+(swap 0 2 lst)
+
+`
+    },
+
+    {
         name: "Fibonacci - tail optimized",
         code:
 `
