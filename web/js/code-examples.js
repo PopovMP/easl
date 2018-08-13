@@ -2,10 +2,19 @@
 
 const examplesList = [
     {
+        name: "List length",
+        code:
+`{define lst [1 2 3 4]}
+
+(list.length lst)
+`
+    },
+
+
+    {
         name: "Swap list elements non destructive",
         code:
-            `
-{define lst [1 2 3]}
+`{define lst [1 2 3]}
 
 {define swap {lambda (i1 i2 lst)
                 (list.set (list.get i1 lst)
@@ -15,15 +24,13 @@ const examplesList = [
                                     lst)) }}
 
 (swap 0 2 lst)
-
 `
     },
 
     {
         name: "Fibonacci - tail optimized",
         code:
-`
-{let fib ( {n 10} )
+`{let fib ( {n 10} )
     {let loop ( {i     2}
                 {prev  1}
                 {cur   1} )
@@ -35,8 +42,7 @@ const examplesList = [
     {
         name: "Sum elements of a list",
         code:
-`
-{let list.sum { (lst [1 2 3 4 5 6 7 8 9]) }
+`{let list.sum { (lst [1 2 3 4 5 6 7 8 9]) }
     {let loop { (i   (list.length lst))
                 (sum 0) }
         {if (= i -1)
@@ -47,8 +53,7 @@ const examplesList = [
     {
         name: "Arithmetic progression",
         code:
-`
-{let make-range { (start     0)
+`{let make-range { (start     0)
                   (length   10)
                   (next     {lambda (cur) (+ cur 10)}) }
     {let loop { (lst  [start])

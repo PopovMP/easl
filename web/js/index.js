@@ -11,9 +11,20 @@ function initialize() {
     view.codeOutputElem = document.getElementById("code-output");
     view.codeExamplesElem = document.getElementById("select-examples");
 
+
+
+    app.editor = CodeMirror.fromTextArea(view.codeAreaElem, {
+        lineNumbers: true,
+        styleActiveLine: true,
+        matchBrackets: true,
+        mode: "easl-mode",
+        theme: "easl",
+    });
+
     view.buttonRun.addEventListener("click", buttonRun_click);
 
     setExamples();
+    setDefaultCode();
 }
 
 function setExamples() {
@@ -29,17 +40,23 @@ function setExamples() {
     }
 }
 
+function setDefaultCode() {
+    app.editor.getDoc().setValue(examplesList[0].code);
+    view.codeOutputElem.value = "";
+}
+
 function exampleLink_click(event) {
     event.preventDefault();
     const exampleName = event.target.innerHTML;
     const example = examplesList.find(e => e.name === exampleName);
-    view.codeAreaElem.value = example.code;
+    app.editor.getDoc().setValue(example.code);
     view.codeOutputElem.value = "";
 }
 
 function buttonRun_click(event) {
     event.preventDefault();
-    runCode(view.codeAreaElem.value);
+    const code = app.editor.getDoc().getValue();
+    runCode(code);
 }
 
 function runCode(codeText) {

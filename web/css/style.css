@@ -32,3 +32,24 @@ pre {
 code {
   background-color: #e8e8e8;
 }
+
+
+.CodeMirror {border: 1px solid black; font-size:16px}
+
+#run-button {
+  background-color: #4CAF50;
+  border: none;
+  color: #FFFFFF;
+  padding: 10px 24px;
+  text-align: center;
+  -webkit-transition-duration: 0.4s;
+  transition-duration: 0.4s;
+  margin: 5px 0 !important;
+  text-decoration: none;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+#run-button:hover {
+  background-color: #4CAF50;
+}
