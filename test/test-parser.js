@@ -1,7 +1,7 @@
 "use strict";
 
 const assert = require("assert");
-const Parser = require("../index").Parser;
+const Parser = require("../bin/easl.js").Parser;
 
 describe('Parser', function () {
     describe('#Parser.lexer', function () {

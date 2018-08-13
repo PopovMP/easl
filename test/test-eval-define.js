@@ -1,7 +1,7 @@
 "use strict";
 
 const assert = require("assert");
-const Application = require("../index").Application;
+const Application = require("../bin/easl.js").Application;
 
 const app = new Application();
 
@@ -80,7 +80,5 @@ describe('define', function () {
                                                 (sum 2 3)
                                                                                         `), 5);
         });
-
     });
-
 });

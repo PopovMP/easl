@@ -4,9 +4,9 @@
     "strict": true,
     "removeComments": true,
     "sourceMap": false,
-    "outFile": "index.js"
+    "outFile": "./bin/easl.js"
   },
   "include": [
     "./src/**/*"
-  ],
+  ]
 }
