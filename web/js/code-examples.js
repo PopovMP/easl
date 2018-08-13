@@ -63,6 +63,23 @@ const examplesList = [
             (loop (list.add (next (list.last lst)) lst) (+ i 1)) }}}
 `
     },
+    {
+        name: "Find max of list recursive",
+        code:
+`{define (list-max lst)
+    {define (loop rest max)
+        {if (null? rest)
+            max
+            (loop (list.rest rest)
+                  (if (> (list.first rest)  max)
+                      (list.first rest)
+                      max)) }}
+    (loop lst (list.first lst))}
+
+
+(list-max [27432 34 3214 526 62 2])
+`
+    },
 
 
 ];
