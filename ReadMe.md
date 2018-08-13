@@ -1,6 +1,30 @@
 # EASL
 
+Try EASL online: https://easl.forexsb.com/
+
+
+## Use on  server
+
+    npm install
+    npm run build
+    npm run test
+
+Usage in Node.js:
+
+
+    const Easl = require("../bin/easl.js").Easl;
+    const easl = new Easl();
+    
+    const code = '  {define lst [1 2 3 4]}
+                    (list.length lst)        `;
+                    
+    eas.evaluate(code);
+
+
 ## Grammar
+
+
+EASL is inspired by the *scheme* language and covers almost all teh scheme base features. 
 
 
 ### Null
@@ -55,7 +79,7 @@ Also we can sue the function `get-type`. Example: `(get-type [1 2 3]) → "list"
 `begin`  - defines a block of several expressions. The block return the value of the last expression.
 Example `{begin (+ 2 4) (+ 1 2)} → 3`. We use curly braces for the code blocks.   
 
-`boolean` - denotes teh `boolean` a data type. `(get-type true) → boolean`   
+`boolean` - denotes a `boolean` data type. `(get-type true) → boolean`   
 
 `case` - used with `switch`  
 
@@ -223,6 +247,6 @@ A string is closed within quotation marks: `"Hello World!"`
 
 ## function definition
 
-    {function sum [a b] (+ a b)}
-    {function pi [] (/ 22.0 7.0)}
+    {define sum (a b) (+ a b)}
+    {define pi () (/ 22.0 7.0)}
     
