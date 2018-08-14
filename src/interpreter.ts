@@ -96,11 +96,8 @@ class Interpreter {
         // Primitives
         if (this.isNumber(expr))    return expr;
         if (this.isNull(expr))      return expr;
-//        if (this.isString(expr))    return expr;
         if (this.isBoolean(expr))   return expr;
-        if (this.isProcedure(expr)) return expr;
         if (this.isUndefined(expr)) return expr;
-        if (this.isSymbol(expr))    return expr;
 
         // Lookup
         if (typeof expr === "string") {
@@ -122,7 +119,6 @@ class Interpreter {
             case "null?"    : return this.isNull   (this.evalExpr(expr[1], env));
             case "number?"  : return this.isNumber (this.evalExpr(expr[1], env));
             case "string?"  : return this.isString (this.evalExpr(expr[1], env));
-            case "symbol?"  : return this.isSymbol (this.evalExpr(expr[1], env));
             case "pair?"    : return this.isPair   (this.evalExpr(expr[1], env));
             case "list?"    : return this.isList   (this.evalExpr(expr[1], env));
 
@@ -150,6 +146,7 @@ class Interpreter {
 
             // (list expr1 expr2 ...) → list
             case "list" : return this.mapExprLst(expr.slice(1), env);
+
             // (string "content") → "content"
             case "string" : return expr[1];
 
@@ -380,9 +377,7 @@ class Interpreter {
     private isNumber    = (a: any) => typeof a === "number";
     private isString    = (a: any) => typeof a === "string";
     private isBoolean   = (a: any) => typeof a === "boolean";
-    private isProcedure = (a: any) => typeof a === "function";
     private isUndefined = (a: any) => typeof a === "undefined";
-    private isSymbol    = (a: any) => typeof a === "symbol";
 
     private not = (a: any) => this.isEmptyList(a) || !a;
 
