@@ -8,14 +8,19 @@
 class Lexer {
 
     public static splitCode(code: string): any[] {
-        const lexList: string[] = [];
+        const lexList: any[] = [];
 
         for (let i = 0, symbol = ""; i < code.length; i++) {
             const ch = code[i];
 
             const pushSymbol = () => {
                 if (symbol === "") return;
-                lexList.push(symbol);
+                if (Grammar.isTextNumber(symbol)) {
+                    const number: number = Lexer.parseNumber(symbol);
+                    lexList.push(number);
+                } else {
+                    lexList.push(symbol);
+                }
                 symbol = "";
             };
 
@@ -24,13 +29,19 @@ class Lexer {
                 for (i++; i < code.length; i++) {
                     const c = code[i];
                     if (Grammar.isStringEnclosureChar(c)) {
-                        const str = charList.join("");
-                        lexList.push(str);
                         break;
                     } else {
                         charList.push(c);
                     }
                 }
+                const str = charList.join("");
+
+                // Syntax sugar: "hello" -> (string "hello")
+                lexList.push('(');
+                lexList.push('string');
+                lexList.push(str);
+                lexList.push(')');
+
             } else if (Grammar.isLineComment(ch)) {
                 for (; i < code.length; i++) {
                     const c = code[i];
@@ -54,6 +65,13 @@ class Lexer {
         return lexList;
     }
 
+    public static parseNumber(numberText: string): number {
+        const isNegative = numberText[0] === "-";
+        const cleanedNumbText = numberText.replace(/-/g, "");
+        const parsedNumber = Number(cleanedNumbText);
+        const number = isNegative ? -parsedNumber : parsedNumber;
+        return number;
+    }
 }
 
 module.exports.Lexer = Lexer;

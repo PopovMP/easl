@@ -11,13 +11,16 @@ describe('Eval basics', function () {
             assert.strictEqual(easl.evaluate("1"), 1);
         });
         it('null: null → null', function () {
-            assert.deepStrictEqual(easl.evaluate("null"), null);
+            assert.strictEqual(easl.evaluate("null"), null);
         });
         it('boolean: true → true', function () {
             assert.strictEqual(easl.evaluate("true"), true);
         });
         it('boolean: false → false', function () {
             assert.strictEqual(easl.evaluate("false"), false);
+        });
+        it('string:\'"John"\' → "John"', function () {
+            assert.strictEqual(easl.evaluate('"John"'), "John");
         });
     });
 
@@ -31,9 +34,9 @@ describe('Eval basics', function () {
         it('empty list: (if [] 1 2) → 2', function () {
             assert.strictEqual(easl.evaluate("(if [] 1 2)"), 2);
         });
-        // it('empty string', function () {
-        //     assert.strictEqual(easl.evaluate('(if "" 1 2)'), 2);
-        // });
+        it('empty string', function () {
+            assert.strictEqual(easl.evaluate('(if "" 1 2)'), 2);
+        });
         it('zero: (if 0 1 2) → 2', function () {
             assert.strictEqual(easl.evaluate("(if 0 1 2)"), 2);
         });
@@ -46,9 +49,9 @@ describe('Eval basics', function () {
         it('non empty list: (if [1] 1 2) → 1', function () {
             assert.strictEqual(easl.evaluate("(if [1] 1 2)"), 1);
         });
-        // it('empty string', function () {
-        //     assert.strictEqual(easl.evaluate('(if "hello" 1 2)'), 1);
-        // });
+        it('empty string', function () {
+            assert.strictEqual(easl.evaluate('(if "hello" 1 2)'), 1);
+        });
         it('number: (if 42 1 2) → 1', function () {
             assert.strictEqual(easl.evaluate("(if 42 1 2)"), 1);
         });
@@ -77,10 +80,23 @@ describe('Eval basics', function () {
         it('(number? 3.14) → true', function () {
             assert.strictEqual(easl.evaluate("(number? 3.14)"), true);
         });
-        // it('(number? "42") → false', function () {
-        //     assert.strictEqual(easl.evaluate('(number? "42")'), false);
-        // });
+        it('(number? -123-456-300.7) → true', function () {
+            assert.strictEqual(easl.evaluate("(number? -123-456-300.7)"), true);
+        });
+        it('(number? "42") → false', function () {
+            assert.strictEqual(easl.evaluate('(number? "42")'), false);
+        });
 
+
+        it('(string? "") → true', function () {
+            assert.strictEqual(easl.evaluate('(string? "")'), true);
+        });
+        it('(string? "hello") → false', function () {
+            assert.strictEqual(easl.evaluate('(string? "hello")'), true);
+        });
+        it('(string? 42) → false', function () {
+            assert.strictEqual(easl.evaluate("(string? 42)"), false);
+        });
 
         it('(null? null) → true', function () {
             assert.strictEqual(easl.evaluate("(null? null)"), true);

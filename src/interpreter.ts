@@ -96,14 +96,14 @@ class Interpreter {
         // Primitives
         if (this.isNumber(expr))    return expr;
         if (this.isNull(expr))      return expr;
-        //if (this.isString(expr))    return expr;
+//        if (this.isString(expr))    return expr;
         if (this.isBoolean(expr))   return expr;
         if (this.isProcedure(expr)) return expr;
         if (this.isUndefined(expr)) return expr;
         if (this.isSymbol(expr))    return expr;
 
         // Lookup
-        if (this.isString(expr)) {
+        if (typeof expr === "string") {
             const val = this.lookup(expr, env);
             if (typeof val === "undefined") {
                 new Error(`lookup returns 'undefined' for symbol: ${JSON.stringify(expr)}`);
@@ -150,6 +150,8 @@ class Interpreter {
 
             // (list expr1 expr2 ...) → list
             case "list" : return this.mapExprLst(expr.slice(1), env);
+            // (string "content") → "content"
+            case "string" : return expr[1];
 
             // (length lst) → int
             case "length" : return this.length(expr[1]);
@@ -189,6 +191,12 @@ class Interpreter {
             case "list.slice"  : return this.listSlice(expr, env);
             case "list.flatten": return this.listFlatten(expr, env);
             case "list.join"   : return this.listJoin(expr, env);
+
+            // string
+            case "str.length" : return this.strLength(expr, env);
+            case "str.has"    : return this.strHas(expr, env);
+            case "str.split"  : return this.strSplit(expr, env);
+            case "str.concat" : return this.strConcat(expr, env);
 
             // (print expr)
             case "print" : return console.log(this.evalExpr(expr[1], env).toString());
@@ -305,7 +313,7 @@ class Interpreter {
     }
 
     private evalLet(expr: any, env: any[]): any {
-        if (this.isString(expr[1])) {
+        if (typeof expr[1] === "string") {
             // expr = ["let", "proc-id", [["s1", v1], ["s2", v2], ...], expr1, expr2, ...]
             return this.evalLetProc(expr, env);
         } else {
@@ -533,6 +541,29 @@ class Interpreter {
         const sep: any = expr[1];
         const lst: any[] = this.evalExpr(expr[2], env);
         return lst.join(sep);
+    }
+
+    private strLength(expr: any[], env: any): number {
+        const str = this.evalExpr(expr[1], env);
+        return typeof str === "string" ? str.length : -1;
+    }
+
+    private strHas(expr: any[], env: any): boolean {
+        const elem = this.evalExpr(expr[1], env);
+        const str = this.evalExpr(expr[2], env);
+        return str.includes(elem);
+    }
+
+    private strSplit(expr: any[], env: any): string {
+        const sep = this.evalExpr(expr[1], env);
+        const str = this.evalExpr(expr[2], env);
+        return str.split(sep);
+    }
+
+    private strConcat(expr: any[], env: any): string {
+        const str1 = this.evalExpr(expr[1], env);
+        const str2 = this.evalExpr(expr[2], env);
+        return str1 + str2;
     }
 
     private flattenArray(arr: any[]): any[] {

@@ -43,7 +43,11 @@ class Grammar {
         return Grammar.endOfLineChars.indexOf(ch) > -1;
     }
 
-    public static isNumber(text: string): boolean {
+    public static isTextNumber(text: string): boolean {
         return Grammar.numberRegExp.test(text);
+    }
+
+    public static isNumber(token: any): boolean {
+        return typeof token === "number";
     }
 }
