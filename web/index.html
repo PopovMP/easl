@@ -9,7 +9,7 @@
 <body>
 
 <h1>EASL</h1>
-<p>EASL is a functional programming language for JavaScript integration.</p>
+<p>EASL is a functional programming language for JavaScript integration. Open source code: <a href="https://github.com/PopovMP/easl">https://github.com/PopovMP/easl</a>.</p>
 
 
 <div class="wrapper">
@@ -92,7 +92,7 @@ pair?
 <p><code>begin</code>  - defines a block of several expressions. The block return the value of the last expression.
     Example <code>{begin (+ 2 4) (+ 1 2)} → 3</code>. We use curly braces for the code blocks.   </p>
 
-<p><code>boolean</code> - denotes teh <code>boolean</code> a data type. <code>(get-type true) → boolean</code>   </p>
+<p><code>boolean</code> - denotes a <code>boolean</code> data type. <code>(get-type true) → boolean</code>   </p>
 
 <p><code>case</code> - used with <code>switch</code>  </p>
 
@@ -260,8 +260,8 @@ pair?
 
 <h2 id="functiondefinition">function definition</h2>
 
-<pre><code>{function sum [a b] (+ a b)}
-{function pi [] (/ 22.0 7.0)}
+<pre><code>{define sum (a b) (+ a b)}
+{define pi () (/ 22.0 7.0)}
 </code></pre>
 
 
