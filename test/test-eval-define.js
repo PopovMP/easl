@@ -80,5 +80,27 @@ describe('define', function () {
                                                 (sum 2 3)
                                                                                         `), 5);
         });
+
+        it('two defines', function () {
+            assert.strictEqual(easl.evaluate(`
+                                                {define (sum a b)
+                                                    (+ a b)}
+                                                {define (res)
+                                                    (sum 1 2)}
+                                                    
+                                                (res)
+                                                                                        `), 3);
+        });
+
+        // it('define proc recursion', function () {
+        //     assert.strictEqual(easl.evaluate(`
+        //                                         {define (counter n)
+        //                                            {if (= n 0)
+        //                                                 n
+        //                                                (counter (- n 1))} }
+        //
+        //                                         (counter 1)
+        //                                                                                 `), 0);
+        // });
     });
 });

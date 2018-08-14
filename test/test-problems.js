@@ -46,11 +46,12 @@ describe('problems', function () {
                                   {let make-range { (start     0)
                                                     (length   10)
                                                     (next     {lambda (cur) (+ cur 1)}) }
-                                    {let loop { (lst  [start])
-                                                (i    1) }
+                                    {let loop { (lst  [start]) ;; The list starts with the first element
+                                                (i    1) }     ;; The teh loop starts from index = 1
                                       {if (= i length)
                                           lst
-                                          (loop (list.add (next (list.last lst)) lst) (+ i 1)) }}}
+                                          (loop (list.add (next (list.last lst)) lst)
+                                                (+ i 1)) }}}
                                               
                                                                        `), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
         });

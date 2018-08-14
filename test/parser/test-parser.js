@@ -1,52 +1,33 @@
 "use strict";
 
 const assert = require("assert");
-const Parser = require("../bin/easl.js").Parser;
+const Parser = require("../../bin/easl.js").Parser;
+const Lexer = require("../../bin/easl.js").Lexer;
 
 describe('Parser', function () {
-    describe('#Parser.lexer', function () {
-        it('lexer 1', function () {
-            assert.deepStrictEqual(Parser.lexer("1"), ["1"]);
-        });
-        it('lexer 2', function () {
-            assert.deepStrictEqual(Parser.lexer("(+ a b)"), ['(', '+', 'a', 'b', ')']);
-        });
-        it('lexer 3', function () {
-            assert.deepStrictEqual(Parser.lexer("{function hello [a b] (+ a b)}"),
-                ['{', 'function', 'hello', '[', 'a', 'b', ']', '(', '+', 'a', 'b', ')', '}']);
-        });
-        // it('lexer 4 - empty string', function () {
-        //     assert.deepStrictEqual(Parser.lexer('""'), [""]);
-        // });
-        it('Multiple expr', function () {
-            assert.deepStrictEqual(Parser.lexer("1 2"), ["1", "2"]);
-        });
-
-    });
-
     describe('#Parser.quoteSymbols', function () {
         it('quote 1', function () {
-            assert.deepStrictEqual(Parser.quoteSymbols(Parser.lexer("(sum a 2)")), ['(', '"sum"', '"a"', '2', ')']);
+            assert.deepStrictEqual(Parser.quoteSymbols(Lexer.splitCode("(sum a 2)")), ['(', '"sum"', '"a"', '2', ')']);
         });
         it('quote 2', function () {
-            assert.deepStrictEqual(Parser.quoteSymbols(Parser.lexer("[a 2]")), ['[', '"a"', '2', ']']);
+            assert.deepStrictEqual(Parser.quoteSymbols(Lexer.splitCode("[a 2]")), ['[', '"a"', '2', ']']);
         });
         it('quote 3 multiple expr', function () {
-            assert.deepStrictEqual(Parser.quoteSymbols(Parser.lexer("1 2 a")), [ '1', '2', '"a"' ]);
+            assert.deepStrictEqual(Parser.quoteSymbols(Lexer.splitCode("1 2 a")), [ '1', '2', '"a"' ]);
         });
     });
 
     describe('#Parser.replaceParens', function () {
         it('parens 1', function () {
-            const lexTree = Parser.quoteSymbols(Parser.lexer("[a 2]"));
+            const lexTree = Parser.quoteSymbols(Lexer.splitCode("[a 2]"));
             assert.deepStrictEqual(Parser.replaceParens(lexTree), ['[', '"list"', '"a"', '2', ']']);
         });
         it('parens 1', function () {
-            const lexTree = Parser.quoteSymbols(Parser.lexer("[]"));
+            const lexTree = Parser.quoteSymbols(Lexer.splitCode("[]"));
             assert.deepStrictEqual(Parser.replaceParens(lexTree), ['[', '"list"', ']']);
         });
         it('no parens', function () {
-            const lexTree = Parser.quoteSymbols(Parser.lexer("1 2 a"));
+            const lexTree = Parser.quoteSymbols(Lexer.splitCode("1 2 a"));
             assert.deepStrictEqual(Parser.replaceParens(lexTree), [ '1', '2', '"a"' ]);
         });
     });
