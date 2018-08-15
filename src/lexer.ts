@@ -1,10 +1,5 @@
 "use strict";
 
-// Comments semicolon ;
-// string - enclosed in quotation marks: "John"
-// white characters: space, tab, new line, line feed: [" ", "\t", "\r", "\n"]
-
-
 class Lexer {
 
     public static splitCode(code: string): any[] {
@@ -41,7 +36,6 @@ class Lexer {
                 lexList.push('string');
                 lexList.push(str);
                 lexList.push(')');
-
             } else if (Grammar.isLineComment(ch)) {
                 for (; i < code.length; i++) {
                     const c = code[i];
@@ -57,7 +51,6 @@ class Lexer {
                     // Syntax sugar: [1 2 3] -> [list 1 2 3]
                     lexList.push("list");
                 }
-
             } else if (Grammar.isWhiteSpace(ch)) {
                 pushSymbol();
             } else {

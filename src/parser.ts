@@ -58,13 +58,13 @@ class Parser {
         for (let i = 0; i < lexTree.length; i++) {
             if (lexTree[i] === "[") {
                 let parens = "";
-                for (; i < lexTree.length && lexTree[i] === "["; i++) {
+                for (; lexTree[i] === "["; i++) {
                     parens += lexTree[i];
                 }
                 result.push(parens += lexTree[i]);
             } else if (lexTree[i] === "]") {
                 let parens = "";
-                for (; i < lexTree.length && lexTree[i] === "]"; i++) {
+                for (; lexTree[i] === "]"; i++) {
                     parens += lexTree[i];
                 }
                 result[result.length - 1] += parens;
@@ -78,7 +78,6 @@ class Parser {
     }
 
     private static tokenize(lexText: string): any[] {
-        // const fixedTree = lexText[0] === "[" ? lexText : "[" + lexText + "]";
         const fixedTree = "[" + lexText + "]";
         const codeTree = JSON.parse(fixedTree);
         return codeTree;
