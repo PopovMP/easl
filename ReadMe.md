@@ -29,7 +29,8 @@ EASL is inspired by the *scheme* language and covers almost all teh scheme base 
 
 ### Null
 
-Null can be represented with the keyword `null` or with an empty list `[]`
+Null can be represented with the keyword `null`.
+
 
 ### Boolean constant
 
@@ -61,76 +62,90 @@ Truthy values are:
 
 We can check the type with the predicates:
 
-    boolean?
-    number?
-    string?
-    null?
-    function?
-    list?
-    pair?
+`boolean?`  - examples:  `(boolean? true) → true`, `(boolean? false) → true`, `(boolean? 42) → false`
+
+`number?` - examples: `(number? 0) → true`, `(number? 3.14) → true`, `(number? 1-000-000) → true`
+
+`string?` - examples: `(string? "") → true`, `(string? "hello") → true`, `(string? 42) → false`
+
+`null?` - examples: `(null? null) → true`, `(null? []) → false`, `(null? 0) → false`
+
+`function?` - !!! To be done
+
+`list?` - examples: `(list? []) → true`, `(list? [1 (+ 2 3)]) → true`
+
+`pair?` - examples: `(pair? [1 2]) → true`, `(pair? 1) → false`
   
-Also we can sue the function `get-type`. Example: `(get-type [1 2 3]) → "list"`
-
-
 ## Reserved keywords
 
-`and`    - logical `and`. Example: `(and true false) → false`   
-
-`begin`  - defines a block of several expressions. The block return the value of the last expression.
-Example `{begin (+ 2 4) (+ 1 2)} → 3`. We use curly braces for the code blocks.   
-
-`boolean` - denotes a `boolean` data type. `(get-type true) → boolean`   
-
-`case` - used with `switch`  
-
-`cond` - 
-`define` -    
-`do` -    
-`double` -    
-`else` -    
-`false` -    
-`for` -    
-`function` -    
-`if` -    
-`int` -    
-`lambda` -    
-`let` -    
-`let*` -    
-`letrec` -    
-`list` -    
-`not` -    
-`null` -    
-`number` -    
-`or` -    
-`quote` -    
-`set!` -    
-`string` -    
-`switch` -    
-`symbol` -    
-`true` -    
-`while` -    
-
-
+    Constants:     true, false, null
+    Types:         number, string, list, function, 
+    Definition:    let, function, lambda
+    Condition:     if, else, switch, case
+    Cycle:         for, break, continue, do, while, default
+    Builtin proc:  typeof
  
 
-### Variable definition
+## Variable definition
 
 EASL defines variables with the keyword `let`.
 
 There are three possible syntax:
 
-##### Definition and initialization of a variable with a constant value
+#### Definition and initialization of a variable with a constant value
  
     {let n 5}
     {let is-member true}
     {let lst [1 2 3 4]}
-    {let indicator-name "Moving Avergae"}
+    {let first-name "John"}
     
-#### Initialization from an expression
+### Initialization from an expression
 
-    {let one-day-ms  (* 1000 60 60 24)}
-    {let full-name (str.append "John" " " "Smith")}
-    {let ma (fx.moving-average (eas.get-data "EURUSD H1"))}
+    {let pi  (/ 22 7)}
+    {let hello (str.append "Hello "  "world!")}
+
+
+## Functions
+
+## Named function
+
+Definition: `{function func-id (par1 par2 ...) (expression) }`
+
+A function returns the value of the last expression.
+
+We call functions with: `(func-id par1 par2)`
+
+    {function sum (a b) (+ a b)}
+    (sum 2 3) ;; → 5
+
+### Lambda
+
+A lambda is a nameless function: `{lambda (par1 par2 ...) (expression)}`
+
+Yuo can assign a lambda to a variable:
+
+    {let sum {lambda (a b) (+ a b)}}
+    (sum 2 3) ;; → 5
+
+You can call a `lambda` directly by enclosing it in parenthesis:
+
+    ({lambda (a b) (+ a b)} 2 3)  ;; → 5
+    
+You can use a `lambda` as a function argument:
+
+    {function calc (operation a b)
+        (operation a b)}
+
+    (calc {lambda (a b) (+ a b)} 2 3)   ;; → 5
+
+A function can return a `lambda`:
+
+    {function make-identity ()
+        {lambda (a) (a)}}
+
+    (let identity (make-identity))
+
+    (identity 5) ;; → 5 
     
 ## if
 
@@ -191,9 +206,9 @@ List functions:
 
 A string is closed within quotation marks: `"Hello World!"`
 
-`str.lenght`
+`str.lenght` - gets the number of characters: `(str.length "hello") → 5`
 
-`str.append`
+`str.concat` - concatenates two strings:  `(str.concat "Hello " "world!") → "Hello world!"`
 
 `str.sub-string`
 
@@ -201,7 +216,7 @@ A string is closed within quotation marks: `"Hello World!"`
 
 `str.to-upper`
 
-`str.contains`
+`str.has` - returns `true` if the string contains substring. `(str.has "lo" "hello") → true`
 
 `str.starts-with`
 
@@ -245,8 +260,4 @@ A string is closed within quotation marks: `"Hello World!"`
 `math.zero`
 
 
-## function definition
-
-    {define sum (a b) (+ a b)}
-    {define pi () (/ 22.0 7.0)}
-    
+   

@@ -45,12 +45,12 @@ describe('function', function () {
         it('make identity', function () {
             assert.strictEqual(easl.evaluate(` 
             
-                {function make-identity ()
-                    {lambda (a) (a)}}
+    {function make-identity ()
+        {lambda (a) (a)}}
 
-                (let identity (make-identity))
+    (let identity (make-identity))
 
-                (identity 5)
+    (identity 5)
                                                  `), 5);
         });
     });
@@ -69,6 +69,18 @@ describe('function', function () {
 
         (fibo 10)    
                                                  `), 55);
+        });
+    });
+
+    describe('lambda argument', function () {
+        it('calc', function () {
+            assert.strictEqual(easl.evaluate(` 
+            
+        {function calc (operation a b)
+            (operation a b)}
+    
+        (calc {lambda (a b) (+ a b)} 2 3)
+                                                 `, false), 5);
         });
     });
 

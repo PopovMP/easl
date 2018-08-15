@@ -61,10 +61,10 @@ describe('Eval basics', function () {
         it('(boolean? true) → true', function () {
             assert.strictEqual(easl.evaluate("(boolean? true)"), true);
         });
-        it('(boolean? false) → true', function () {
+        it(`(boolean? false) → true`, function () {
             assert.strictEqual(easl.evaluate("(boolean? false)"), true);
         });
-        it('(boolean? 42) → false', function () {
+        it(`(boolean? 42) → false`, function () {
             assert.strictEqual(easl.evaluate("(boolean? 42)"), false);
         });
 
@@ -91,7 +91,7 @@ describe('Eval basics', function () {
         it('(string? "") → true', function () {
             assert.strictEqual(easl.evaluate('(string? "")'), true);
         });
-        it('(string? "hello") → false', function () {
+        it('(string? "hello") → true', function () {
             assert.strictEqual(easl.evaluate('(string? "hello")'), true);
         });
         it('(string? 42) → false', function () {
