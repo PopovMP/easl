@@ -18,7 +18,7 @@ describe('let lambda - recursive', function () {
 
 (count [1 2 3 4 5] 0)
                                                   
-                                                    `, false), 5);
+                                                    `), 5);
     });
 
 
@@ -32,7 +32,7 @@ describe('let lambda - recursive', function () {
             (* n (fac (- n 1)))}}} 
 
 (fac 5)
-                                                    `, false), 120);
+                                                    `), 120);
     });
 
 
@@ -63,7 +63,7 @@ describe('let lambda - recursive', function () {
                                (is-even? (- n 1))))}
 
 (is-odd? 3)   
-                                                    `, false), true);
+                                                    `), true);
     });
 });
 

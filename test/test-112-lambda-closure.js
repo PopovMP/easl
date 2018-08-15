@@ -7,19 +7,11 @@ const easl = new Easl();
 
 
 describe('lambda - closure', function () {
-    xit('closure - 1 free param', function () {
+    it('closure - 1 free param', function () {
         assert.strictEqual(easl.evaluate(`
         
         ( ({lambda (a)
-               {lambda () (a)}})  1)
-                                            `, true), 1);
-    });
-
-
-    xit('Currying', function () {
-        assert.strictEqual(easl.evaluate(`
-        
-        ( ({lambda (a)
-               {lambda (b) (+ a b)}} 5)  6)`), 11);
+                {lambda (b) (+ a b)}} 1) 2)
+                                            `), 3);
     });
 });

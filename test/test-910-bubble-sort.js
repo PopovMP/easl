@@ -27,7 +27,6 @@ it('Bubble sort', function () {
     (bubble-sort-aux (list.length lst) lst) }
   
 (sort (list 6 5 10 9 8 7))
-                                              
-                                                             `, false),
+                                                             `),
         [5,6,7,8,9,10]);
 });

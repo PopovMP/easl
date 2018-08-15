@@ -80,7 +80,7 @@ describe('function', function () {
             (operation a b)}
     
         (calc {lambda (a b) (+ a b)} 2 3)
-                                                 `, false), 5);
+                                                 `), 5);
         });
     });
 });

@@ -16,14 +16,13 @@ describe('problems', function () {
                                             (loop (list.add (next (list.last lst)) lst)
                                                   (+ i 1)) }}
                                     (loop [start] 1) }
-                                          
+
                                   {make-range 3 10 {lambda (cur) (* cur 3)} )
                                   
                                               
-                                                             `, false),
+                                                             `),
             [3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049]);
     });
-
 
     it('Swap elements of a list', function () {
         assert.deepStrictEqual(easl.evaluate(`   
@@ -61,7 +60,7 @@ describe('problems', function () {
 
 (list-max [42 34 12 5 62 2])
                                               
-                                                             `, false), 62);
+                                                             `), 62);
     });
 
 });

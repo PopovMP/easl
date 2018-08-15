@@ -7,7 +7,7 @@ const easl = new Easl();
 
 
 describe('lambda - Y combinator', function () {
-    xit('!5 → 120', function () {
+    it('!5 → 120', function () {
         assert.strictEqual(easl.evaluate(`
 
     (((lambda (!) (lambda (n) ((! !) n)))
