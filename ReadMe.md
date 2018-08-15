@@ -2,6 +2,17 @@
 
 Try EASL online: https://easl.forexsb.com/
 
+## Why EASL?
+
+EASL is designed to be small scripting language for integration in online applications.
+
+Features:
+  - minimal impact on the hosting app.
+  - safe. EASL works on own memory environment. It executes only predefined commands.
+  - pure. EASL embraces the functional programming paradigm. No side effects.
+  - unmutable. All variables are unmutable by default.
+  - powerful. It supports higher order functions, recursion, closure.
+  
 
 ## Use on  server
 
@@ -9,8 +20,7 @@ Try EASL online: https://easl.forexsb.com/
     npm run build
     npm run test
 
-Usage in Node.js:
-
+Execute code:
 
     const Easl = require("../bin/easl.js").Easl;
     const easl = new Easl();
@@ -18,7 +28,23 @@ Usage in Node.js:
     const code = '  {define lst [1 2 3 4]}
                     (list.length lst)        `;
                     
-    eas.evaluate(code);
+    const res = eas.evaluate(code);
+    
+    console.log(res);
+
+
+## Use in browser
+
+    <script src="js/easl.js"></script>
+    <script>
+        const easl = new Easl();
+
+        const code = '  {define lst [1 2 3 4]}
+                        (list.length lst)        `;
+                        
+        const res = eas.evaluate(code);
+        console.log(res);
+    </script>
 
 
 ## Grammar
