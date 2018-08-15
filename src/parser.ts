@@ -37,23 +37,13 @@ class Parser {
             const token = lexTree[i];
             switch (token) {
                 case "(":
-                    result.push("[");
-                    break;
-
-                case "[":
-                    result.push("[");
-                    result.push("\"list\"");
-                    break;
-
                 case "{":
                     result.push("[");
                     break;
-
                 case ")":
                 case "}":
                     result.push("]");
                     break;
-
                 default:
                     result.push(token);
             }

@@ -13,14 +13,14 @@ describe("Lexer", function () {
         });
         it("let - list", function () {
             assert.deepStrictEqual(Lexer.splitCode("{let lst [1 2 3]}"),
-                ["{", "let", "lst", "[", 1, 2, 3, "]", "}"]);
+                ["{", "let", "lst", "[", "list", 1, 2, 3, "]", "}"]);
         });
         it("code in parenthesis", function () {
             assert.deepStrictEqual(Lexer.splitCode("(+ a b)"), ["(", "+", "a", "b", ")"]);
         });
         it("function definition", function () {
-            assert.deepStrictEqual(Lexer.splitCode("{function max [a b] {if (> a b) a b)}}"),
-                ["{", "function", "max", "[", "a", "b", "]",
+            assert.deepStrictEqual(Lexer.splitCode("{function max (a b) {if (> a b) a b)}}"),
+                ["{", "function", "max", "(", "a", "b", ")",
                     "{", "if", "(", ">", "a", "b", ")", "a", "b", ")", "}", "}"]);
         });
         it("Multiple expr", function () {

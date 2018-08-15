@@ -101,11 +101,11 @@ describe('Eval basics', function () {
         it('(null? null) → true', function () {
             assert.strictEqual(easl.evaluate("(null? null)"), true);
         });
-        it('(null? []) → true', function () {
-            assert.strictEqual(easl.evaluate("(null? [])"), true);
+        it('(null? []) → false', function () {
+            assert.strictEqual(easl.evaluate("(null? [])"), false);
         });
-        it('(null? (list)) → true', function () {
-            assert.strictEqual(easl.evaluate("(null? (list))"), true);
+        it('(null? (list)) → false', function () {
+            assert.strictEqual(easl.evaluate("(null? (list))"), false);
         });
         it('(null? 0) → false', function () {
             assert.strictEqual(easl.evaluate("(null? 0)"), false);
@@ -161,13 +161,13 @@ describe('Eval basics', function () {
             assert.deepStrictEqual(easl.evaluate("(list)"), []);
         });
         it('non empty list: (list 1 2 3) → [1 2 3]', function () {
-            assert.deepStrictEqual(easl.evaluate("(list 1 2 3)"), [1, 2 , 3]);
+            assert.deepStrictEqual(easl.evaluate("(list 1 2 3)"), [1, 2, 3]);
         });
         it('non empty list: [1 2 3] → [1 2 3]', function () {
-            assert.deepStrictEqual(easl.evaluate("[1 2 3]"), [1, 2 , 3]);
+            assert.deepStrictEqual(easl.evaluate("[1 2 3]"), [1, 2, 3]);
         });
         it('non empty list: [1 (- 5 3) 3] → [1 2 3]', function () {
-            assert.deepStrictEqual(easl.evaluate("[1 (- 5 3) 3]"), [1, 2 , 3]);
+            assert.deepStrictEqual(easl.evaluate("[1 (- 5 3) 3]"), [1, 2, 3]);
         });
     });
 
@@ -209,6 +209,6 @@ describe('Eval basics', function () {
         it('3 (+ 1 1) → 2', function () {
             assert.deepStrictEqual(easl.evaluate("3 (+ 1 1)"), 2);
         });
-     });
+    });
 
 });

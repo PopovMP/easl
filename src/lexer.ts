@@ -52,6 +52,12 @@ class Lexer {
             } else if (Grammar.isParen(ch)) {
                 pushSymbol();
                 lexList.push(ch);
+
+                if (ch === "[") {
+                    // Syntax sugar: [1 2 3] -> [list 1 2 3]
+                    lexList.push("list");
+                }
+
             } else if (Grammar.isWhiteSpace(ch)) {
                 pushSymbol();
             } else {

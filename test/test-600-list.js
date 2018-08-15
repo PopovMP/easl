@@ -12,6 +12,21 @@ describe('list', function () {
         });
     });
 
+    describe('list.empty?', function () {
+        it('(list.empty? list.empty) → true', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.empty? list.empty)       `), true);
+        });
+        it('(list.empty? [1 2 3]) → false', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.empty? [1 2 3])          `), false);
+        });
+        it('(list.empty? "bla") → false', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.empty? "bla")            `), false);
+        });
+        it('(list.empty? 42) → false', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.empty? 42)               `), true);
+        });
+    });
+
     describe('list.length', function () {
         it('not a list:  (list.length 42) → -1', function () {
             assert.strictEqual(easl.evaluate(`   (list.length 42)        `), -1);
@@ -131,6 +146,12 @@ describe('list', function () {
     describe('list.set', function () {
         it('set element:  (list.set 42 1 [1 2 3]) → [1 42 3]', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.set 42 1 [1 2 3])     `), [ 1, 42, 3 ]);
+        });
+    });
+
+    describe('list.append', function () {
+        it('set element:  (list.append [3 4] [1 2]) → [1 2 3 4]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.append [3 4] [1 2])     `), [ 1, 2, 3, 4 ]);
         });
     });
 

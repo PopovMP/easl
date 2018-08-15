@@ -10,7 +10,7 @@ describe('Parser', function () {
             assert.deepStrictEqual(Parser.quoteSymbols(Lexer.splitCode("(sum a 2)")), ['(', '"sum"', '"a"', 2, ')']);
         });
         it('quote 2', function () {
-            assert.deepStrictEqual(Parser.quoteSymbols(Lexer.splitCode("[a 2]")), ['[', '"a"', 2, ']']);
+            assert.deepStrictEqual(Parser.quoteSymbols(Lexer.splitCode("[a 2]")), ['[', '"list"', '"a"', 2, ']']);
         });
         it('quote 3 multiple expr', function () {
             assert.deepStrictEqual(Parser.quoteSymbols(Lexer.splitCode("1 2 a")), [ 1, 2, '"a"' ]);
