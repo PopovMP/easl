@@ -4,11 +4,20 @@ const examplesList = [
     {
         name: "List length",
         code:
-`;; Define a variable 'lst' and assign a list to it
+`;; Define a variable 'lst' and
+;; assign a list to it
+
 {let lst [1 2 3 4]}
 
-;; Use the builtin function 'list.length' to take the length of the list
+;; Use the builtin function 'list.length'
+;; to take the length of the list
+
 (list.length lst)
+
+;; Try to uncomment some of the expressions below
+; (list.first lst)
+; (list.rest lst)
+; (list.last lst)
 `
     },
     {
