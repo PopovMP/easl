@@ -198,27 +198,28 @@ List functions:
 
 `list.empty?` - checks if a list is empty: `(list.empty? [1 2 3]) → false`, `(list.empty? []) → true`
 
-`list.length` - gives the length of an list: `(list.length [1 2 3])  → 3`
+`list.length` - gives the length of a list: `(list.length [1 2 3])  → 3`
 
 `list.first` - gets the first element: `(list.first [1 2 3]) → 1`, `(list.first []) → null`
 
-`list.rest` - gets the all elements without the first one: `(list.rest [1 2 3]) → [2 3]`, `(list.rest []) → []`
+`list.rest` - gets all elements without the first one: `(list.rest [1 2 3]) → [2 3]`, `(list.rest []) → []`
 
-`list.last` - gets the last element: `(list.first [1 2 3]) → 3`, `(list.first []) → []`
+`list.last` - gets the last element: `(list.last [1 2 3]) → 3`, `(list.last []) → []`
 
-`list.least` - gets the all elements without the last one: `(list.least [1 2 3]) → [1 2]`, `(list.least []) → []`
+`list.least` - gets all elements without the last one: `(list.least [1 2 3]) → [1 2]`, `(list.least []) → []`
 
 `list.add` - adds an element to the end: `(list.add 4 [1 2 3]) → [1 2 3 4]`, `(list.add 1 []) → [1]`
  
-`list.push` - adds an element at the beginning: `(list.push 0 [1 2 3]) → [0 1 2 3]`, `(list.push 1 []) → [1]`
+`list.push` - pushes an element to the beginning of the list: `(list.push 0 [1 2 3]) → [0 1 2 3]`, `(list.push 1 []) → [1]`
  
-`list.has` - check if a list contains an element: `(list.has 3 [1 2 3]) → true`, `(list.has 1 []) → false`
+`list.has` - checks if a list contains an element: `(list.has 3 [1 2 3]) → true`, `(list.has 1 []) → false`
  
 `list.index` - gets the index of an element or -1: `(list.index 3 [1 2 3]) → 2`, `(list.has 1 [3 4 5]) → -1`
 
 `list.get` - gets an element at an index: `(list.get 1 [1 2 3]) → 2`. The index is within the range of the list.
 
 `list.set` - sets an element at an index: `(list.set 4 0 [1 2 3]) → [4 2 3]`. The index is within the range of the list.
+`list.set` doesn't modify the list. It returns a new list instead.
 
 `list.swap` - swaps two elements of a list: `(list.swap 0 1 [1 2 3]) → [ 2, 1, 3 ]`
 
