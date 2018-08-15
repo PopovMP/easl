@@ -98,6 +98,27 @@ const examplesList = [
 (list-max [42 34 12 5 62 2])
 `
     },
+    {
+        name: "Bubble sort",
+        code:
+`{function bubble-up (lst)
+    {if (list.empty? (cdr lst))   
+        lst    
+        {if (< (car lst) (cadr lst))   
+            (cons (car  lst) (bubble-up (cdr lst)))   
+            (cons (cadr lst) (bubble-up (cons (car lst)
+                                              (cddr lst)))) }}}
 
+{function bubble-sort-aux (n lst)
+    {if (= n 1)
+        (bubble-up lst)
+        (bubble-sort-aux (- n 1)
+                         (bubble-up lst)) }} 
 
+{function sort (lst) 
+    (bubble-sort-aux (list.length lst) lst) }
+    
+(sort [6 5 10 9 8 7])
+`
+    },
 ];

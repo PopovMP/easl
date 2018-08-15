@@ -61,7 +61,7 @@ describe('problems', function () {
 
 (list-max [42 34 12 5 62 2])
                                               
-                                                             `, true), 62);
+                                                             `, false), 62);
     });
 
 });
