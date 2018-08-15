@@ -37,11 +37,67 @@
 
 
 
+
+
+<h2 id="whyeasl">Why EASL?</h2>
+
+<p>EASL is designed to be small scripting language for integration in online applications.</p>
+
+<p>Features:</p>
+
+<ul>
+    <li>minimal impact on the hosting app.</li>
+
+    <li>safe. EASL works on own memory environment. It executes only predefined commands.</li>
+
+    <li>pure. EASL embraces the functional programming paradigm. No side effects.</li>
+
+    <li>unmutable. All variables are unmutable by default.</li>
+
+    <li>powerful. It supports higher order functions, recursion, closure.</li>
+</ul>
+
+<h2 id="useonserver">Use on  server</h2>
+
+<pre><code>npm install
+npm run build
+npm run test
+</code></pre>
+
+<p>Execute code:</p>
+
+<pre><code>const Easl = require("../bin/easl.js").Easl;
+const easl = new Easl();
+
+const code = '  {define lst [1 2 3 4]}
+                (list.length lst)        `;
+
+const res = eas.evaluate(code);
+
+console.log(res);
+</code></pre>
+
+<h2 id="useinbrowser">Use in browser</h2>
+
+<pre><code>&lt;script src="js/easl.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+    const easl = new Easl();
+
+    const code = '  {define lst [1 2 3 4]}
+                    (list.length lst)        `;
+
+    const res = eas.evaluate(code);
+    console.log(res);
+&lt;/script&gt;
+</code></pre>
+
 <h2 id="grammar">Grammar</h2>
+
+<p>EASL is inspired by the <em>scheme</em> language and covers almost all teh scheme base features. </p>
 
 <h3 id="null">Null</h3>
 
-<p>Null can be represented with the keyword <code>null</code> or with an empty list <code>[]</code></p>
+<p>Null can be represented with the keyword <code>null</code>.</p>
 
 <h3 id="booleanconstant">Boolean constant</h3>
 
@@ -74,74 +130,95 @@ list     - a list of values in square brackets: [1 2 3] , ["white", "red", "gree
 
 <p>We can check the type with the predicates:</p>
 
-<pre><code>boolean?
-number?
-string?
-null?
-function?
-list?
-pair?
-</code></pre>
+<p><code>boolean?</code>  - examples:  <code>(boolean? true) → true</code>, <code>(boolean? false) → true</code>, <code>(boolean? 42) → false</code></p>
 
-<p>Also we can sue the function <code>get-type</code>. Example: <code>(get-type [1 2 3]) → "list"</code></p>
+<p><code>number?</code> - examples: <code>(number? 0) → true</code>, <code>(number? 3.14) → true</code>, <code>(number? 1-000-000) → true</code></p>
+
+<p><code>string?</code> - examples: <code>(string? "") → true</code>, <code>(string? "hello") → true</code>, <code>(string? 42) → false</code></p>
+
+<p><code>null?</code> - examples: <code>(null? null) → true</code>, <code>(null? []) → false</code>, <code>(null? 0) → false</code></p>
+
+<p><code>function?</code> - !!! To be done</p>
+
+<p><code>list?</code> - examples: <code>(list? []) → true</code>, <code>(list? [1 (+ 2 3)]) → true</code></p>
+
+<p><code>pair?</code> - examples: <code>(pair? [1 2]) → true</code>, <code>(pair? 1) → false</code></p>
 
 <h2 id="reservedkeywords">Reserved keywords</h2>
 
-<p><code>and</code>    - logical <code>and</code>. Example: <code>(and true false) → false</code>   </p>
+<pre><code>Constants:     true, false, null
+Types:         number, string, list, function,
+Definition:    let, function, lambda
+Condition:     if, else, switch, case
+Cycle:         for, break, continue, do, while, default
+Builtin proc:  typeof
+</code></pre>
 
-<p><code>begin</code>  - defines a block of several expressions. The block return the value of the last expression.
-    Example <code>{begin (+ 2 4) (+ 1 2)} → 3</code>. We use curly braces for the code blocks.   </p>
-
-<p><code>boolean</code> - denotes a <code>boolean</code> data type. <code>(get-type true) → boolean</code>   </p>
-
-<p><code>case</code> - used with <code>switch</code>  </p>
-
-<p><code>cond</code> -
-    <code>define</code> - <br />
-    <code>do</code> - <br />
-    <code>double</code> - <br />
-    <code>else</code> - <br />
-    <code>false</code> - <br />
-    <code>for</code> - <br />
-    <code>function</code> - <br />
-    <code>if</code> - <br />
-    <code>int</code> - <br />
-    <code>lambda</code> - <br />
-    <code>let</code> - <br />
-    <code>let*</code> - <br />
-    <code>letrec</code> - <br />
-    <code>list</code> - <br />
-    <code>not</code> - <br />
-    <code>null</code> - <br />
-    <code>number</code> - <br />
-    <code>or</code> - <br />
-    <code>quote</code> - <br />
-    <code>set!</code> - <br />
-    <code>string</code> - <br />
-    <code>switch</code> - <br />
-    <code>symbol</code> - <br />
-    <code>true</code> - <br />
-    <code>while</code> -    </p>
-
-<h3 id="variabledefinition">Variable definition</h3>
+<h2 id="variabledefinition">Variable definition</h2>
 
 <p>EASL defines variables with the keyword <code>let</code>.</p>
 
 <p>There are three possible syntax:</p>
 
-<h5 id="definitionandinitializationofavariablewithaconstantvalue">Definition and initialization of a variable with a constant value</h5>
+<h4 id="definitionandinitializationofavariablewithaconstantvalue">Definition and initialization of a variable with a constant value</h4>
 
 <pre><code>{let n 5}
 {let is-member true}
 {let lst [1 2 3 4]}
-{let indicator-name "Moving Avergae"}
+{let first-name "John"}
 </code></pre>
 
-<h4 id="initializationfromanexpression">Initialization from an expression</h4>
+<h3 id="initializationfromanexpression">Initialization from an expression</h3>
 
-<pre><code>{let one-day-ms  (* 1000 60 60 24)}
-{let full-name (str.append "John" " " "Smith")}
-{let ma (fx.moving-average (eas.get-data "EURUSD H1"))}
+<pre><code>{let pi  (/ 22 7)}
+{let hello (str.append "Hello "  "world!")}
+</code></pre>
+
+<h2 id="functions">Functions</h2>
+
+<h2 id="namedfunction">Named function</h2>
+
+<p>Definition: <code>{function func-id (par1 par2 ...) (expression) }</code></p>
+
+<p>A function returns the value of the last expression.</p>
+
+<p>We call functions with: <code>(func-id par1 par2)</code></p>
+
+<pre><code>{function sum (a b) (+ a b)}
+(sum 2 3) ;; → 5
+</code></pre>
+
+<h3 id="lambda">Lambda</h3>
+
+<p>A lambda is a nameless function: <code>{lambda (par1 par2 ...) (expression)}</code></p>
+
+<p>Yuo can assign a lambda to a variable:</p>
+
+<pre><code>{let sum {lambda (a b) (+ a b)}}
+(sum 2 3) ;; → 5
+</code></pre>
+
+<p>You can call a <code>lambda</code> directly by enclosing it in parenthesis:</p>
+
+<pre><code>({lambda (a b) (+ a b)} 2 3)  ;; → 5
+</code></pre>
+
+<p>You can use a <code>lambda</code> as a function argument:</p>
+
+<pre><code>{function calc (operation a b)
+    (operation a b)}
+
+(calc {lambda (a b) (+ a b)} 2 3)   ;; → 5
+</code></pre>
+
+<p>A function can return a <code>lambda</code>:</p>
+
+<pre><code>{function make-identity ()
+    {lambda (a) (a)}}
+
+(let identity (make-identity))
+
+(identity 5) ;; → 5
 </code></pre>
 
 <h2 id="if">if</h2>
@@ -206,9 +283,9 @@ pair?
 
 <p>A string is closed within quotation marks: <code>"Hello World!"</code></p>
 
-<p><code>str.lenght</code></p>
+<p><code>str.lenght</code> - gets the number of characters: <code>(str.length "hello") → 5</code></p>
 
-<p><code>str.append</code></p>
+<p><code>str.concat</code> - concatenates two strings:  <code>(str.concat "Hello " "world!") → "Hello world!"</code></p>
 
 <p><code>str.sub-string</code></p>
 
@@ -216,7 +293,7 @@ pair?
 
 <p><code>str.to-upper</code></p>
 
-<p><code>str.contains</code></p>
+<p><code>str.has</code> - returns <code>true</code> if the string contains substring. <code>(str.has "lo" "hello") → true</code></p>
 
 <p><code>str.starts-with</code></p>
 
@@ -257,15 +334,6 @@ pair?
 <p><code>math.odd</code></p>
 
 <p><code>math.zero</code></p>
-
-<h2 id="functiondefinition">function definition</h2>
-
-<pre><code>{define sum (a b) (+ a b)}
-{define pi () (/ 22.0 7.0)}
-</code></pre>
-
-
-
 
 
 

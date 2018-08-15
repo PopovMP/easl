@@ -24,7 +24,7 @@ Execute code:
 
     const Easl = require("../bin/easl.js").Easl;
     const easl = new Easl();
-    
+      
     const code = '  {define lst [1 2 3 4]}
                     (list.length lst)        `;
                     
