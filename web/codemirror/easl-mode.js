@@ -22,7 +22,7 @@
             "define let function lambda if cond for else");
 
         const builtins = makeKeywords(
-            "list.empty list.length list.first list.rest list.last list.least list.add list.push list.has list.index " +
+            "list.empty list.empty? list.length list.first list.rest list.last list.least list.add list.push list.has list.index " +
             "list.get list.set list.swap list.append list.slice list.flatten list.join");
 
         const indentKeys = makeKeywords(
