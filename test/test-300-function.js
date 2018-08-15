@@ -83,19 +83,4 @@ describe('function', function () {
                                                  `, false), 5);
         });
     });
-
-    describe('closure', function () {
-        it('make adder', function () {
-            assert.strictEqual(easl.evaluate(` 
-            
-                {function make-adder (a)
-                    {lambda (a b) (+ a b)}}
-
-                {let add2 (make-adder 2)}
-
-                (add2 3)
-                                                 `, false), 5);
-        });
-    });
-
 });

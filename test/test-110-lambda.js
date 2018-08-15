@@ -26,16 +26,5 @@ describe('Eval lambda', function () {
         it('(((lambda () (lambda (a b) (+ a b)))) 2 3) → 5', function () {
             assert.strictEqual(easl.evaluate("(((lambda () (lambda (a b) (+ a b)))) 2 3)"), 5);
         });
-        it('Currying', function () {
-            assert.strictEqual(easl.evaluate("(((lambda (a) (lambda (b) (+ a b))) 5) 6)"), 11);
-        });
-        it('Y comb !5 → 120', function () {
-            assert.strictEqual(easl.evaluate(`
-                                                (((lambda (!) (lambda (n) ((! !) n)))
-                                                  (lambda (!) (lambda (n) (if (= n 0)
-                                                                              1
-                                                                              (* ((! !) (- n 1))
-                                                                                 n))))) 5)           `), 120);
-        });
     });
 });

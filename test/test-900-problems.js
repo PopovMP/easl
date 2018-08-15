@@ -6,7 +6,7 @@ const Easl = require("../bin/easl.js").Easl;
 const easl = new Easl();
 
 describe('problems', function () {
-    it('Geometric  progression', function () {
+    xit('Geometric  progression', function () {
         assert.deepStrictEqual(easl.evaluate(`   
              
                                 {function make-range (start length next)
