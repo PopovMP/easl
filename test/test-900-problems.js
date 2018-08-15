@@ -6,20 +6,19 @@ const Easl = require("../bin/easl.js").Easl;
 const easl = new Easl();
 
 describe('problems', function () {
-    xit('Geometric  progression', function () {
+    it('Sequence generator', function () {
         assert.deepStrictEqual(easl.evaluate(`   
              
-                                {function make-range (start length next)
-                                    {function  loop (lst i)
-                                        {if (= i length)
-                                            lst
-                                            (loop (list.add (next (list.last lst)) lst)
-                                                  (+ i 1)) }}
-                                    (loop [start] 1) }
+{function make-sequence (start length next)
+    {begin
+        {function loop (lst i)
+            {if (= i length)
+                lst
+                (loop (list.add (next (list.last lst)) lst)
+                      (+ i 1)) }}
+        (loop [start] 1) }}
 
-                                  {make-range 3 10 {lambda (cur) (* cur 3)} )
-                                  
-                                              
+  {make-sequence 3 10 {lambda (cur) (* cur 3)} )
                                                              `),
             [3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049]);
     });

@@ -120,6 +120,24 @@ const examplesList = [
 (add2 3)
 `   },
     {
+        name: "Sequence generator",
+        code:
+            `;; Sequence generator
+
+{function make-sequence (start length next)
+    {begin
+        {function loop (lst i)
+            {if (= i length)
+                lst
+                (loop (list.add (next (list.last lst)) lst)
+                      (+ i 1)) }}
+        (loop [start] 1) }}  ; tail optimized recursion
+
+{make-sequence 3     ; -------------------- the first element
+               10    ; -------------------- the sequence length
+               {lambda (cur) (* cur 3)} ) ; calculation formula
+`   },
+    {
         name: "Bubble sort",
         code:
 `;; Bubble sort
