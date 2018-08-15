@@ -80,7 +80,7 @@ class Interpreter {
         if (typeof debug === "boolean") {
             this.isDebug = debug;
         }
-        return this.evalExprLst(codeTree, [["empty-env"]]);
+        return this.evalExprLst(codeTree, []);
     }
     evalExprLst(exprLst, env) {
         const res = this.mapExprLst(exprLst, env);
@@ -93,9 +93,6 @@ class Interpreter {
         for (const cell of env) {
             if (this.isDebug)
                 console.log("lookup symbol:", JSON.stringify(symbol), "cell:", JSON.stringify(cell));
-            if (cell[0] === "empty-env") {
-                throw Error(`lookup unbound symbol: ${JSON.stringify(symbol)}`);
-            }
             if (symbol === cell[0]) {
                 const val = cell[1];
                 if (this.isDebug)
@@ -103,6 +100,7 @@ class Interpreter {
                 return val;
             }
         }
+        throw Error(`lookup unbound symbol: ${JSON.stringify(symbol)}`);
     }
     evalExpr(expr, env) {
         if (this.isDebug)
@@ -182,7 +180,7 @@ class Interpreter {
             case "str.concat": return this.strConcat(expr, env);
             case "print": return console.log(String(this.evalExpr(expr[1], env)));
             case "let": return this.evalLet(expr, env);
-            case "lambda": return ["closure", expr[1], expr[2]];
+            case "lambda": return ["closure", expr[1], expr[2], env.slice()];
             case "function": return this.evalFunction(expr, env);
             case "if": return this.isTruthy(this.evalExpr(expr[1], env))
                 ? this.evalExpr(expr[2], env)
@@ -191,18 +189,24 @@ class Interpreter {
             case "begin": return this.evalExprLst(this.cdr(expr), env);
             case "for": return this.evalFor(expr, env);
         }
-        return this.applyProcedure(this.evalExpr(expr[0], env), this.mapExprLst(expr.slice(1), env), env);
+        if (Array.isArray(expr)) {
+            const proc = this.evalExpr(expr[0], env);
+            const procArgs = (expr.length > 1) ? this.mapExprLst(expr.slice(1), env) : [];
+            return this.applyProcedure(proc, procArgs, env);
+        }
+        else {
+            throw Error(`evalExpr - not proc reached the end: ${expr}`);
+        }
     }
-    applyProcedure(proc, argsList, env) {
+    applyProcedure(proc, procArgs, env) {
         if (this.isDebug) {
             console.log("applProc proc:", JSON.stringify(proc));
-            console.log("applProc args:", JSON.stringify(argsList));
+            console.log("applProc args:", JSON.stringify(procArgs));
         }
         if (Array.isArray(proc) && proc[0] === "closure") {
-            const paramsList = proc[1];
-            const closureExpr = proc[2];
-            const exprEnv = this.assocList(paramsList, argsList).concat(env);
-            return this.evalExpr(closureExpr, exprEnv);
+            const closureEnv = this.assocList(proc[1], procArgs).concat(env).concat(proc[3]);
+            const closureBody = proc[2];
+            return this.evalExpr(closureBody, closureEnv);
         }
         return proc;
     }

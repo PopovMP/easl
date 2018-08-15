@@ -11,8 +11,6 @@ const examplesList = [
 (list.length lst)
 `
     },
-
-
     {
         name: "Swap list elements non destructive",
         code:
@@ -83,7 +81,9 @@ const examplesList = [
     {
         name: "Find the maximum of a list",
         code:
-`{function list-max (lst)
+`;; Find the maximum of a list
+
+{function list-max (lst)
     (loop lst (list.first lst))}
     
 {function loop (rest max)
@@ -99,9 +99,23 @@ const examplesList = [
 `
     },
     {
+        name: "Closure example",
+        code:
+`;; Closure
+
+{function make-adder (a)
+    {lambda (b) (+ a b)}}
+
+{let add2 (make-adder 2)}
+
+(add2 3)
+`   },
+    {
         name: "Bubble sort",
         code:
-`{function bubble-up (lst)
+`;; Bubble sort
+
+{function bubble-up (lst)
     {if (list.empty? (cdr lst))   
         lst    
         {if (< (car lst) (cadr lst))   
@@ -119,6 +133,18 @@ const examplesList = [
     (bubble-sort-aux (list.length lst) lst) }
     
 (sort [6 5 10 9 8 7])
+`
+    },
+    {
+        name: "Y combinator - factorial",
+        code:
+            `;; Y combinator - factorial
+
+(((lambda (!) (lambda (n) ((! !) n)))
+  (lambda (!) (lambda (n) (if (= n 0)
+                              1
+                              (* ((! !) (- n 1))
+                                 n))))) 5) 
 `
     },
 ];
