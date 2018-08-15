@@ -196,6 +196,8 @@ List functions:
 
 `list.empty` - gets an empty list: `(list.empty) → []`
 
+`list.empty?` - checks if a list is empty: `(list.empty? [1 2 3]) → false`, `(list.empty? []) → true`
+
 `list.length` - gives the length of an list: `(list.length [1 2 3])  → 3`
 
 `list.first` - gets the first element: `(list.first [1 2 3]) → 1`, `(list.first []) → null`

@@ -18,7 +18,7 @@ describe('let lambda - recursive', function () {
 
 (count [1 2 3 4 5] 0)
                                                   
-                                                    `, true), 5);
+                                                    `, false), 5);
     });
 
 

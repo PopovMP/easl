@@ -81,7 +81,7 @@ const examplesList = [
 `
     },
     {
-        name: "Find max of list recursive",
+        name: "Find the maximum of a list",
         code:
 `{function list-max (lst)
     (loop lst (list.first lst))}

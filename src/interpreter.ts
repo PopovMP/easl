@@ -110,7 +110,7 @@ class Interpreter {
 
             // list
             case "list.empty"  : return [];
-            case "list.empty?" : return Array.isArray(expr[1]) ? expr[1].length === 0 : true;
+            case "list.empty?" : return this.listEmpty(expr, env);
             case "list.length" : return this.listLength(expr, env);
             case "list.first"  : return this.listFirst(expr, env);
             case "list.rest"   : return this.listRest(expr, env);
@@ -282,6 +282,11 @@ class Interpreter {
         if ( this.isList(b)) return  b.unshift(a) && b;
         return [a, b];
     };
+
+    private listEmpty(expr: any[], env: any[]): boolean {
+        const lst = this.evalExpr(expr[1], env);
+        return Array.isArray(lst) ? lst.length === 0 : true
+    }
 
     private listLength(expr: any[], env: any[]): number {
         const lst = this.evalExpr(expr[1], env);

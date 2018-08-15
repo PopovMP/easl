@@ -159,7 +159,7 @@ class Interpreter {
             case "cdar": return this.cdar(this.evalExpr(expr[1], env));
             case "cddr": return this.cddr(this.evalExpr(expr[1], env));
             case "list.empty": return [];
-            case "list.empty?": return Array.isArray(expr[1]) ? expr[1].length === 0 : true;
+            case "list.empty?": return this.listEmpty(expr, env);
             case "list.length": return this.listLength(expr, env);
             case "list.first": return this.listFirst(expr, env);
             case "list.rest": return this.listRest(expr, env);
@@ -272,6 +272,10 @@ class Interpreter {
             lastRes = this.evalExprLst(expr.slice(4), getNewEnv(env, counterPair));
         }
         return lastRes;
+    }
+    listEmpty(expr, env) {
+        const lst = this.evalExpr(expr[1], env);
+        return Array.isArray(lst) ? lst.length === 0 : true;
     }
     listLength(expr, env) {
         const lst = this.evalExpr(expr[1], env);

@@ -44,4 +44,24 @@ describe('problems', function () {
                                                              `), [4, 2, 3, 1]);
     });
 
+    it('"Find the maximum of a list', function () {
+        assert.strictEqual(easl.evaluate(`   
+
+{function list-max (lst)
+    (loop lst (list.first lst))}
+    
+{function loop (rest max)
+    {if (list.empty? rest)
+        max
+        (loop (list.rest rest)
+              (if (> (list.first rest)  max)
+                  (list.first rest)
+                  max)) }}
+
+
+(list-max [42 34 12 5 62 2])
+                                              
+                                                             `, true), 62);
+    });
+
 });

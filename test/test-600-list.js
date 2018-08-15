@@ -13,14 +13,14 @@ describe('list', function () {
     });
 
     describe('list.empty?', function () {
-        it('(list.empty? list.empty) → true', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.empty? list.empty)       `), true);
+        it('(list.empty? (list.empty)) → true', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.empty? (list.empty))     `), true);
         });
         it('(list.empty? [1 2 3]) → false', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.empty? [1 2 3])          `), false);
         });
         it('(list.empty? "bla") → false', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.empty? "bla")            `), false);
+            assert.deepStrictEqual(easl.evaluate(`   (list.empty? "bla")            `), true);
         });
         it('(list.empty? 42) → false', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.empty? 42)               `), true);
