@@ -3,38 +3,71 @@ class Easl {
     constructor() {
         this.interpreter = new Interpreter();
     }
-    evaluate(codeText) {
+    evaluate(codeText, debug) {
         const codeTree = Parser.parse(codeText);
-        const output = this.interpreter.evalCodeTree(codeTree);
+        const output = this.interpreter.evalCodeTree(codeTree, debug);
         return output;
     }
 }
 module.exports.Easl = Easl;
+class Grammar {
+    static isParen(ch) {
+        return Grammar.isOpenParen(ch) || Grammar.isCloseParen(ch);
+    }
+    static isOpenParen(ch) {
+        return Grammar.openParenChars.indexOf(ch) > -1;
+    }
+    static isCloseParen(ch) {
+        return Grammar.closeParenChars.indexOf(ch) > -1;
+    }
+    static isDigit(ch) {
+        return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].indexOf(ch) > -1;
+    }
+    static isWhiteSpace(ch) {
+        return Grammar.whiteSpaceChars.indexOf(ch) > -1 ||
+            Grammar.endOfLineChars.indexOf(ch) > -1;
+    }
+    static isStringEnclosureChar(ch) {
+        return Grammar.stringEncloseChars.indexOf(ch) > -1;
+    }
+    static isLineComment(ch) {
+        return Grammar.commentStartChars.indexOf(ch) > -1;
+    }
+    static isEndOfLine(ch) {
+        return Grammar.endOfLineChars.indexOf(ch) > -1;
+    }
+    static isTextNumber(text) {
+        return Grammar.numberRegExp.test(text);
+    }
+    static isNumber(token) {
+        return typeof token === "number";
+    }
+}
+Grammar.numberRegExp = /^[-+]?\d+(?:-\d\d\d)*(?:\.\d+)*$/;
+Grammar.openParenChars = ["(", "[", "{"];
+Grammar.closeParenChars = [")", "]", "}"];
+Grammar.whiteSpaceChars = [" ", "\t"];
+Grammar.endOfLineChars = ["\r", "\n"];
+Grammar.commentStartChars = [";"];
+Grammar.stringEncloseChars = ["\""];
 class Interpreter {
     constructor() {
         this.isDebug = false;
-        this.isNull = (a) => a === null || a === "null" || a === "" || this.isEmptyList(a);
+        this.isNull = (a) => a === null;
         this.isNumber = (a) => typeof a === "number";
         this.isString = (a) => typeof a === "string";
         this.isBoolean = (a) => typeof a === "boolean";
-        this.isProcedure = (a) => typeof a === "function";
         this.isUndefined = (a) => typeof a === "undefined";
-        this.isSymbol = (a) => typeof a === "symbol";
         this.not = (a) => this.isEmptyList(a) || !a;
         this.isList = (a) => Array.isArray(a);
         this.isEmptyList = (a) => Array.isArray(a) && a.length === 0;
+        this.isPair = (lst) => Array.isArray(lst) && lst.length > 0;
         this.car = (lst) => lst[0];
         this.cdr = (lst) => lst.slice(1);
         this.caar = (lst) => this.car(this.car(lst));
         this.cadr = (lst) => this.car(this.cdr(lst));
         this.cdar = (lst) => this.cdr(this.car(lst));
         this.cddr = (lst) => this.cdr(this.cdr(lst));
-        this.caaar = (lst) => this.car(this.car(this.car(lst)));
-        this.caadr = (lst) => this.car(this.car(this.cdr(lst)));
-        this.cadar = (lst) => this.car(this.cdr(this.car(lst)));
-        this.caddr = (lst) => this.car(this.cdr(this.cdr(lst)));
-        this.cddar = (lst) => this.cdr(this.cdr(this.car(lst)));
-        this.cdddr = (lst) => this.cdr(this.cdr(this.cdr(lst)));
         this.cons = (a, b) => {
             if (b === null)
                 return [a];
@@ -42,78 +75,34 @@ class Interpreter {
                 return b.unshift(a) && b;
             return [a, b];
         };
-        this.length = (lst) => lst.length;
-        this.isPair = (lst) => Array.isArray(lst) && lst.length > 0;
     }
-    evalCodeTree(codeTree) {
-        return this.evalExprLst(codeTree, ["empty-env"]);
+    evalCodeTree(codeTree, debug) {
+        if (typeof debug === "boolean") {
+            this.isDebug = debug;
+        }
+        return this.evalExprLst(codeTree, [["empty-env"]]);
     }
     evalExprLst(exprLst, env) {
-        const newEnv = this.assocDefines(exprLst, env);
-        const res = this.mapExprLst(exprLst, newEnv);
+        const res = this.mapExprLst(exprLst, env);
         return res[res.length - 1];
     }
     mapExprLst(exprLst, env) {
         return exprLst.map((expr) => this.evalExpr(expr, env), exprLst);
     }
-    assocDefines(exprLst, env) {
-        const newEnv = env.slice();
-        for (const expr of exprLst) {
-            if (Array.isArray(expr) && expr[0] === "define") {
-                newEnv.unshift(this.manageDefine(expr, newEnv));
-            }
-        }
-        return newEnv;
-    }
-    manageDefine(expr, env) {
-        if (typeof (expr[1]) === "string") {
-            return [expr[1], this.evalExpr(expr[2], env)];
-        }
-        if (Array.isArray([expr[1]])) {
-            const procId = expr[1][0];
-            const procParams = expr[1].slice(1);
-            const procBody = expr.slice(2);
-            return [procId, ["closure", procParams, procBody, env.slice()]];
-        }
-        return env;
-    }
     lookup(symbol, env) {
-        if (this.isDebug)
-            console.log("lookup symbol:", JSON.stringify(symbol), "env:", JSON.stringify(env));
-        if (this.not(this.isPair(env))) {
-            new Error(`lookup unbound symbol: ${JSON.stringify(symbol)}`);
-            return [];
-        }
-        if (env[0] === "letrec-env") {
-            const proc = this.getPair(symbol, env[1]);
-            if (proc[0] === symbol) {
-                const closure = ["closure", proc[2], proc[3], env];
-                if (this.isDebug)
-                    console.log("lookup closure found:", JSON.stringify(symbol), "value:", JSON.stringify(closure));
-                return closure;
-            }
-            else {
-                return this.lookup(symbol, env[2]);
-            }
-        }
-        if (env[0] === "let-proc") {
-            if (env[1] === symbol) {
-                const closure = ["closure", env[2], env[3], env];
-                if (this.isDebug)
-                    console.log("lookup closure found:", JSON.stringify(symbol), "value:", JSON.stringify(closure));
-                return closure;
-            }
-            else {
-                return this.lookup(symbol, env[4]);
-            }
-        }
-        if (symbol === env[0][0]) {
-            const val = env[0][1];
+        for (const cell of env) {
             if (this.isDebug)
-                console.log("lookup symbol found:", JSON.stringify(symbol), "value:", JSON.stringify(val));
-            return val;
+                console.log("lookup symbol:", JSON.stringify(symbol), "cell:", JSON.stringify(cell));
+            if (cell[0] === "empty-env") {
+                throw Error(`lookup unbound symbol: ${JSON.stringify(symbol)}`);
+            }
+            if (symbol === cell[0]) {
+                const val = cell[1];
+                if (this.isDebug)
+                    console.log("lookup found :", JSON.stringify(symbol), "value:", JSON.stringify(val));
+                return val;
+            }
         }
-        return this.lookup(symbol, env.slice(1));
     }
     evalExpr(expr, env) {
         if (this.isDebug)
@@ -130,16 +119,12 @@ class Interpreter {
             return expr;
         if (this.isBoolean(expr))
             return expr;
-        if (this.isProcedure(expr))
-            return expr;
         if (this.isUndefined(expr))
             return expr;
-        if (this.isSymbol(expr))
-            return expr;
-        if (this.isString(expr)) {
+        if (typeof expr === "string") {
             const val = this.lookup(expr, env);
             if (typeof val === "undefined") {
-                new Error(`lookup returns 'undefined' for symbol: ${JSON.stringify(expr)}`);
+                throw Error(`lookup returns 'undefined' for symbol: ${expr}`);
             }
             return val;
         }
@@ -149,12 +134,8 @@ class Interpreter {
             case "null?": return this.isNull(this.evalExpr(expr[1], env));
             case "number?": return this.isNumber(this.evalExpr(expr[1], env));
             case "string?": return this.isString(this.evalExpr(expr[1], env));
-            case "symbol?": return this.isSymbol(this.evalExpr(expr[1], env));
             case "pair?": return this.isPair(this.evalExpr(expr[1], env));
             case "list?": return this.isList(this.evalExpr(expr[1], env));
-            case "zero?": return this.evalExpr(expr[1], env) === 0;
-            case "add1": return this.evalExpr(expr[1], env) + 1;
-            case "sub1": return this.evalExpr(expr[1], env) - 1;
             case "+": return this.evalExpr(expr[1], env) + this.evalExpr(expr[2], env);
             case "-": return this.evalExpr(expr[1], env) - this.evalExpr(expr[2], env);
             case "*": return this.evalExpr(expr[1], env) * this.evalExpr(expr[2], env);
@@ -169,7 +150,7 @@ class Interpreter {
             case "or": return this.evalExpr(expr[1], env) || this.evalExpr(expr[2], env);
             case "not": return this.not(this.evalExpr(expr[1], env));
             case "list": return this.mapExprLst(expr.slice(1), env);
-            case "length": return this.length(expr[1]);
+            case "string": return expr[1];
             case "cons": return this.evalCons(expr.slice(1), env);
             case "car": return this.car(this.evalExpr(expr[1], env));
             case "cdr": return this.cdr(this.evalExpr(expr[1], env));
@@ -177,13 +158,8 @@ class Interpreter {
             case "cadr": return this.cadr(this.evalExpr(expr[1], env));
             case "cdar": return this.cdar(this.evalExpr(expr[1], env));
             case "cddr": return this.cddr(this.evalExpr(expr[1], env));
-            case "caaar": return this.caaar(this.evalExpr(expr[1], env));
-            case "caadr": return this.caadr(this.evalExpr(expr[1], env));
-            case "cadar": return this.cadar(this.evalExpr(expr[1], env));
-            case "caddr": return this.caddr(this.evalExpr(expr[1], env));
-            case "cddar": return this.cddar(this.evalExpr(expr[1], env));
-            case "cdddr": return this.cdddr(this.evalExpr(expr[1], env));
             case "list.empty": return [];
+            case "list.empty?": return Array.isArray(expr[1]) ? expr[1].length === 0 : true;
             case "list.length": return this.listLength(expr, env);
             case "list.first": return this.listFirst(expr, env);
             case "list.rest": return this.listRest(expr, env);
@@ -192,7 +168,7 @@ class Interpreter {
             case "list.add": return this.listAdd(expr, env);
             case "list.push": return this.listPush(expr, env);
             case "list.index": return this.listIndex(expr, env);
-            case "list.has": return this.listHas(expr, env);
+            case "list.has?": return this.listHas(expr, env);
             case "list.get": return this.listGet(expr, env);
             case "list.set": return this.listSet(expr, env);
             case "list.swap": return this.listSwap(expr, env);
@@ -200,34 +176,60 @@ class Interpreter {
             case "list.slice": return this.listSlice(expr, env);
             case "list.flatten": return this.listFlatten(expr, env);
             case "list.join": return this.listJoin(expr, env);
-            case "print": return console.log(this.evalExpr(expr[1], env).toString());
+            case "str.length": return this.strLength(expr, env);
+            case "str.has": return this.strHas(expr, env);
+            case "str.split": return this.strSplit(expr, env);
+            case "str.concat": return this.strConcat(expr, env);
+            case "print": return console.log(String(this.evalExpr(expr[1], env)));
+            case "let": return this.evalLet(expr, env);
+            case "lambda": return ["closure", expr[1], expr[2]];
+            case "function": return this.evalFunction(expr, env);
             case "if": return this.isTruthy(this.evalExpr(expr[1], env))
                 ? this.evalExpr(expr[2], env)
                 : this.evalExpr(expr[3], env);
-            case "define": return;
             case "cond": return this.evalCond(expr, env);
             case "begin": return this.evalExprLst(this.cdr(expr), env);
             case "for": return this.evalFor(expr, env);
-            case "lambda": return ["closure", expr[1], expr[2], env.slice()];
-            case "let": return this.evalLet(expr, env);
-            case "let*": return this.evalLetStar(expr, env);
-            case "letrec": return this.evalLetRec(expr, env);
         }
-        return this.applyProcedure(this.evalExpr(expr[0], env), this.mapExprLst(expr.slice(1), env));
+        return this.applyProcedure(this.evalExpr(expr[0], env), this.mapExprLst(expr.slice(1), env), env);
     }
-    applyProcedure(proc, argsList) {
+    applyProcedure(proc, argsList, env) {
         if (this.isDebug) {
             console.log("applProc proc:", JSON.stringify(proc));
             console.log("applProc args:", JSON.stringify(argsList));
         }
-        if (this.isPair(proc) && proc[0] === "closure") {
+        if (Array.isArray(proc) && proc[0] === "closure") {
             const paramsList = proc[1];
-            const exprList = proc[2];
-            const closureEnv = proc[3];
-            const exprEnv = this.assocList(paramsList, argsList).concat(closureEnv);
-            return this.evalExpr(exprList, exprEnv);
+            const closureExpr = proc[2];
+            const exprEnv = this.assocList(paramsList, argsList).concat(env);
+            return this.evalExpr(closureExpr, exprEnv);
         }
         return proc;
+    }
+    assocList(lst1, lst2) {
+        const aList = [];
+        for (let i = 0; i < lst1.length; i++) {
+            aList.push([lst1[i], lst2[i]]);
+        }
+        return aList;
+    }
+    evalLet(expr, env) {
+        const symbol = expr[1];
+        if (Array.isArray(expr[2]) && expr[2][0] === "lambda") {
+            const value = this.evalExpr(["lambda", expr[2][1], expr[2][2]], env);
+            env.unshift([symbol, value]);
+        }
+        else {
+            const value = this.evalExpr(expr[2], env);
+            env.unshift([symbol, value]);
+        }
+        return;
+    }
+    evalFunction(expr, env) {
+        const symbol = expr[1];
+        const value = this.evalExpr(["lambda", expr[2], expr[3]], env);
+        env.unshift([symbol, value]);
+        return;
     }
     isTruthy(expr) {
         return !this.isFaulty(expr);
@@ -236,21 +238,6 @@ class Interpreter {
         if (Array.isArray(expr) && expr.length === 0)
             return true;
         return !expr;
-    }
-    getPair(symb, alist) {
-        for (let i = 0; i < alist.length; i++) {
-            if (alist[i][0] === symb)
-                return alist[i];
-        }
-        console.error("#getPair: \"Pair doesn't found!\"  symbol:", JSON.stringify(symb), "alist:", JSON.stringify(alist));
-        return [];
-    }
-    assocList(lst1, lst2) {
-        const aList = [];
-        for (let i = 0; i < lst1.length; i++) {
-            aList.push([lst1[i], lst2[i]]);
-        }
-        return aList;
     }
     evalCons(argsLst, env) {
         const a = this.evalExpr(argsLst[0], env);
@@ -285,55 +272,6 @@ class Interpreter {
             lastRes = this.evalExprLst(expr.slice(4), getNewEnv(env, counterPair));
         }
         return lastRes;
-    }
-    evalLet(expr, env) {
-        if (this.isString(expr[1])) {
-            return this.evalLetProc(expr, env);
-        }
-        else {
-            return this.evalExprLst(expr.slice(2), this.assocLetArgs(expr[1], env));
-        }
-    }
-    evalLetStar(expr, env) {
-        return this.evalExprLst(expr.slice(2), this.assocLetStarArgs(expr[1], env));
-    }
-    evalLetProc(expr, env) {
-        const procId = expr[1];
-        const procParams = expr[2].map((pair) => pair[0]);
-        const bodyExpr = expr.slice(3);
-        const assocEnv = this.assocLetArgs(expr[2], env);
-        return this.evalExpr(bodyExpr, ["let-proc", procId, procParams, bodyExpr, assocEnv]);
-    }
-    assocLetArgs(argsList, env) {
-        return this.assocLetArgsLoop(argsList, env, env);
-    }
-    assocLetArgsLoop(argsList, env, letEnv) {
-        if (argsList.length === 0) {
-            return letEnv.slice();
-        }
-        else {
-            return this.assocLetArgsLoop(argsList.slice(1), env, this.evalLetArgPair(argsList[0], env).concat(letEnv));
-        }
-    }
-    assocLetStarArgs(argsList, env) {
-        return this.assocLetStarArgsLoop(argsList, env);
-    }
-    assocLetStarArgsLoop(argsList, letEnv) {
-        if (argsList.length === 0) {
-            return letEnv.slice();
-        }
-        else {
-            return this.assocLetStarArgsLoop(argsList.slice(1), this.evalLetArgPair(argsList[0], letEnv).concat(letEnv));
-        }
-    }
-    evalLetArgPair(argPair, env) {
-        const key = argPair[0];
-        const val = this.evalExpr(argPair[1], env);
-        return [[key, val]];
-    }
-    evalLetRec(expr, env) {
-        const procBinds = expr[1].map((e) => [e[0], "letrec-proc", e[1][1], e[1].slice(2)], expr[1]);
-        return this.evalExpr(expr.slice(2), ["letrec-env", procBinds, env.slice()]);
     }
     listLength(expr, env) {
         const lst = this.evalExpr(expr[1], env);
@@ -441,40 +379,85 @@ class Interpreter {
         const lst = this.evalExpr(expr[2], env);
         return lst.join(sep);
     }
+    strLength(expr, env) {
+        const str = this.evalExpr(expr[1], env);
+        return typeof str === "string" ? str.length : -1;
+    }
+    strHas(expr, env) {
+        const elem = this.evalExpr(expr[1], env);
+        const str = this.evalExpr(expr[2], env);
+        return str.includes(elem);
+    }
+    strSplit(expr, env) {
+        const sep = this.evalExpr(expr[1], env);
+        const str = this.evalExpr(expr[2], env);
+        return str.split(sep);
+    }
+    strConcat(expr, env) {
+        const str1 = this.evalExpr(expr[1], env);
+        const str2 = this.evalExpr(expr[2], env);
+        return str1 + str2;
+    }
     flattenArray(arr) {
         return arr.reduce((flat, toFlatten) => flat.concat(Array.isArray(toFlatten)
             ? this.flattenArray(toFlatten)
             : toFlatten), []);
     }
 }
-class Parser {
-    static parse(codeText) {
-        const lexTree = Parser.lexer(codeText);
-        const quotedLexTree = Parser.quoteSymbols(lexTree);
-        const fixedLexTree = Parser.replaceParens(quotedLexTree);
-        const joinedLexTree = Parser.joinLexTree(fixedLexTree);
-        const codeTree = Parser.tokenize(joinedLexTree);
-        return codeTree;
-    }
-    static lexer(code) {
+class Lexer {
+    static splitCode(code) {
         const lexList = [];
         for (let i = 0, symbol = ""; i < code.length; i++) {
-            const c = code[i];
+            const ch = code[i];
             const pushSymbol = () => {
                 if (symbol === "")
                     return;
-                lexList.push(symbol);
+                if (Grammar.isTextNumber(symbol)) {
+                    const number = Lexer.parseNumber(symbol);
+                    lexList.push(number);
+                }
+                else {
+                    lexList.push(symbol);
+                }
                 symbol = "";
             };
-            if (Parser.isDelimiter(c)) {
-                pushSymbol();
-                lexList.push(c);
+            if (Grammar.isStringEnclosureChar(ch)) {
+                const charList = [];
+                for (i++; i < code.length; i++) {
+                    const c = code[i];
+                    if (Grammar.isStringEnclosureChar(c)) {
+                        break;
+                    }
+                    else {
+                        charList.push(c);
+                    }
+                }
+                const str = charList.join("");
+                lexList.push('(');
+                lexList.push('string');
+                lexList.push(str);
+                lexList.push(')');
             }
-            else if (Parser.isWhiteSpace(c)) {
+            else if (Grammar.isLineComment(ch)) {
+                for (; i < code.length; i++) {
+                    const c = code[i];
+                    if (Grammar.isEndOfLine(c)) {
+                        break;
+                    }
+                }
+            }
+            else if (Grammar.isParen(ch)) {
+                pushSymbol();
+                lexList.push(ch);
+                if (ch === "[") {
+                    lexList.push("list");
+                }
+            }
+            else if (Grammar.isWhiteSpace(ch)) {
                 pushSymbol();
             }
             else {
-                symbol += c;
+                symbol += ch;
                 if (i === code.length - 1) {
                     pushSymbol();
                 }
@@ -482,14 +465,32 @@ class Parser {
         }
         return lexList;
     }
+    static parseNumber(numberText) {
+        const isNegative = numberText[0] === "-";
+        const cleanedNumbText = numberText.replace(/-/g, "");
+        const parsedNumber = Number(cleanedNumbText);
+        const number = isNegative ? -parsedNumber : parsedNumber;
+        return number;
+    }
+}
+module.exports.Lexer = Lexer;
+class Parser {
+    static parse(codeText) {
+        const lexTree = Lexer.splitCode(codeText);
+        const quotedLexTree = Parser.quoteSymbols(lexTree);
+        const fixedLexTree = Parser.replaceParens(quotedLexTree);
+        const joinedLexTree = Parser.joinLexTree(fixedLexTree);
+        const codeTree = Parser.tokenize(joinedLexTree);
+        return codeTree;
+    }
     static quoteSymbols(lexTree) {
         const result = [];
         for (let i = 0; i < lexTree.length; i++) {
             const token = lexTree[i];
-            if (Parser.isNumber(token)) {
+            if (Grammar.isNumber(token)) {
                 result.push(token);
             }
-            else if (Parser.isDelimiter(token)) {
+            else if (Grammar.isParen(token)) {
                 result.push(token);
             }
             else {
@@ -504,12 +505,6 @@ class Parser {
             const token = lexTree[i];
             switch (token) {
                 case "(":
-                    result.push("[");
-                    break;
-                case "[":
-                    result.push("[");
-                    result.push("\"list\"");
-                    break;
                 case "{":
                     result.push("[");
                     break;
@@ -528,14 +523,14 @@ class Parser {
         for (let i = 0; i < lexTree.length; i++) {
             if (lexTree[i] === "[") {
                 let parens = "";
-                for (; i < lexTree.length && lexTree[i] === "["; i++) {
+                for (; lexTree[i] === "["; i++) {
                     parens += lexTree[i];
                 }
                 result.push(parens += lexTree[i]);
             }
             else if (lexTree[i] === "]") {
                 let parens = "";
-                for (; i < lexTree.length && lexTree[i] === "]"; i++) {
+                for (; lexTree[i] === "]"; i++) {
                     parens += lexTree[i];
                 }
                 result[result.length - 1] += parens;
@@ -551,34 +546,6 @@ class Parser {
         const fixedTree = "[" + lexText + "]";
         const codeTree = JSON.parse(fixedTree);
         return codeTree;
-    }
-    static isDelimiter(ch) {
-        return Parser.isOpenDelimiter(ch) || Parser.isCloseDelimiter(ch);
-    }
-    static isOpenDelimiter(ch) {
-        return ["(", "[", "{"].indexOf(ch) > -1;
-    }
-    static isCloseDelimiter(ch) {
-        return [")", "]", "}"].indexOf(ch) > -1;
-    }
-    static isDigit(ch) {
-        return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].indexOf(ch) > -1;
-    }
-    static isWhiteSpace(ch) {
-        return [" ", "\t", "\r", "\n"].indexOf(ch) > -1;
-    }
-    static isNumber(text) {
-        if (text === "")
-            return false;
-        if (!Parser.isDigit(text[0]) && text[0] !== "-")
-            return false;
-        if (text[0] === "-" && text.length === 1)
-            return false;
-        for (let i = 1; i < text.length; i++) {
-            if (!Parser.isDigit(text[i]) && text[i] !== ".")
-                return false;
-        }
-        return true;
     }
 }
 module.exports.Parser = Parser;

@@ -4,8 +4,10 @@ const examplesList = [
     {
         name: "List length",
         code:
-`{define lst [1 2 3 4]}
+`;; Define a variable 'lst' and assign a list to it
+{let lst [1 2 3 4]}
 
+;; Use the builtin function 'list.length' to take the length of the list
 (list.length lst)
 `
     },
@@ -14,70 +16,86 @@ const examplesList = [
     {
         name: "Swap list elements non destructive",
         code:
-`{define lst [1 2 3]}
+`;; Swap list elements non destructive
 
-{define swap {lambda (i1 i2 lst)
-                (list.set (list.get i1 lst)
-                          i2
-                          (list.set (list.get i2 lst)
-                                    i1
-                                    lst)) }}
+{let lst [1 2 3 4]}
 
-(swap 0 2 lst)
+{function swap (i1 i2 lst)
+    (list.set (list.get i1 lst)
+              i2
+              (list.set (list.get i2 lst)
+                        i1
+                        lst)) }
+
+(swap 0 3 lst)
 `
     },
 
     {
         name: "Fibonacci - tail optimized",
         code:
-`{let fib ( {n 10} )
-    {let loop ( {i     2}
-                {prev  1}
-                {cur   1} )
-        {if (= i n)
-            cur
-            (loop (+ i 1) cur (+ prev cur)) }}}
+`;; Fibonacci - tail optimized
+
+{function fibo (n)
+    {cond
+        ((= n 1) 1)
+        ((= n 2) 1)
+        (else (loop n 2 1 1)) }}
+
+{function loop (n i prev cur)
+    {if (= i n)
+        cur
+        (loop n (+ i 1) cur (+ prev cur)) }}
+
+(fibo 10)
 `
     },
     {
-        name: "Sum elements of a list",
+        name: "Mutual recursion",
         code:
-`{let list.sum { (lst [1 2 3 4 5 6 7 8 9]) }
-    {let loop { (i   (list.length lst))
-                (sum 0) }
-        {if (= i -1)
-            sum
-            (loop (- i 1) (+ (list.get i lst) sum)) }}}
+`;; Mutual recursion
+
+{function is-even? (n)
+    (or  (= n 0)
+         (is-odd? (- n 1))) }
+
+{function is-odd? (n)
+    (and (!= n 0)
+         (is-even? (- n 1))) }
+
+(is-odd? 3)
 `
     },
     {
-        name: "Arithmetic progression",
+        name: "Factorial",
         code:
-`{let make-range { (start     0)
-                  (length   10)
-                  (next     {lambda (cur) (+ cur 10)}) }
-    {let loop { (lst  [start])
-                (i    1) }
-        {if (= i length)
-            lst
-            (loop (list.add (next (list.last lst)) lst) (+ i 1)) }}}
+`;; Factorial
+
+{let fac
+    {lambda (n)
+        {if (= n 0)
+            1
+            (* n (fac (- n 1)))}}} 
+
+(fac 5)
 `
     },
     {
         name: "Find max of list recursive",
         code:
-`{define (list-max lst)
-    {define (loop rest max)
-        {if (null? rest)
-            max
-            (loop (list.rest rest)
-                  (if (> (list.first rest)  max)
-                      (list.first rest)
-                      max)) }}
+`{function list-max (lst)
     (loop lst (list.first lst))}
+    
+{function loop (rest max)
+    {if (list.empty? rest)
+        max
+        (loop (list.rest rest)
+              (if (> (list.first rest)  max)
+                  (list.first rest)
+                  max)) }}
 
 
-(list-max [27432 34 3214 526 62 2])
+(list-max [42 34 12 5 62 2])
 `
     },
 
