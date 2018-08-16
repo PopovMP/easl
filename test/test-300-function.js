@@ -10,6 +10,12 @@ describe('function', function () {
     describe('basic application', function () {
         it('no arguments', function () {
             assert.strictEqual(easl.evaluate(` 
+                {function f (5)}
+                (f)                                 `), 5);
+        });
+
+        it('empty arguments', function () {
+            assert.strictEqual(easl.evaluate(` 
                 {function f () (5)}
                 (f)                                 `), 5);
         });
@@ -17,13 +23,13 @@ describe('function', function () {
         it('return from env 1', function () {
             assert.strictEqual(easl.evaluate(` 
                 {let a 5)
-                {function f () (a)}
+                {function f (a)}
                 (f)                                 `), 5);
         });
 
         it('return from env 2', function () {
             assert.strictEqual(easl.evaluate(` 
-                {function f () (a)}
+                {function f (a)}
                 {let a 5)
                 (f)                                 `), 5);
         });
@@ -39,18 +45,26 @@ describe('function', function () {
                 {function sum (a b) (+ a b)}
                 (sum 2 3)                            `), 5);
         });
+
+        it('two expressions', function () {
+            assert.strictEqual(easl.evaluate(`
+                {function sum (a b)
+                    {let s (+ a b)}
+                    s}
+                (sum 2 3)                            `), 5);
+        });
     });
 
     describe('nested functions', function () {
         it('make identity', function () {
             assert.strictEqual(easl.evaluate(` 
-            
-    {function make-identity ()
-        {lambda (a) (a)}}
 
-    (let identity (make-identity))
-
-    (identity 5)
+        {function make-identity ()
+            {lambda (a) (a)}}
+    
+        (let identity (make-identity))
+    
+        (identity 5)
                                                  `), 5);
         });
     });
@@ -58,14 +72,17 @@ describe('function', function () {
     describe('recursion', function () {
         it('fibonacci tail optimized', function () {
             assert.strictEqual(easl.evaluate(` 
-            
-        {function fibo (n)
-            (loop n 2 1 1)}
 
-        {function loop (n i prev cur)
-                    {if (= i n)
-                        cur
-                        (loop n (+ i 1) cur (+ prev cur))}}
+        {function fibo (n)
+            {function loop (i prev cur)
+                {if (= i n)
+                    cur
+                    (loop (+ i 1) cur (+ prev cur)) }}
+
+            {cond
+                ((= n 1) 1)
+                ((= n 2) 1)
+                (else (loop 2 1 1)) }}
 
         (fibo 10)    
                                                  `), 55);

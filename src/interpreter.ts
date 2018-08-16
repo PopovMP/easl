@@ -145,7 +145,7 @@ class Interpreter {
             // {"lambda" ["par1", "par2", ...], expr}
             case "lambda" : return ["closure", expr[1], expr[2], env.slice()];
 
-            // ["function", "proc-id", ["par1", "par2", ...], expr1, expr2, ...]
+            // [function, proc-id, [par1, par2, ...], expr1, expr2, ...]
             case "function" : return this.evalFunction(expr, env);
 
             // {if (test-expr) (then-expr) (else-expr)}
@@ -208,11 +208,14 @@ class Interpreter {
         return;
     }
 
-    private evalFunction(expr: any, env: any[]): any {
-        // expr = [function, proc-id, [par1, par2, ...], expr1, expr2, ...]
-        const symbol = expr[1];
-        const value = this.evalExpr(["lambda", expr[2], expr[3]], env);
-        env.unshift([symbol, value]);
+    private evalFunction(expr: any[], env: any[]): any {
+        // [function, func-id, [par1, par2, ...], expr1, expr2, ...]
+        const length = expr.length;
+        const funcId = expr[1];
+        const params = length > 3 ? expr[2] : [];
+        const body   = length > 4 ? ["begin", ... expr.slice(3)] :  expr[length - 1];
+        const value  = this.evalExpr(["lambda", params, body], env);
+        env.unshift([funcId, value]);
         return
     }
 

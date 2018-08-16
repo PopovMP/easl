@@ -256,9 +256,12 @@ class Interpreter {
         return;
     }
     evalFunction(expr, env) {
-        const symbol = expr[1];
-        const value = this.evalExpr(["lambda", expr[2], expr[3]], env);
-        env.unshift([symbol, value]);
+        const length = expr.length;
+        const funcId = expr[1];
+        const params = length > 3 ? expr[2] : [];
+        const body = length > 4 ? ["begin", ...expr.slice(3)] : expr[length - 1];
+        const value = this.evalExpr(["lambda", params, body], env);
+        env.unshift([funcId, value]);
         return;
     }
     isTruthy(expr) {

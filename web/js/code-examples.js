@@ -44,15 +44,15 @@ const examplesList = [
 `;; Fibonacci - tail optimized
 
 {function fibo (n)
+    {function loop (i prev cur)
+        {if (= i n)
+            cur
+            (loop (+ i 1) cur (+ prev cur)) }}
+
     {cond
         ((= n 1) 1)
         ((= n 2) 1)
-        (else (loop n 2 1 1)) }}
-
-{function loop (n i prev cur)
-    {if (= i n)
-        cur
-        (loop n (+ i 1) cur (+ prev cur)) }}
+        (else (loop 2 1 1)) }}
 
 (fibo 10)
 `
