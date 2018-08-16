@@ -89,11 +89,14 @@ class Interpreter {
 
             case "and" : return this.evalExpr(expr[1], env) && this.evalExpr(expr[2], env);
             case "or"  : return this.evalExpr(expr[1], env) || this.evalExpr(expr[2], env);
-            case "not" : return this.not(this.evalExpr(expr[1], env));
+            case "not" : return this.evalNot(this.evalExpr(expr[1], env));
 
-            case "print"     : return this.print(String(this.mapExprLst(expr.slice(1), env).join(" "))) || "";
-            case "type-of"   : return this.evalTypeOf(expr[1], env);
-            case "to-string" : return String(this.evalExpr(expr[1], env));
+            case "type-of"    : return this.evalTypeOf(expr[1], env);
+            case "to-string"  : return String(this.evalExpr(expr[1], env));
+            case "to-number"  : return this.toNumber(this.evalExpr(expr[1], env));
+            case "to-boolean" : return this.toBoolean(this.evalExpr(expr[1], env));
+
+            case "print" : return this.print(String(this.mapExprLst(expr.slice(1), env).join(" "))) || "";
 
 
             // scheme lib
@@ -305,7 +308,18 @@ class Interpreter {
     private isBoolean   = (a: any) => typeof a === "boolean";
     private isUndefined = (a: any) => typeof a === "undefined";
 
-    private not = (a: any) => this.isEmptyList(a) || !a;
+    private evalNot(a: any): boolean {
+        return this.isEmptyList(a) || !a;
+    }
+
+    private toBoolean(a: any): boolean {
+        return !this.evalNot(a);
+    }
+
+    private toNumber(a: any): number | null {
+        const number = Number(a);
+        return Number.isNaN(number) ? null : number;
+    };
 
     private isList = (a: any) => Array.isArray(a);
     private isEmptyList = (a: any) => Array.isArray(a) && a.length === 0;

@@ -128,7 +128,52 @@ describe('EASL design', function () {
 
     describe('to-string', function () {
         it('number', function () {
-            assert.strictEqual(easl.evaluate(`   (type-of (to-string 42))   `), "string");
+            assert.strictEqual(easl.evaluate(`   (to-string 42)        `), "42");
+        });
+        it('string', function () {
+            assert.strictEqual(easl.evaluate(`   (to-string "42")     `), "42");
+        });
+        it('true', function () {
+            assert.strictEqual(easl.evaluate(`   (to-string true)      `), "true");
+        });
+        it('false', function () {
+            assert.strictEqual(easl.evaluate(`   (to-string false)     `), "false");
+        });
+        it('null', function () {
+            assert.strictEqual(easl.evaluate(`   (to-string null)      `), "null");
+        });
+        it('empty string', function () {
+            assert.strictEqual(easl.evaluate(`   (to-string "")        `), "");
+        });
+        it('empty list', function () {
+            assert.strictEqual(easl.evaluate(`   (to-string [])        `), "");
+        });
+    });
+
+    describe('to-number', function () {
+        it('number', function () {
+            assert.strictEqual(easl.evaluate(`   (to-number 42)        `), 42);
+        });
+        it('string', function () {
+            assert.strictEqual(easl.evaluate(`   (to-number "42")      `), 42);
+        });
+        it('true', function () {
+            assert.strictEqual(easl.evaluate(`   (to-number true)      `), 1);
+        });
+        it('false', function () {
+            assert.strictEqual(easl.evaluate(`   (to-number false)     `), 0);
+        });
+        it('null', function () {
+            assert.strictEqual(easl.evaluate(`   (to-number null)      `), 0);
+        });
+        it('empty string', function () {
+            assert.strictEqual(easl.evaluate(`   (to-number "")        `), 0);
+        });
+        it('empty list', function () {
+            assert.strictEqual(easl.evaluate(`   (to-number [])        `), 0);
+        });
+        it('NaN', function () {
+            assert.strictEqual(easl.evaluate(`   (to-number "hello")   `), null);
         });
     });
 });
