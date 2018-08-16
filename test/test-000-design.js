@@ -7,7 +7,7 @@ const easl = new Easl();
 
 describe('EASL design', function () {
 
-    describe('types', function () {
+    describe('numbers', function () {
         it('number 1', function () {
             assert.strictEqual(easl.evaluate(`  42  `), 42);
         });
@@ -50,27 +50,27 @@ describe('EASL design', function () {
     describe('variable definition', function () {
         it('number', function () {
             assert.strictEqual(easl.evaluate(`      {let answer 42}
-                                                    answer                  ` ), 42);
+                                                    answer                  `), 42);
         });
         it('string', function () {
             assert.strictEqual(easl.evaluate(`      {let name "John"}
-                                                    name                    ` ), "John");
+                                                    name                    `), "John");
         });
         it('boolean', function () {
             assert.strictEqual(easl.evaluate(`      {let is-good true}
-                                                    is-good                 ` ), true);
+                                                    is-good                 `), true);
         });
         it('list', function () {
             assert.deepStrictEqual(easl.evaluate(`  {let lst [1 2 3]}
-                                                    lst                     ` ), [1, 2, 3]);
+                                                    lst                     `), [1, 2, 3]);
         });
         it('from calculation', function () {
             assert.strictEqual(easl.evaluate(`      {let num (+ 2 3)}
-                                                    num                     ` ), 5);
+                                                    num                     `), 5);
         });
         it('from function call', function () {
             assert.strictEqual(easl.evaluate(`      {let len (list.length [4 5 6])}
-                                                    len                     ` ), 3);
+                                                    len                     `), 3);
         });
     });
 
@@ -82,6 +82,53 @@ describe('EASL design', function () {
         it('lambda', function () {
             assert.strictEqual(easl.evaluate(`      {let sum {lambda (a b) (+ a b)}}
                                                     (sum 2 3)               `), 5);
+        });
+    });
+
+    describe('type-of', function () {
+        it('type-of number', function () {
+            assert.strictEqual(easl.evaluate(`  (type-of 42)       `), "number");
+        });
+        it('type-of string', function () {
+            assert.strictEqual(easl.evaluate(`  (type-of "hello")  `), "string");
+        });
+        it('type-of boolean', function () {
+            assert.strictEqual(easl.evaluate(`  (type-of true)     `), "boolean");
+        });
+        it('type-of null', function () {
+            assert.strictEqual(easl.evaluate(`  (type-of null)     `), "null");
+        });
+        it('type-of list', function () {
+            assert.strictEqual(easl.evaluate(`  (type-of [1 2 3 4])  `), "list");
+        });
+
+        it('type-of let expression', function () {
+            assert.strictEqual(easl.evaluate(` 
+             {let a (+ 3 4) }
+             (type-of a)                           `), "number");
+        });
+
+        it('type-of function', function () {
+            assert.strictEqual(easl.evaluate(` 
+             {function sum (a b) {+ a b)}
+             (type-of sum)                           `), "function");
+        });
+
+        it('type-of let lambda', function () {
+            assert.strictEqual(easl.evaluate(` 
+             {let sum {lambda (a b) {+ a b)} }
+             (type-of sum)                           `), "function");
+        });
+
+        it('type-of lambda', function () {
+            assert.strictEqual(easl.evaluate(` 
+             (type-of {lambda (a b) {+ a b)})        `), "function");
+        });
+    });
+
+    describe('to-string', function () {
+        it('number', function () {
+            assert.strictEqual(easl.evaluate(`   (type-of (to-string 42))   `), "string");
         });
     });
 });

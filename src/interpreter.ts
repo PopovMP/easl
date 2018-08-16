@@ -91,7 +91,9 @@ class Interpreter {
             case "or"  : return this.evalExpr(expr[1], env) || this.evalExpr(expr[2], env);
             case "not" : return this.not(this.evalExpr(expr[1], env));
 
-            case "print" : return this.print(String(this.mapExprLst(expr.slice(1), env).join(" "))) || "";
+            case "print"     : return this.print(String(this.mapExprLst(expr.slice(1), env).join(" "))) || "";
+            case "type-of"   : return this.evalTypeOf(expr[1], env);
+            case "to-string" : return String(this.evalExpr(expr[1], env));
 
 
             // scheme lib
@@ -269,6 +271,32 @@ class Interpreter {
             lastRes = this.evalExprLst(expr.slice(4), getNewEnv(env, counterPair));
         }
         return lastRes;
+    }
+
+    private evalTypeOf (expr: any, env: any[]): string {
+        if (Array.isArray(expr)) {
+            switch (expr[0]) {
+                case "list"     : return "list";
+                case "string"   : return "string";
+                case "lambda"   :
+                case "function" :
+                case "closure"  : return "function";
+            }
+        }
+
+        if (expr === "null") return "null";
+
+        const value =  this.evalExpr(expr, env);
+
+        if (Array.isArray(value)) {
+            switch (value[0]) {
+                case "lambda"   :
+                case "function" :
+                case "closure"  : return "function";
+            }
+        }
+
+        return typeof value;
     }
 
     private isNull      = (a: any) => a === null;
