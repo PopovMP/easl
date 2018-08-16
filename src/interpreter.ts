@@ -10,15 +10,18 @@ class Interpreter {
     }
 
     public evalCodeTree(codeTree: any[], options: EvalOptions): any {
-        this.print = options.print;
+        this.print   = options.print;
         this.isDebug = options.isDebug;
 
         return this.evalExprLst(codeTree, []);
     }
 
     private evalExprLst(exprLst: any[], env: any): any[] {
-        const res = this.mapExprLst(exprLst, env);
-        return res[res.length - 1];
+        let res: any;
+        for (const expr of exprLst) {
+            res = this.evalExpr(expr, env);
+        }
+        return res;
     }
 
     private mapExprLst(exprLst: any[], env: any): any[] {
@@ -49,69 +52,66 @@ class Interpreter {
 
         // Primitives
         if (this.isNumber(expr))    return expr;
-        if (this.isNull(expr))      return expr;
-        if (this.isBoolean(expr))   return expr;
         if (this.isUndefined(expr)) return expr;
 
         // Lookup
-        if (typeof expr === "string") {
-            const val = this.lookup(expr, env);
-            if (typeof val === "undefined") {
-                throw Error(`lookup returns 'undefined' for symbol: ${expr}`);
-            }
-            return val;
-        }
+        if (typeof expr === "string") return this.lookup(expr, env);
 
 
         switch (expr[0]) {
 
-            // Equality
-            case "eq?"    : return this.evalExpr(expr[1], env) === this.evalExpr(expr[2], env);
+            // easl syntax
+            case "list"     : return this.mapExprLst(expr.slice(1), env);
+            case "string"   : return expr[1];
 
-            // Predicates
+            case "let"      : return this.evalLet(expr, env);
+            case "lambda"   : return this.evalLambda(expr, env);
+            case "function" : return this.evalFunction(expr, env);
+
+            case "if"       : return this.evalIf(expr, env);
+            case "cond"     : return this.evalCond(expr, env);
+            case "begin"    : return this.evalExprLst(this.cdr(expr), env);
+            case "for"      : return this.evalFor(expr, env);
+
+
+            // core lib
+            case "+"   : return this.evalExpr(expr[1], env) + this.evalExpr(expr[2], env);
+            case "-"   : return this.evalExpr(expr[1], env) - this.evalExpr(expr[2], env);
+            case "*"   : return this.evalExpr(expr[1], env) * this.evalExpr(expr[2], env);
+            case "/"   : return this.evalExpr(expr[1], env) / this.evalExpr(expr[2], env);
+
+            case "="   : return this.evalExpr(expr[1], env) === this.evalExpr(expr[2], env);
+            case ">"   : return this.evalExpr(expr[1], env) >   this.evalExpr(expr[2], env);
+            case "<"   : return this.evalExpr(expr[1], env) <   this.evalExpr(expr[2], env);
+            case "!="  : return this.evalExpr(expr[1], env) !== this.evalExpr(expr[2], env);
+            case ">="  : return this.evalExpr(expr[1], env) >=  this.evalExpr(expr[2], env);
+            case "<="  : return this.evalExpr(expr[1], env) <=  this.evalExpr(expr[2], env);
+
+            case "and" : return this.evalExpr(expr[1], env) && this.evalExpr(expr[2], env);
+            case "or"  : return this.evalExpr(expr[1], env) || this.evalExpr(expr[2], env);
+            case "not" : return this.not(this.evalExpr(expr[1], env));
+
+            case "print" : return this.print(String(this.mapExprLst(expr.slice(1), env).join(" "))) || "";
+
+
+            // scheme lib
+            case "eq?"      : return this.evalExpr(expr[1], env) === this.evalExpr(expr[2], env);
             case "boolean?" : return this.isBoolean(this.evalExpr(expr[1], env));
             case "null?"    : return this.isNull   (this.evalExpr(expr[1], env));
             case "number?"  : return this.isNumber (this.evalExpr(expr[1], env));
             case "string?"  : return this.isString (this.evalExpr(expr[1], env));
             case "pair?"    : return this.isPair   (this.evalExpr(expr[1], env));
             case "list?"    : return this.isList   (this.evalExpr(expr[1], env));
+            case "cons"     : return this.evalCons(expr.slice(1), env);
+            case "car"      : return this.car(this.evalExpr(expr[1], env));
+            case "cdr"      : return this.cdr(this.evalExpr(expr[1], env));
+            case "caar"     : return this.caar(this.evalExpr(expr[1], env));
+            case "cadr"     : return this.cadr(this.evalExpr(expr[1], env));
+            case "cdar"     : return this.cdar(this.evalExpr(expr[1], env));
+            case "cddr"     : return this.cddr(this.evalExpr(expr[1], env));
 
-            // Math
-            case "+" : return this.evalExpr(expr[1], env) + this.evalExpr(expr[2], env);
-            case "-" : return this.evalExpr(expr[1], env) - this.evalExpr(expr[2], env);
-            case "*" : return this.evalExpr(expr[1], env) * this.evalExpr(expr[2], env);
-            case "/" : return this.evalExpr(expr[1], env) / this.evalExpr(expr[2], env);
 
-            case "="  : return this.evalExpr(expr[1], env) === this.evalExpr(expr[2], env);
-            case ">"  : return this.evalExpr(expr[1], env) >   this.evalExpr(expr[2], env);
-            case "<"  : return this.evalExpr(expr[1], env) <   this.evalExpr(expr[2], env);
-            case "!=" : return this.evalExpr(expr[1], env) !== this.evalExpr(expr[2], env);
-            case ">=" : return this.evalExpr(expr[1], env) >=  this.evalExpr(expr[2], env);
-            case "<=" : return this.evalExpr(expr[1], env) <=  this.evalExpr(expr[2], env);
-
-            // logic
-            case "and" : return this.evalExpr(expr[1], env) && this.evalExpr(expr[2], env);
-            case "or"  : return this.evalExpr(expr[1], env) || this.evalExpr(expr[2], env);
-            case "not" : return this.not(this.evalExpr(expr[1], env));
-
-            // (list expr1 expr2 ...) → list
-            case "list" : return this.mapExprLst(expr.slice(1), env);
-
-            // (string "content") → "content"
-            case "string" : return expr[1];
-
-            // ((cons expr1 expr2) → pair
-            case "cons" : return this.evalCons(expr.slice(1), env);
-
-            // c*r
-            case "car"   : return this.car(this.evalExpr(expr[1], env));
-            case "cdr"   : return this.cdr(this.evalExpr(expr[1], env));
-            case "caar"  : return this.caar(this.evalExpr(expr[1], env));
-            case "cadr"  : return this.cadr(this.evalExpr(expr[1], env));
-            case "cdar"  : return this.cdar(this.evalExpr(expr[1], env));
-            case "cddr"  : return this.cddr(this.evalExpr(expr[1], env));
-
-            // list
+            // list lib
             case "list.empty"  : return [];
             case "list.empty?" : return this.listEmpty(expr, env);
             case "list.length" : return this.listLength(expr, env);
@@ -131,42 +131,20 @@ class Interpreter {
             case "list.flatten": return this.listFlatten(expr, env);
             case "list.join"   : return this.listJoin(expr, env);
 
-            // string
+
+            // string lib
             case "str.length" : return this.strLength(expr, env);
             case "str.has"    : return this.strHas(expr, env);
             case "str.split"  : return this.strSplit(expr, env);
             case "str.concat" : return this.strConcat(expr, env);
 
-            // (print expr)
-            case "print" : return this.print(String(this.evalExpr(expr[1], env)));
-
-            case "let" : return this.evalLet(expr, env);
-
-            // {"lambda" ["par1", "par2", ...], expr}
-            case "lambda" : return ["closure", expr[1], expr[2], env.slice()];
-
-            // [function, proc-id, [par1, par2, ...], expr1, expr2, ...]
-            case "function" : return this.evalFunction(expr, env);
-
-            // {if (test-expr) (then-expr) (else-expr)}
-            case "if" : return this.isTruthy(this.evalExpr(expr[1], env))
-                ? this.evalExpr(expr[2], env)
-                : this.evalExpr(expr[3], env);
-
-            // {cond [test-expr then-body ...] ... [else then-body ...]}
-            case "cond" : return this.evalCond(expr, env);
-
-            // {begin exp1 exp2 ...}
-            case "begin" : return this.evalExprLst(this.cdr(expr), env);
-
-            // {for (i 0) (< i 10) (add1 i) exp1 exp2 ...}
-            case "for" : return this.evalFor(expr, env);
         }
 
         if (Array.isArray(expr)){
             const proc = this.evalExpr(expr[0], env);
-            const procArgs =  (expr.length > 1) ? this.mapExprLst(expr.slice(1), env) : [];
-            return this.applyProcedure(proc,procArgs, env);
+            const args = (expr.length > 1) ? this.mapExprLst(expr.slice(1), env) : [];
+
+            return this.applyProcedure(proc, args, env);
        }   else {
             throw Error(`evalExpr - not proc reached the end: ${expr}`);
         }
@@ -179,9 +157,11 @@ class Interpreter {
         }
 
         if (Array.isArray(proc) && proc[0] === "closure") {
-            // proc = [closure, [par1, par2, ...], expr, env]
+            // [closure, [par1, par2, ...], expr, env]
+
             const closureEnv = this.assocList(proc[1], procArgs).concat(env).concat(proc[3]);
             const closureBody = proc[2];
+
             return this.evalExpr(closureBody, closureEnv);
         }
 
@@ -196,27 +176,49 @@ class Interpreter {
         return aList;
     }
 
+    private evalLambda(expr: any, env: any[]): any[] {
+        // [lambda, [par1, par2, ...], expr]
+
+        return ["closure", expr[1], expr[2], env.slice()];
+    }
+
     private evalLet(expr: any, env: any[]): any {
-        const symbol = expr[1];
-        if (Array.isArray(expr[2]) && expr[2][0] === "lambda") {
-            const value = this.evalExpr(["lambda", expr[2][1], expr[2][2]], env);
-            env.unshift([symbol, value]);
-        } else {
-            const value = this.evalExpr(expr[2], env);
-            env.unshift([symbol, value]);
-        }
-        return;
+        // [let, symbol, expr]
+        // [let, symbol, [lambda, [par1, par2, ...], expr]]
+
+        const symbol: string = expr[1];
+        const body  : any    = expr[2];
+        const value : any    = (Array.isArray(body) && body[0] === "lambda")
+                                        ? this.evalLambda(["lambda", body[1], body[2]], env)
+                                        : this.evalExpr(body, env);
+        env.unshift([symbol, value]);
+
+        return value;
     }
 
     private evalFunction(expr: any[], env: any[]): any {
-        // [function, func-id, [par1, par2, ...], expr1, expr2, ...]
-        const length = expr.length;
-        const funcId = expr[1];
-        const params = length > 3 ? expr[2] : [];
-        const body   = length > 4 ? ["begin", ... expr.slice(3)] :  expr[length - 1];
-        const value  = this.evalExpr(["lambda", params, body], env);
-        env.unshift([funcId, value]);
-        return
+        // [function, symbol, expr]
+        // [function, symbol, [par1, par2, ...], expr]
+        // [function, symbol, [par1, par2, ...], expr1, expr2, ...]
+
+        const length: number = expr.length;
+        const symbol: string = expr[1];
+        const params: any[]  = length > 3 ? expr[2] : [];
+        const body  : any    = length > 4 ? ["begin", ... expr.slice(3)] :  expr[length - 1];
+        const value : any    = this.evalLambda(["lambda", params, body], env);
+        env.unshift([symbol, value]);
+
+        return value;
+    }
+
+    private evalIf(expr: any[], env: any[]): any {
+        // [if, test-expr, then-expr, else-expr]
+
+        const value = this.isTruthy(this.evalExpr(expr[1], env))
+                            ? this.evalExpr(expr[2], env)
+                            : this.evalExpr(expr[3], env);
+
+        return value;
     }
 
     private isTruthy(expr: any): boolean {
@@ -235,6 +237,8 @@ class Interpreter {
     }
 
     private evalCond(expr: any, env: any[]): any {
+        // {cond [test-expr then-body ...] ... [else then-body ...]}
+
         return this.evalCondLoop(expr.slice(1), env);
     }
 
@@ -251,8 +255,9 @@ class Interpreter {
         }
     }
 
-    // {for (i 0) (< i 10) (add1 i) exp1 exp2 ...}
     private evalFor(expr: any, env: any[]): any {
+        // {for (i 0) (< i 10) (add1 i) exp1 exp2 ...}
+
         const counterPair = [expr[1][0], expr[1][1]];
         const getNewEnv = (e: any[], c: any[]) => {
             e.unshift(c); return e;
