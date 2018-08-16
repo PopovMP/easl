@@ -3,13 +3,14 @@
 class Interpreter {
     private readonly libs: ILib[];
     private isDebug: boolean;
-    private print: Function;
+    public print: Function;
 
     constructor() {
         this.print = console.log;
         this.isDebug = false;
 
         this.libs = [];
+        this.libs.push(new CoreLib(this));
         this.libs.push(new SchemeLib(this));
         this.libs.push(new ListLib(this));
         this.libs.push(new StringLib(this));
@@ -24,7 +25,7 @@ class Interpreter {
         return this.evalExprLst(codeTree, []);
     }
 
-    private evalExprLst(exprLst: any[], env: any): any[] {
+    public evalExprLst(exprLst: any[], env: any): any[] {
         let res: any;
         for (const expr of exprLst) {
             res = this.evalExpr(expr, env);
@@ -32,7 +33,7 @@ class Interpreter {
         return res;
     }
 
-    private mapExprLst(exprLst: any[], env: any): any[] {
+    public mapExprLst(exprLst: any[], env: any): any[] {
         return exprLst.map((expr: any) => this.evalExpr(expr, env), exprLst);
     }
 
@@ -63,7 +64,6 @@ class Interpreter {
         if (typeof expr === "string") return this.lookup(expr, env);
 
         switch (expr[0]) {
-            // easl syntax
             case "list"     : return this.mapExprLst(expr.slice(1), env);
             case "string"   : return expr[1];
 
@@ -75,30 +75,6 @@ class Interpreter {
             case "cond"     : return this.evalCond(expr, env);
             case "begin"    : return this.evalExprLst(expr.slice(1), env);
             case "for"      : return this.evalFor(expr, env);
-
-            // core lib
-            case "+"   : return this.evalExpr(expr[1], env) + this.evalExpr(expr[2], env);
-            case "-"   : return this.evalExpr(expr[1], env) - this.evalExpr(expr[2], env);
-            case "*"   : return this.evalExpr(expr[1], env) * this.evalExpr(expr[2], env);
-            case "/"   : return this.evalExpr(expr[1], env) / this.evalExpr(expr[2], env);
-
-            case "="   : return this.evalExpr(expr[1], env) === this.evalExpr(expr[2], env);
-            case ">"   : return this.evalExpr(expr[1], env) >   this.evalExpr(expr[2], env);
-            case "<"   : return this.evalExpr(expr[1], env) <   this.evalExpr(expr[2], env);
-            case "!="  : return this.evalExpr(expr[1], env) !== this.evalExpr(expr[2], env);
-            case ">="  : return this.evalExpr(expr[1], env) >=  this.evalExpr(expr[2], env);
-            case "<="  : return this.evalExpr(expr[1], env) <=  this.evalExpr(expr[2], env);
-
-            case "and" : return this.evalExpr(expr[1], env) && this.evalExpr(expr[2], env);
-            case "or"  : return this.evalExpr(expr[1], env) || this.evalExpr(expr[2], env);
-            case "not" : return this.evalNot(this.evalExpr(expr[1], env));
-
-            case "type-of"    : return this.evalTypeOf(expr[1], env);
-            case "to-string"  : return String(this.evalExpr(expr[1], env));
-            case "to-number"  : return this.toNumber(this.evalExpr(expr[1], env));
-            case "to-boolean" : return this.toBoolean(this.evalExpr(expr[1], env));
-
-            case "print" : return this.print(String(this.mapExprLst(expr.slice(1), env).join(" "))) || "";
         }
 
         const res = this.resolveThroughLib(expr, env);
@@ -224,45 +200,6 @@ class Interpreter {
         }
         return lastRes;
     }
-
-    private evalTypeOf (expr: any, env: any[]): string {
-        if (Array.isArray(expr)) {
-            switch (expr[0]) {
-                case "list"     : return "list";
-                case "string"   : return "string";
-                case "lambda"   :
-                case "function" :
-                case "closure"  : return "function";
-            }
-        }
-
-        if (expr === "null") return "null";
-
-        const value =  this.evalExpr(expr, env);
-
-        if (Array.isArray(value)) {
-            switch (value[0]) {
-                case "lambda"   :
-                case "function" :
-                case "closure"  : return "function";
-            }
-        }
-
-        return typeof value;
-    }
-
-    private evalNot(a: any): boolean {
-        return (Array.isArray(a) && a.length === 0) || !a;
-    }
-
-    private toBoolean(a: any): boolean {
-        return !this.evalNot(a);
-    }
-
-    private toNumber(a: any): number | null {
-        const number = Number(a);
-        return Number.isNaN(number) ? null : number;
-    };
 
     private resolveThroughLib(expr: any[], env: any[]): any {
         for (const lib of this.libs) {
