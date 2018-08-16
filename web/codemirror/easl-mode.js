@@ -19,29 +19,33 @@
         const atoms = makeKeywords("true false null");
 
         const keywords = makeKeywords(
-            "define let function lambda if cond for else");
+            "list string let lambda function if cond else begin for case break continue");
 
         const builtins = makeKeywords(
-            "list.empty list.empty? list.length list.first list.rest list.last list.least list.add list.push list.has list.index " +
-            "list.get list.set list.swap list.append list.slice list.flatten list.join");
+            // Core lib
+            "+ - * / = > < != >= <= and or not type-of to-string to-number to-boolean print " +
+
+            // scheme lib
+            "eq? boolean? null? number? string? pair? list? cons car cdr caar cadr cdar cddr length " +
+
+            // list lib
+            "list.empty list.empty? list.length list.first list.rest list.last list.least list.add list.push list.index list.has? " +
+            "list.get list.set list.swap list.append list.slice list.flatten list.join " +
+
+            // math lib
+            "math.pi math.abs math.ceil math.floor math.log math.max math.min math.pow math.random math.round math.sign math.sqrt math.trunc " +
+
+            // number lib
+            "numb.epsilon numb.max-value numb.min-value numb.is-integer numb.parse-float numb.parse-integer numb.to-fixed numb.to-string " +
+
+            // string
+            "str.length str.has str.split str.concat "
+        );
 
         const indentKeys = makeKeywords(
             // Built-ins
-            "define let let* letrec lambda if cond for" +
-            "locking proxy with-open with-precision reify deftype defrecord defprotocol extend extend-protocol extend-type " +
-            "try catch " +
-
-            // Binding forms
-            "let letfn binding loop for doseq dotimes when-let if-let " +
-
-            // Data structures
-            "defstruct struct-map assoc " +
-
-            // clojure.test
-            "testing deftest " +
-
-            // contrib
-            "handler-case handle dotrace deftrace");
+            "define let lambda if cond for "
+        );
 
         const tests = {
             digit: /\d/,
