@@ -1,12 +1,17 @@
 "use strict";
 
 class Interpreter {
-    private isDebug = false;
+    private isDebug: boolean;
+    private print: Function;
 
-    public evalCodeTree(codeTree: any[], debug?: boolean): any {
-        if (typeof  debug === "boolean") {
-            this.isDebug = debug;
-        }
+    constructor() {
+        this.print = console.log;
+        this.isDebug = false;
+    }
+
+    public evalCodeTree(codeTree: any[], options: EvalOptions): any {
+        this.print = options.print;
+        this.isDebug = options.isDebug;
 
         return this.evalExprLst(codeTree, []);
     }
@@ -133,7 +138,7 @@ class Interpreter {
             case "str.concat" : return this.strConcat(expr, env);
 
             // (print expr)
-            case "print" : return console.log(String(this.evalExpr(expr[1], env)));
+            case "print" : return this.print(String(this.evalExpr(expr[1], env)));
 
             case "let" : return this.evalLet(expr, env);
 

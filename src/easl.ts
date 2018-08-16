@@ -8,16 +8,18 @@ class Easl {
         this.interpreter = new Interpreter();
     }
 
-    public evaluate(codeText: string, debug?: boolean) {
-        const codeTree = Parser.parse(codeText);
+    public evaluate(codeText: string, optionsParam?: EvalOptions) {
+        const options = optionsParam
+            ? EvalOptions.parse(optionsParam)
+            : new EvalOptions();
 
-        // console.time("Eval time");
-
-        const output = this.interpreter.evalCodeTree(codeTree, debug);
-
-        // console.timeEnd("Eval time");
-
-        return output;
+        try {
+            const codeTree = Parser.parse(codeText);
+            const output = this.interpreter.evalCodeTree(codeTree, options);
+            return output;
+        } catch (e) {
+            return e.toString();
+        }
     }
 }
 

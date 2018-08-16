@@ -3,13 +3,37 @@ class Easl {
     constructor() {
         this.interpreter = new Interpreter();
     }
-    evaluate(codeText, debug) {
-        const codeTree = Parser.parse(codeText);
-        const output = this.interpreter.evalCodeTree(codeTree, debug);
-        return output;
+    evaluate(codeText, optionsParam) {
+        const options = optionsParam
+            ? EvalOptions.parse(optionsParam)
+            : new EvalOptions();
+        try {
+            const codeTree = Parser.parse(codeText);
+            const output = this.interpreter.evalCodeTree(codeTree, options);
+            return output;
+        }
+        catch (e) {
+            return e.toString();
+        }
     }
 }
 module.exports.Easl = Easl;
+class EvalOptions {
+    constructor() {
+        this.print = console.log;
+        this.isDebug = false;
+    }
+    static parse(options) {
+        const evalOptions = new EvalOptions();
+        if (typeof options.print === "function") {
+            evalOptions.print = options.print;
+        }
+        if (typeof options.isDebug === "boolean") {
+            evalOptions.isDebug = options.isDebug;
+        }
+        return evalOptions;
+    }
+}
 class Grammar {
     static isParen(ch) {
         return Grammar.isOpenParen(ch) || Grammar.isCloseParen(ch);
@@ -52,7 +76,6 @@ Grammar.commentStartChars = [";"];
 Grammar.stringEncloseChars = ["\""];
 class Interpreter {
     constructor() {
-        this.isDebug = false;
         this.isNull = (a) => a === null;
         this.isNumber = (a) => typeof a === "number";
         this.isString = (a) => typeof a === "string";
@@ -75,11 +98,12 @@ class Interpreter {
                 return b.unshift(a) && b;
             return [a, b];
         };
+        this.print = console.log;
+        this.isDebug = false;
     }
-    evalCodeTree(codeTree, debug) {
-        if (typeof debug === "boolean") {
-            this.isDebug = debug;
-        }
+    evalCodeTree(codeTree, options) {
+        this.print = options.print;
+        this.isDebug = options.isDebug;
         return this.evalExprLst(codeTree, []);
     }
     evalExprLst(exprLst, env) {
@@ -178,7 +202,7 @@ class Interpreter {
             case "str.has": return this.strHas(expr, env);
             case "str.split": return this.strSplit(expr, env);
             case "str.concat": return this.strConcat(expr, env);
-            case "print": return console.log(String(this.evalExpr(expr[1], env)));
+            case "print": return this.print(String(this.evalExpr(expr[1], env)));
             case "let": return this.evalLet(expr, env);
             case "lambda": return ["closure", expr[1], expr[2], env.slice()];
             case "function": return this.evalFunction(expr, env);
