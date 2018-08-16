@@ -21,6 +21,22 @@ const examplesList = [
 `
     },
     {
+        name: "Random numbers in a list",
+        code:
+            `;; Random numbers in a list
+
+{let lst (list.empty)}                    ; make an empty list
+
+{for (i 0) (< i 10) (+ i 1)               ; cycle 10 times
+    {let rand-num (* (math.random) 100)}  ; generate a random number between 0 and 100
+    {let rounded  (math.round rand-num)}  ; round the number
+    (list.add rounded lst) }              ; add the number to the end of the list
+    
+{print lst) ; print the list
+`
+    },
+
+    {
         name: "Swap list elements non destructive",
         code:
 `;; Swap list elements non destructive
@@ -124,18 +140,18 @@ const examplesList = [
         code:
             `;; Sequence generator
 
-{function make-sequence (start length next)
-    {begin
-        {function loop (lst i)
-            {if (= i length)
-                lst
-                (loop (list.add (next (list.last lst)) lst)
-                      (+ i 1)) }}
-        (loop [start] 1) }}  ; tail optimized recursion
+{function make-sequence (first length next)
+    {function loop (lst i)
+        {if (= i length)
+            lst
+            (loop (list.add (next (list.last lst)) lst)
+                  (+ i 1)) }}
+    (loop [first] 1) }                       ; start the loop with the first element preset.
 
-{make-sequence 3     ; -------------------- the first element
-               10    ; -------------------- the sequence length
-               {lambda (cur) (* cur 3)} ) ; calculation formula
+
+{make-sequence 3                             ; the first element
+               10                            ; the sequence length
+               {lambda (prev) (* prev 3)} )  ; calculation formula
 `   },
     {
         name: "Bubble sort",
