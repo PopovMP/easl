@@ -10,7 +10,7 @@ Features:
   - minimal impact on the hosting app.
   - safe. EASL works on own memory environment. It executes only predefined commands.
   - pure. EASL embraces the functional programming paradigm. No side effects.
-  - unmutable. All variables are unmutable by default.
+  - immutable. All variables are immutable by default.
   - powerful. It supports higher order functions, recursion, closure.
   
 
@@ -219,7 +219,7 @@ List functions:
 `list.get` - gets an element at an index: `(list.get 1 [1 2 3]) → 2`. The index is within the range of the list.
 
 `list.set` - sets an element at an index: `(list.set 4 0 [1 2 3]) → [4 2 3]`. The index is within the range of the list.
-`list.set` doesn't modify the list. It returns a new list instead.
+`list.set` does not modify the list. It returns a new list instead.
 
 `list.swap` - swaps two elements of a list: `(list.swap 0 1 [1 2 3]) → [ 2, 1, 3 ]`
 
@@ -282,11 +282,3 @@ A string is closed within quotation marks: `"Hello World!"`
 
 `math.sqrt`
 
-`math.even`
-
-`math.odd`
-
-`math.zero`
-
-
-   
