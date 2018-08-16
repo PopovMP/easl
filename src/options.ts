@@ -1,6 +1,6 @@
 "use strict";
 
-class EvalOptions {
+class Options {
     public print: Function;
     public isDebug: boolean;
 
@@ -9,8 +9,8 @@ class EvalOptions {
         this.isDebug = false;
     }
 
-    public static parse(options: any): EvalOptions {
-        const evalOptions = new EvalOptions();
+    public static parse(options: any): Options {
+        const evalOptions = new Options();
 
         if (typeof options.print === "function") {
             evalOptions.print = options.print;

@@ -8,10 +8,10 @@ class Easl {
         this.interpreter = new Interpreter();
     }
 
-    public evaluate(codeText: string, optionsParam?: EvalOptions) {
+    public evaluate(codeText: string, optionsParam?: Options) {
         const options = optionsParam
-            ? EvalOptions.parse(optionsParam)
-            : new EvalOptions();
+            ? Options.parse(optionsParam)
+            : new Options();
 
         try {
             const codeTree = Parser.parse(codeText);
