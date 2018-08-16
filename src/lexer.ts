@@ -73,4 +73,6 @@ class Lexer {
     }
 }
 
-module.exports.Lexer = Lexer;
+if (typeof module === "object") {
+    module.exports.Lexer = Lexer;
+}

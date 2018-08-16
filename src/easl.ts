@@ -23,4 +23,6 @@ class Easl {
     }
 }
 
-module.exports.Easl = Easl;
+if (typeof module === "object") {
+    module.exports.Easl = Easl;
+}

@@ -17,7 +17,9 @@ class Easl {
         }
     }
 }
-module.exports.Easl = Easl;
+if (typeof module === "object") {
+    module.exports.Easl = Easl;
+}
 class EvalOptions {
     constructor() {
         this.print = console.log;
@@ -505,7 +507,9 @@ class Lexer {
         return number;
     }
 }
-module.exports.Lexer = Lexer;
+if (typeof module === "object") {
+    module.exports.Lexer = Lexer;
+}
 class Parser {
     static parse(codeText) {
         const lexTree = Lexer.splitCode(codeText);
@@ -580,4 +584,6 @@ class Parser {
         return codeTree;
     }
 }
-module.exports.Parser = Parser;
+if (typeof module === "object") {
+    module.exports.Parser = Parser;
+}

@@ -84,4 +84,6 @@ class Parser {
     }
 }
 
-module.exports.Parser = Parser;
+if (typeof module === "object") {
+    module.exports.Parser = Parser;
+}
