@@ -42,16 +42,6 @@ class Interpreter {
         return res;
     }
 
-    private lookup(symbol: string, env: any[]): any {
-        for (const cell of env) {
-            if (symbol === cell[0]) {
-                return cell[1];
-            }
-        }
-
-        throw Error(`Unbound symbol: ${symbol}`);
-    }
-
     public evalExpr(expr: any, env: any[]): any {
         if (this.isDebug) console.log("evalExpr expr:", JSON.stringify(expr), "env:", JSON.stringify(env));
 
@@ -81,6 +71,23 @@ class Interpreter {
         if (res[0]) return res[1];
 
         return this.applyProcedure(expr, env);
+    }
+
+    private lookup(symbol: string, env: any[]): any {
+        for (const cell of env) {
+            if (symbol === cell[0]) {
+                return cell[1];
+            }
+        }
+        throw Error(`Unbound identifier: ${symbol}`);
+    }
+
+    private throwOnExistingDef(symbol: string, env: any[]): void {
+        for (const cell of env) {
+            if (symbol === cell[0]) {
+                throw Error(`Identifier already defined: ${symbol}`);
+            }
+        }
     }
 
     private applyProcedure(expr: any[], env: any[]): any {
@@ -115,12 +122,15 @@ class Interpreter {
     // [let, symbol, expr]
     // [let, symbol, [lambda, [par1, par2, ...], expr]]
     private evalLet(expr: any, env: any[]): any {
+        const symbol = expr[1];
+        this.throwOnExistingDef(symbol, env);
+
         const body  : any = expr[2];
         const value : any = (Array.isArray(body) && body[0] === "lambda")
                                         ? this.evalLambda(["lambda", body[1], body[2]], env)
                                         : this.evalExpr(body, env);
 
-        env.unshift([expr[1], value]);
+        env.unshift([symbol, value]);
 
         return value;
     }
@@ -128,12 +138,15 @@ class Interpreter {
     // [function, symbol, [par1, par2, ...], expr]
     // [function, symbol, [par1, par2, ...], expr1, expr2, ...]
     private evalFunction(expr: any[], env: any[]): any {
+        const symbol = expr[1];
+        this.throwOnExistingDef(symbol, env);
+
         const body  : any = expr.length === 4 ? expr[3] : ["begin", ... expr.slice(3)];
         const value : any = this.evalLambda(["lambda", expr[2], body], env);
 
         env.unshift([expr[1], value]);
 
-        return value;
+        return symbol;
     }
 
     // [if, test-expr, then-expr, else-expr]
