@@ -89,6 +89,20 @@ const examplesList = [
     },
 
     {
+        name: "Factorial",
+        code:
+            `;; Factorial
+
+{function fac (n)
+    {if (= n 0)
+        1
+        (* (fac (- n 1)) n) }} 
+
+(fac 5)
+`
+    },
+
+    {
         name: "Fibonacci - tail optimized",
         code:
 `;; Fibonacci - tail optimized
@@ -113,30 +127,18 @@ const examplesList = [
 `;; Mutual recursion
 
 {function is-even? (n)
-    (or  (= n 0)
-         (is-odd? (- n 1))) }
+    {or  (= n 0)
+         (is-odd? (- n 1)) }}
 
 {function is-odd? (n)
-    (and (!= n 0)
-         (is-even? (- n 1))) }
+    {and (!= n 0)
+         (is-even? (- n 1)) }}
 
 (is-odd? 3)
 `
     },
-    {
-        name: "Factorial",
-        code:
-`;; Factorial
 
-{let fac
-    {lambda (n)
-        {if (= n 0)
-            1
-            (* n (fac (- n 1)))}}} 
 
-(fac 5)
-`
-    },
     {
         name: "Find the maximum of a list",
         code:
