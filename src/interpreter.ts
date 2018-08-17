@@ -17,6 +17,7 @@ class Interpreter {
         this.libs.push(new StringLib(this));
         this.libs.push(new MathLib(this));
         this.libs.push(new NumberLib(this));
+        this.libs.push(new DateLib(this));
     }
 
     public evalCodeTree(codeTree: any[], options: Options): any {
@@ -68,6 +69,7 @@ class Interpreter {
             case "begin"    : return this.evalExprLst(expr.slice(1), env);
             case "for"      : return this.evalFor(expr, env);
             case "while"    : return this.evalWhile(expr, env);
+            case "do"       : return this.evalDo(expr, env);
         }
 
         const res: [boolean, any] = this.resolveThroughLib(expr, env);
@@ -235,32 +237,50 @@ class Interpreter {
         return this.evalCaseLoop(val, condClauses.slice(1), env);
     }
 
-    // {for (i 0) (< i 10) (add1 i) exp1 exp2 ...}
-    private evalFor(expr: any, env: any[]): any {
-        const counterPair = [expr[1][0], expr[1][1]];
-        const getNewEnv = (e: any[], c: any[]) => {
-            e.unshift(c); return e;
+    // {for (i 0) (< i 10) (+ i 1) exp1 exp2 ...}
+    private evalFor(expr: any[], env: any[]): void {
+        const condBody: any = expr[2];
+        const incBody: any  = expr[3];
+        const forBody: any  = expr.slice(4);
+        const envFor: any[] = env.slice();
+
+        const cntId: string = expr[1][0];
+        const cntPair: [string, number] = [cntId, this.evalExpr(expr[1][1], envFor)];
+        envFor.unshift(cntPair);
+
+        const setEnv = () => {
+            for (const cell of envFor) {
+                if (cell[0] === cntId) {
+                    cell[1] = cntPair[1];
+                    break;
+                }}
         };
 
-        let lastRes: any;
-
-        for (; this.evalExpr(expr[2].slice(), getNewEnv(env, counterPair));
-               counterPair[1] = this.evalExpr(expr[3].slice(), getNewEnv(env, counterPair))) {
-            lastRes = this.evalExprLst(expr.slice(4), getNewEnv(env, counterPair));
+        for (; this.evalExpr(condBody, envFor);
+               cntPair[1] = this.evalExpr(incBody, envFor)) {
+            this.evalExprLst(forBody, envFor);
+            setEnv();
         }
-
-        return lastRes;
     }
 
     // {while, condition, expr1, expr2, ...}
-    private evalWhile(expr: any, env: any[]): any {
-        let lastRes: any = null;
+    private evalWhile(expr: any[], env: any[]): void {
+        const condBody: any = expr[1];
+        const loopBody: any = expr.slice(2);
 
-        while (this.evalExpr(expr[1],env)) {
-            lastRes = this.evalExprLst(expr.slice(2), env);
+        while (this.evalExpr(condBody, env)) {
+            this.evalExprLst(loopBody, env);
         }
+    }
 
-        return lastRes;
+    // {do, expr1, expr2, ..., condition}
+    private evalDo(expr: any[], env: any[]): void {
+        const condBody: any = expr[expr.length - 1];
+        const loopBody: any = expr.slice(1, expr.length - 1);
+
+        do  {
+            this.evalExprLst(loopBody, env);
+        } while (this.evalExpr(condBody, env));
     }
 
     private resolveThroughLib(expr: any[], env: any[]): [boolean, any] {
