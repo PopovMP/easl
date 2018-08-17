@@ -64,6 +64,7 @@ class Interpreter {
 
             case "if"       : return this.evalIf(expr, env);
             case "cond"     : return this.evalCond(expr, env);
+            case "case"     : return this.evalCase(expr, env);
             case "begin"    : return this.evalExprLst(expr.slice(1), env);
             case "for"      : return this.evalFor(expr, env);
         }
@@ -207,6 +208,29 @@ class Interpreter {
         }
 
         return this.evalCondLoop(condClauses.slice(1), env);
+    }
+
+    // {case expr
+    //       ([a1, a2, ...] expr)
+    //       ([b1, b2, ...] expr}
+    //       (else          expr) }
+    private evalCase(expr: any, env: any[]): any {
+        const val: any = this.evalExpr(expr[1], env);
+        return this.evalCaseLoop(val, expr.slice(2), env);
+    }
+
+    private evalCaseLoop(val: any, condClauses: any[], env: any): any {
+        const clause = condClauses[0];
+
+        if (clause[0] === "else"){
+            return this.evalExprLst(clause.slice(1), env);
+        }
+
+        if (clause[0].indexOf(val) > -1) {
+            return this.evalExprLst(clause.slice(1), env);
+        }
+
+        return this.evalCaseLoop(val, condClauses.slice(1), env);
     }
 
     // {for (i 0) (< i 10) (add1 i) exp1 exp2 ...}

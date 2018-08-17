@@ -51,14 +51,6 @@ class Interpreter {
         }
         return res;
     }
-    lookup(symbol, env) {
-        for (const cell of env) {
-            if (symbol === cell[0]) {
-                return cell[1];
-            }
-        }
-        throw Error(`Unbound symbol: ${symbol}`);
-    }
     evalExpr(expr, env) {
         if (this.isDebug)
             console.log("evalExpr expr:", JSON.stringify(expr), "env:", JSON.stringify(env));
@@ -76,10 +68,12 @@ class Interpreter {
             case "list": return this.mapExprLst(expr.slice(1), env);
             case "string": return expr[1];
             case "let": return this.evalLet(expr, env);
+            case "set!": return this.evalSet(expr, env);
             case "lambda": return this.evalLambda(expr, env);
             case "function": return this.evalFunction(expr, env);
             case "if": return this.evalIf(expr, env);
             case "cond": return this.evalCond(expr, env);
+            case "case": return this.evalCase(expr, env);
             case "begin": return this.evalExprLst(expr.slice(1), env);
             case "for": return this.evalFor(expr, env);
         }
@@ -87,6 +81,30 @@ class Interpreter {
         if (res[0])
             return res[1];
         return this.applyProcedure(expr, env);
+    }
+    lookup(symbol, env) {
+        for (const cell of env) {
+            if (symbol === cell[0]) {
+                return cell[1];
+            }
+        }
+        throw Error(`Unbound identifier: ${symbol}`);
+    }
+    throwOnExistingDef(symbol, env) {
+        for (const cell of env) {
+            if (symbol === cell[0]) {
+                throw Error(`Identifier already defined: ${symbol}`);
+            }
+        }
+    }
+    setInEnv(symbol, value, env) {
+        for (const cell of env) {
+            if (symbol === cell[0]) {
+                cell[1] = value;
+                return;
+            }
+        }
+        throw Error(`Unbound identifier: ${symbol}`);
     }
     applyProcedure(expr, env) {
         const closure = this.evalExpr(expr[0], env);
@@ -110,18 +128,32 @@ class Interpreter {
         return ["closure", expr[1], expr[2], env.slice()];
     }
     evalLet(expr, env) {
-        const body = expr[2];
-        const value = (Array.isArray(body) && body[0] === "lambda")
-            ? this.evalLambda(["lambda", body[1], body[2]], env)
-            : this.evalExpr(body, env);
-        env.unshift([expr[1], value]);
+        const symbol = expr[1];
+        this.throwOnExistingDef(symbol, env);
+        const value = this.evalLetValue(expr, env);
+        env.unshift([symbol, value]);
+        return value;
+    }
+    evalSet(expr, env) {
+        const symbol = expr[1];
+        const value = this.evalLetValue(expr, env);
+        this.setInEnv(symbol, value, env);
+        return value;
+    }
+    evalLetValue(expr, env) {
+        const letExpr = expr[2];
+        const value = (Array.isArray(letExpr) && letExpr[0] === "lambda")
+            ? this.evalLambda(["lambda", letExpr[1], letExpr[2]], env)
+            : this.evalExpr(letExpr, env);
         return value;
     }
     evalFunction(expr, env) {
+        const symbol = expr[1];
+        this.throwOnExistingDef(symbol, env);
         const body = expr.length === 4 ? expr[3] : ["begin", ...expr.slice(3)];
         const value = this.evalLambda(["lambda", expr[2], body], env);
         env.unshift([expr[1], value]);
-        return value;
+        return symbol;
     }
     evalIf(expr, env) {
         const value = this.isTruthy(this.evalExpr(expr[1], env))
@@ -149,6 +181,20 @@ class Interpreter {
             return this.evalExprLst(clause.slice(1), env);
         }
         return this.evalCondLoop(condClauses.slice(1), env);
+    }
+    evalCase(expr, env) {
+        const val = this.evalExpr(expr[1], env);
+        return this.evalCaseLoop(val, expr.slice(2), env);
+    }
+    evalCaseLoop(val, condClauses, env) {
+        const clause = condClauses[0];
+        if (clause[0] === "else") {
+            return this.evalExprLst(clause.slice(1), env);
+        }
+        if (clause[0].indexOf(val) > -1) {
+            return this.evalExprLst(clause.slice(1), env);
+        }
+        return this.evalCaseLoop(val, condClauses.slice(1), env);
     }
     evalFor(expr, env) {
         const counterPair = [expr[1][0], expr[1][1]];

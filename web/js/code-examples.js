@@ -35,7 +35,22 @@ const examplesList = [
 {print lst) ; print the list
 `
     },
+    {
+        name: "Odd or even with 'case'",
+        code:
+            `;; Odd or even with 'case'
 
+; Generate a random number between 0 and 9
+{let n (math.floor (* (math.random) 10)) }
+
+; Check which list of options contains the value of 'n' and return the text.
+{let type {case n
+             ([0 2 4 6 8] " is even")
+             ([1 3 5 7 9] " is odd" ) }}
+
+(print (+ n type))
+`
+    },
     {
         name: "Swap list elements non destructive",
         code:
