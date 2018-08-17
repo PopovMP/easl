@@ -11,18 +11,20 @@ class ListLib implements ILib {
         switch (expr[0]) {
             case "list.empty"  : return [];
             case "list.empty?" : return this.listEmpty(expr, env);
+            case "list.has?"   : return this.listHas(expr, env);
             case "list.length" : return this.listLength(expr, env);
             case "list.first"  : return this.listFirst(expr, env);
             case "list.rest"   : return this.listRest(expr, env);
             case "list.last"   : return this.listLast(expr, env);
             case "list.least"  : return this.listLeast(expr, env);
             case "list.add"    : return this.listAdd(expr, env);
+            case "list.add!"   : return this.listAdd(expr, env, false);
             case "list.push"   : return this.listPush(expr, env);
+            case "list.push!"  : return this.listPush(expr, env, false);
             case "list.index"  : return this.listIndex(expr, env);
-            case "list.has?"   : return this.listHas(expr, env);
             case "list.get"    : return this.listGet(expr, env);
             case "list.set"    : return this.listSet(expr, env);
-            case "list.swap"   : return this.listSwap(expr, env);
+            case "list.set!"   : return this.listSet(expr, env, false);
             case "list.append" : return this.listAppend(expr, env);
             case "list.slice"  : return this.listSlice(expr, env);
             case "list.flatten": return this.listFlatten(expr, env);
@@ -62,12 +64,13 @@ class ListLib implements ILib {
         return Array.isArray(lst) && lst.length > 1 ? lst.slice(0, lst.length - 1) : [];
     }
 
-    private listAdd(expr: any[], env: any[]): any[] {
-        const elm: any = this.inter.evalExpr(expr[1], env);
+    private listAdd(expr: any[], env: any[], pure: boolean = true): any[] {
+        const elm: any   = this.inter.evalExpr(expr[1], env);
         const lst: any[] = this.inter.evalExpr(expr[2], env);
         if (Array.isArray(lst)) {
-            lst.push(elm);
-            return lst;
+            const list = pure ? lst.slice() : lst;
+            list.push(elm);
+            return list;
         }
         if (lst === null) {
             return [elm];
@@ -75,12 +78,13 @@ class ListLib implements ILib {
         return [lst, elm];
     }
 
-    private listPush(expr: any[], env: any[]): any[] {
-        const elm: any = this.inter.evalExpr(expr[1], env);
+    private listPush(expr: any[], env: any[], pure: boolean = true): any[] {
+        const elm: any   = this.inter.evalExpr(expr[1], env);
         const lst: any[] = this.inter.evalExpr(expr[2], env);
         if (Array.isArray(lst)) {
-            lst.unshift(elm);
-            return lst;
+            const list = pure ? lst.slice() : lst;
+            list.unshift(elm);
+            return list;
         }
         if (lst === null) {
             return [elm];
@@ -112,33 +116,18 @@ class ListLib implements ILib {
         return null;
     }
 
-    private listSet(expr: any[], env: any): any[] {
-        const elm: any = this.inter.evalExpr(expr[1], env);
+    private listSet(expr: any[], env: any, pure: boolean = true): any[] {
+        const elm: any   = this.inter.evalExpr(expr[1], env);
         const index: any = this.inter.evalExpr(expr[2], env);
         const lst: any[] = this.inter.evalExpr(expr[3], env);
 
         if (Array.isArray(lst) && index >= 0 && index < lst.length) {
-            const newLst = lst.slice();
-            newLst[index] = elm;
-            return newLst;
+            const list = pure ? lst.slice() : lst;
+            list[index] = elm;
+            return list;
         }
 
         return lst;
-    }
-
-    private listSwap(expr: any[], env: any): any[] {
-        const i1: any = this.inter.evalExpr(expr[1], env);
-        const i2: any = this.inter.evalExpr(expr[2], env);
-        const lst: any[] = this.inter.evalExpr(expr[3], env);
-
-        if (Array.isArray(lst) && i1 >= 0 && i1 < lst.length && i2 >= 0 && i2 < lst.length) {
-            const newLst = lst.slice();
-            newLst[i1] = lst[i2];
-            newLst[i2] = lst[i1];
-            return newLst;
-        }
-
-        return [];
     }
 
     private listAppend(expr: any[], env: any): any[] {

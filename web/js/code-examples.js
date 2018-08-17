@@ -30,7 +30,7 @@ const examplesList = [
 {for (i 0) (< i 10) (+ i 1)               ; cycle 10 times
     {let rand-num (* (math.random) 100)}  ; generate a random number between 0 and 100
     {let rounded  (math.round rand-num)}  ; round the number
-    (list.add rounded lst) }              ; add the number to the end of the list
+    (list.add! rounded lst) }             ; add the number to the end of the list
     
 {print lst) ; print the list
 `

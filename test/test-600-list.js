@@ -105,6 +105,21 @@ describe('list', function () {
         it('two list:  (list.add [3 4] [1 2]) → [1, 2, [3, 4]]', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.add [3 4] [1 2])      `), [1, 2, [3, 4]]);
         });
+        it('it is pure', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [2 3]}
+             (list.add 1 lst)
+             lst                  `), [2, 3]);
+        });
+    });
+
+    describe('list.add!', function () {
+        it('it mutates', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [2 3]}
+             (list.add! 1 lst)
+             lst                  `), [2, 3, 1]);
+        });
     });
 
     describe('list.push', function () {
@@ -118,10 +133,25 @@ describe('list', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.push 2 null)        `), [2]);
         });
         it('non empty list:  (list.push 1 [2 3]) → [1, 2, 3]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.push 1 [2 3])      `), [1, 2, 3]);
+            assert.deepStrictEqual(easl.evaluate(`   (list.push 1 [2 3])       `), [1, 2, 3]);
         });
-        it('two list:  (list.push [1 2] [3 4]) → [1, 2, [3, 4]]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.push [1 2] [3 4])      `), [[1, 2], 3, 4]);
+        it('two list:  (list.push [1 2] [3 4]) → [[1, 2], 3, 4]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.push [1 2] [3 4])   `), [[1, 2], 3, 4]);
+        });
+        it('it is pure', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [2 3]}
+             (list.push 1 lst)
+             lst                  `), [2, 3]);
+        });
+    });
+
+    describe('list.push!', function () {
+        it('it mutates', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [2 3]}
+             (list.push! 1 lst)
+             lst                  `), [1, 2, 3]);
         });
     });
 
@@ -147,6 +177,22 @@ describe('list', function () {
         it('set element:  (list.set 42 1 [1 2 3]) → [1 42 3]', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.set 42 1 [1 2 3])     `), [ 1, 42, 3 ]);
         });
+        it('it is pur', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [2 3]}
+             (list.set 5 1 lst)
+             lst                  `), [2, 3]);
+        });
+
+    });
+
+    describe('list.set!', function () {
+        it('it mutates', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [2 3]}
+             (list.set! 5 1 lst)
+             lst                  `), [2, 5]);
+        });
     });
 
     describe('list.append', function () {
@@ -154,11 +200,4 @@ describe('list', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.append [3 4] [1 2])     `), [ 1, 2, 3, 4 ]);
         });
     });
-
-    describe('list.swap', function () {
-        it('set element:  (list.swap 0 2 [1 2 3]) → [ 3, 2, 1 ]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.swap 0 2 [1 2 3])     `), [ 3, 2, 1 ]);
-        });
-    });
-
 });

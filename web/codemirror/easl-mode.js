@@ -29,8 +29,8 @@
             "eq? boolean? null? number? string? pair? list? cons car cdr caar cadr cdar cddr length " +
 
             // list lib
-            "list.empty list.empty? list.length list.first list.rest list.last list.least list.add list.push list.index list.has? " +
-            "list.get list.set list.swap list.append list.slice list.flatten list.join " +
+            "list.empty list.empty? list.has? list.length list.first list.rest list.last list.least list.add list.add! list.push list.push! list.index " +
+            "list.get list.set list.set! list.append list.slice list.flatten list.join " +
 
             // math lib
             "math.pi math.abs math.ceil math.floor math.log math.max math.min math.pow math.random math.round math.sign math.sqrt math.trunc " +
