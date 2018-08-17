@@ -7,7 +7,7 @@ class ListLib implements ILib {
         this.inter = interpreter;
     }
 
-    public eval(expr: any[], env: any[]): any {
+    public libEvalExpr(expr: any[], env: any[]): any {
         switch (expr[0]) {
             case "list.empty"  : return [];
             case "list.empty?" : return this.listEmpty(expr, env);

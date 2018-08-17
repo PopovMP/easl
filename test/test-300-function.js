@@ -8,12 +8,6 @@ const easl = new Easl();
 describe('function', function () {
 
     describe('basic application', function () {
-        it('no arguments', function () {
-            assert.strictEqual(easl.evaluate(` 
-                {function f (5)}
-                (f)                                 `), 5);
-        });
-
         it('empty arguments', function () {
             assert.strictEqual(easl.evaluate(` 
                 {function f () (5)}
@@ -23,13 +17,13 @@ describe('function', function () {
         it('return from env 1', function () {
             assert.strictEqual(easl.evaluate(` 
                 {let a 5)
-                {function f (a)}
+                {function f () (a)}
                 (f)                                 `), 5);
         });
 
         it('return from env 2', function () {
             assert.strictEqual(easl.evaluate(` 
-                {function f (a)}
+                {function f () (a)}
                 {let a 5)
                 (f)                                 `), 5);
         });

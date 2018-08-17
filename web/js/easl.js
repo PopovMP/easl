@@ -227,7 +227,7 @@ class Interpreter {
     ;
     resolveThroughLib(expr, env) {
         for (const lib of this.libs) {
-            const res = lib.eval(expr, env);
+            const res = lib.libEvalExpr(expr, env);
             if (res !== "##not-resolved##")
                 return res;
         }

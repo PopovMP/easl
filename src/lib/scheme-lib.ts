@@ -7,7 +7,7 @@ class SchemeLib implements ILib {
         this.inter = interpreter;
     }
 
-    public eval(expr: any[], env: any[]): any {
+    public libEvalExpr(expr: any[], env: any[]): any {
         switch (expr[0]) {
 
             case "eq?"      : return this.inter.evalExpr(expr[1], env) === this.inter.evalExpr(expr[2], env);
@@ -20,7 +20,7 @@ class SchemeLib implements ILib {
             case "pair?"    : return this.isPair(this.inter.evalExpr(expr[1], env));
             case "list?"    : return this.isList(this.inter.evalExpr(expr[1], env));
 
-            case "cons"     : return this.evalCons(expr.slice(1), env);
+            case "cons"     : return this.evalCons(expr, env);
 
             case "car"      : return this.car(this.inter.evalExpr(expr[1], env));
             case "cdr"      : return this.cdr(this.inter.evalExpr(expr[1], env));
@@ -44,18 +44,20 @@ class SchemeLib implements ILib {
     private isPair = (lst: any[]) => Array.isArray(lst) && lst.length > 0;
     private length = (lst: any[]) => Array.isArray(lst) ? lst.length : -1;
 
-    private evalCons(argsLst: any[], env: any[]): any[] {
-        const a = this.inter.evalExpr(argsLst[0], env);
-        const b = this.inter.evalExpr(argsLst.slice(1), env);
+    private evalCons(expr: any[], env: any[]): any[] {
+        const a = this.inter.evalExpr(expr[1], env);
+        const b = this.inter.evalExpr(expr[2], env);
         if (b === null) return [a];
-        if ( this.isList(b)) return  b.unshift(a) && b;
+        if (this.isList(b)) {
+            return  b.unshift(a) && b;
+        }
         return [a, b];
     }
 
     private car  = (lst: any[]) => lst[0];
     private cdr  = (lst: any[]) => lst.slice(1);
-    private caar = (lst: any[]) => this.car(this.car(lst));
-    private cadr = (lst: any[]) => this.car(this.cdr(lst));
-    private cdar = (lst: any[]) => this.cdr(this.car(lst));
-    private cddr = (lst: any[]) => this.cdr(this.cdr(lst));
+    private caar = (lst: any[]) => lst[0][0];
+    private cadr = (lst: any[]) => lst[1];
+    private cdar = (lst: any[]) => lst[0].slice(1);
+    private cddr = (lst: any[]) => lst.slice(2);
 }

@@ -22,10 +22,6 @@ class Grammar {
         return Grammar.closeParenChars.indexOf(ch) > -1;
     }
 
-    public static isDigit(ch: string): boolean {
-        return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].indexOf(ch) > -1;
-    }
-
     public static isWhiteSpace(ch: string): boolean {
         return Grammar.whiteSpaceChars.indexOf(ch) > -1 ||
             Grammar.endOfLineChars.indexOf(ch) > -1;

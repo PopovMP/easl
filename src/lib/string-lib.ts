@@ -7,7 +7,7 @@ class StringLib implements ILib {
         this.inter = interpreter;
     }
 
-    public eval(expr: any[], env: any[]): any {
+    public libEvalExpr(expr: any[], env: any[]): any {
         switch (expr[0]) {
             case "str.length" : return this.strLength(expr, env);
             case "str.has"    : return this.strHas(expr, env);

@@ -3,11 +3,12 @@
 class Interpreter {
     private readonly libs: ILib[];
     private isDebug: boolean;
+
     public print: Function;
 
     constructor() {
-        this.print = console.log;
         this.isDebug = false;
+        this.print   = console.log;
 
         this.libs = [];
         this.libs.push(new CoreLib(this));
@@ -19,13 +20,13 @@ class Interpreter {
     }
 
     public evalCodeTree(codeTree: any[], options: Options): any {
-        this.print   = options.print;
         this.isDebug = options.isDebug;
+        this.print   = options.print;
 
         return this.evalExprLst(codeTree, []);
     }
 
-    public evalExprLst(exprLst: any[], env: any): any[] {
+    public evalExprLst(exprLst: any[], env: any[]): any {
         let res: any;
         for (const expr of exprLst) {
             res = this.evalExpr(expr, env);
@@ -33,22 +34,22 @@ class Interpreter {
         return res;
     }
 
-    public mapExprLst(exprLst: any[], env: any): any[] {
-        return exprLst.map((expr: any) => this.evalExpr(expr, env), exprLst);
+    public mapExprLst(exprLst: any[], env: any[]): any[] {
+        const res: any[] = [];
+        for (const expr of exprLst) {
+            res.push(this.evalExpr(expr, env));
+        }
+        return res;
     }
 
     private lookup(symbol: string, env: any[]): any {
         for (const cell of env) {
-            if (this.isDebug) console.log("lookup symbol:", JSON.stringify(symbol), "cell:", JSON.stringify(cell));
-
             if (symbol === cell[0]) {
-                const val = cell[1];
-                if (this.isDebug) console.log("lookup found :", JSON.stringify(symbol), "value:", JSON.stringify(val));
-                return val;
+                return cell[1];
             }
         }
 
-        throw Error(`lookup unbound symbol: ${JSON.stringify(symbol)}`);
+        throw Error(`Unbound symbol: ${symbol}`);
     }
 
     public evalExpr(expr: any, env: any[]): any {
@@ -59,7 +60,6 @@ class Interpreter {
         if (expr === "true")  return true;
         if (expr === "false") return false;
 
-        // Primitives
         if (typeof expr === "number") return expr;
         if (typeof expr === "string") return this.lookup(expr, env);
 
@@ -77,35 +77,26 @@ class Interpreter {
             case "for"      : return this.evalFor(expr, env);
         }
 
-        const res = this.resolveThroughLib(expr, env);
-        if (res !== "##not-resolved##") return res;
+        const res: [boolean, any] = this.resolveThroughLib(expr, env);
+        if (res[0]) return res[1];
 
-        if (Array.isArray(expr)){
-            const proc = this.evalExpr(expr[0], env);
-            const args = (expr.length > 1) ? this.mapExprLst(expr.slice(1), env) : [];
-
-            return this.applyProcedure(proc, args, env);
-        } else {
-            throw Error(`evalExpr - not proc reached the end: ${expr}`);
-        }
+        return this.applyProcedure(expr, env);
     }
 
-    private applyProcedure(proc: any, procArgs: any[], env: any[]): any {
+    private applyProcedure(expr: any[], env: any[]): any {
+        const closure = this.evalExpr(expr[0], env);
+        const args    = (expr.length > 1) ? this.mapExprLst(expr.slice(1), env) : [];
+
         if (this.isDebug) {
-            console.log("applProc proc:", JSON.stringify(proc));
-            console.log("applProc args:", JSON.stringify(procArgs));
+            console.log("applProc proc:", JSON.stringify(closure));
+            console.log("applProc args:", JSON.stringify(args));
         }
 
-        if (Array.isArray(proc) && proc[0] === "closure") {
-            // [closure, [par1, par2, ...], expr, env]
+        // [closure, [par1, par2, ...], expr, env]
+        const closureBody: any  = closure[2].length === 1 ? closure[2][0] : closure[2];
+        const closureEnv: any[] = this.assocList(closure[1], args).concat(env).concat(closure[3]);
 
-            const closureEnv = this.assocList(proc[1], procArgs).concat(env).concat(proc[3]);
-            const closureBody = proc[2];
-
-            return this.evalExpr(closureBody, closureEnv);
-        }
-
-        return proc;
+        return this.evalExpr(closureBody, closureEnv);
     }
 
     private assocList(lst1: any[], lst2: any[]): any[] {
@@ -124,28 +115,23 @@ class Interpreter {
     // [let, symbol, expr]
     // [let, symbol, [lambda, [par1, par2, ...], expr]]
     private evalLet(expr: any, env: any[]): any {
-        const symbol: string = expr[1];
-        const body  : any    = expr[2];
-        const value : any    = (Array.isArray(body) && body[0] === "lambda")
+        const body  : any = expr[2];
+        const value : any = (Array.isArray(body) && body[0] === "lambda")
                                         ? this.evalLambda(["lambda", body[1], body[2]], env)
                                         : this.evalExpr(body, env);
 
-        env.unshift([symbol, value]);
+        env.unshift([expr[1], value]);
 
         return value;
     }
 
-    // [function, symbol, expr]
     // [function, symbol, [par1, par2, ...], expr]
     // [function, symbol, [par1, par2, ...], expr1, expr2, ...]
     private evalFunction(expr: any[], env: any[]): any {
-        const length: number = expr.length;
-        const symbol: string = expr[1];
-        const params: any[]  = length > 3 ? expr[2] : [];
-        const body  : any    = length > 4 ? ["begin", ... expr.slice(3)] :  expr[length - 1];
-        const value : any    = this.evalLambda(["lambda", params, body], env);
+        const body  : any = expr.length === 4 ? expr[3] : ["begin", ... expr.slice(3)];
+        const value : any = this.evalLambda(["lambda", expr[2], body], env);
 
-        env.unshift([symbol, value]);
+        env.unshift([expr[1], value]);
 
         return value;
     }
@@ -201,11 +187,11 @@ class Interpreter {
         return lastRes;
     }
 
-    private resolveThroughLib(expr: any[], env: any[]): any {
+    private resolveThroughLib(expr: any[], env: any[]): [boolean, any] {
         for (const lib of this.libs) {
-            const res = lib.eval(expr, env);
-            if (res !== "##not-resolved##") return res;
+            const res = lib.libEvalExpr(expr, env);
+            if (res !== "##not-resolved##") return [true, res];
         }
-        return "##not-resolved##";
+        return [false, null];
     }
 }

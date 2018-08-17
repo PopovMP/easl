@@ -7,7 +7,7 @@ class CoreLib implements ILib {
         this.inter = interpreter;
     }
 
-    public eval(expr: any[], env: any[]): any {
+    public libEvalExpr(expr: any[], env: any[]): any {
         switch (expr[0]) {
             case "+"   : return this.inter.evalExpr(expr[1], env) + this.inter.evalExpr(expr[2], env);
             case "-"   : return this.inter.evalExpr(expr[1], env) - this.inter.evalExpr(expr[2], env);

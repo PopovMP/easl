@@ -1,5 +1,5 @@
 "use strict";
 
 interface ILib {
-    eval(expr: any[], env: any[]): any;
+    libEvalExpr(expr: any[], env: any[]): any;
 }

@@ -8,8 +8,8 @@ const easl = new Easl();
 describe('Eval lambda', function () {
 
     describe('lambda', function () {
-        it('((lambda () 5)) → 5', function () {
-            assert.strictEqual(easl.evaluate("((lambda () 5))"), 5);
+        it('((lambda () (5))) → 5', function () {
+            assert.strictEqual(easl.evaluate("((lambda () (5)))"), 5);
         });
         it('((lambda () (+ 2 3))) → 5', function () {
             assert.strictEqual(easl.evaluate("((lambda () (+ 2 3)))"), 5);
