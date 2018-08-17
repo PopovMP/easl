@@ -82,13 +82,14 @@ class Interpreter {
                 return cell[1];
             }
         }
-        throw Error(`Unbound identifier: ${symbol}`);
+
+        return null;
     }
 
     private throwOnExistingDef(symbol: string, env: any[]): void {
         for (const cell of env) {
             if (symbol === cell[0]) {
-                throw Error(`Identifier already defined: ${symbol}`);
+                // ToDo Fix: throw Error(`Identifier already defined: ${symbol}`);
             }
         }
     }
