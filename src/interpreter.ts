@@ -58,6 +58,7 @@ class Interpreter {
             case "string"   : return expr[1];
 
             case "let"      : return this.evalLet(expr, env);
+            case "set!"     : return this.evalSet(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
             case "function" : return this.evalFunction(expr, env);
 
@@ -90,6 +91,16 @@ class Interpreter {
         }
     }
 
+    private setInEnv(symbol: string, value: any, env: any[]): void {
+        for (const cell of env) {
+            if (symbol === cell[0]) {
+                cell[1] = value;
+                return;
+            }
+        }
+        throw Error(`Unbound identifier: ${symbol}`);
+    }
+
     private applyProcedure(expr: any[], env: any[]): any {
         const closure = this.evalExpr(expr[0], env);
         const args    = (expr.length > 1) ? this.mapExprLst(expr.slice(1), env) : [];
@@ -119,19 +130,32 @@ class Interpreter {
         return ["closure", expr[1], expr[2], env.slice()];
     }
 
-    // [let, symbol, expr]
-    // [let, symbol, [lambda, [par1, par2, ...], expr]]
     private evalLet(expr: any, env: any[]): any {
         const symbol = expr[1];
         this.throwOnExistingDef(symbol, env);
-
-        const body  : any = expr[2];
-        const value : any = (Array.isArray(body) && body[0] === "lambda")
-                                        ? this.evalLambda(["lambda", body[1], body[2]], env)
-                                        : this.evalExpr(body, env);
+        const value: any = this.evalLetValue(expr, env);
 
         env.unshift([symbol, value]);
 
+        return value;
+    }
+
+    private evalSet(expr: any, env: any[]): any {
+        const symbol = expr[1];
+        const value: any = this.evalLetValue(expr, env);
+
+        this.setInEnv(symbol, value, env);
+
+        return value;
+    }
+
+    // [let, symbol, expr]
+    // [let, symbol, [lambda, [par1, par2, ...], expr]]
+    private evalLetValue(expr: any, env: any[]): any {
+        const letExpr: any = expr[2];
+        const value  : any = (Array.isArray(letExpr) && letExpr[0] === "lambda")
+                                ? this.evalLambda(["lambda", letExpr[1], letExpr[2]], env)
+                                : this.evalExpr(letExpr, env);
         return value;
     }
 
@@ -141,8 +165,8 @@ class Interpreter {
         const symbol = expr[1];
         this.throwOnExistingDef(symbol, env);
 
-        const body  : any = expr.length === 4 ? expr[3] : ["begin", ... expr.slice(3)];
-        const value : any = this.evalLambda(["lambda", expr[2], body], env);
+        const body : any = expr.length === 4 ? expr[3] : ["begin", ... expr.slice(3)];
+        const value: any = this.evalLambda(["lambda", expr[2], body], env);
 
         env.unshift([expr[1], value]);
 

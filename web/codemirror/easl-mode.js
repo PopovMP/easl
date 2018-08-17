@@ -19,7 +19,7 @@
         const atoms = makeKeywords("true false null");
 
         const keywords = makeKeywords(
-            "list string let lambda function if cond else begin for case break continue");
+            "list string let set! lambda function if cond else begin for case break continue");
 
         const builtins = makeKeywords(
             // Core lib
