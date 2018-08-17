@@ -67,6 +67,7 @@ class Interpreter {
             case "case"     : return this.evalCase(expr, env);
             case "begin"    : return this.evalExprLst(expr.slice(1), env);
             case "for"      : return this.evalFor(expr, env);
+            case "while"    : return this.evalWhile(expr, env);
         }
 
         const res: [boolean, any] = this.resolveThroughLib(expr, env);
@@ -241,10 +242,23 @@ class Interpreter {
         };
 
         let lastRes: any;
+
         for (; this.evalExpr(expr[2].slice(), getNewEnv(env, counterPair));
                counterPair[1] = this.evalExpr(expr[3].slice(), getNewEnv(env, counterPair))) {
             lastRes = this.evalExprLst(expr.slice(4), getNewEnv(env, counterPair));
         }
+
+        return lastRes;
+    }
+
+    // {while, condition, expr1, expr2, ...}
+    private evalWhile(expr: any, env: any[]): any {
+        let lastRes: any = null;
+
+        while (this.evalExpr(expr[1],env)) {
+            lastRes = this.evalExprLst(expr.slice(2), env);
+        }
+
         return lastRes;
     }
 

@@ -21,6 +21,23 @@ const examplesList = [
 `
     },
     {
+        name: "Print numbers from 1 to 10",
+        code:
+            `;; Print numbers from 1 to 10
+
+{let n 1 }                         ; initialize a counter
+
+(print (+ "Start from " n))
+
+{while (<= n 10)                   ; evaluate the condition
+                                   ; repeat the loop until the condition is true
+    (print  (+ "It is number " n)) ; the 'while' loop body
+    {set! n (+ n 1)} }             ; increase the counter and return back
+
+(print (+ "The loop is not executed for: " n))
+`
+    },
+    {
         name: "Random numbers in a list",
         code:
             `;; Random numbers in a list
@@ -51,6 +68,8 @@ const examplesList = [
 (print (+ n type))
 `
     },
+
+
     {
         name: "Swap list elements non destructive",
         code:
