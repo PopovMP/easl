@@ -13,6 +13,7 @@ class CoreLib implements ILib {
             case "-"   : return this.inter.evalExpr(expr[1], env) - this.inter.evalExpr(expr[2], env);
             case "*"   : return this.inter.evalExpr(expr[1], env) * this.inter.evalExpr(expr[2], env);
             case "/"   : return this.inter.evalExpr(expr[1], env) / this.inter.evalExpr(expr[2], env);
+            case "%"   : return this.inter.evalExpr(expr[1], env) % this.inter.evalExpr(expr[2], env);
 
             case "="   : return this.inter.evalExpr(expr[1], env) === this.inter.evalExpr(expr[2], env);
             case ">"   : return this.inter.evalExpr(expr[1], env) >   this.inter.evalExpr(expr[2], env);
