@@ -25,8 +25,8 @@ Execute code:
     const Easl = require("../bin/easl.js").Easl;
     const easl = new Easl();
       
-    const code = '  {define lst [1 2 3 4]}
-                    (list.length lst)        `;
+    const code = '  {let lst [1 2 3 4]}
+                    (list.length lst)    `;
                     
     const res = eas.evaluate(code);
     
@@ -39,8 +39,8 @@ Execute code:
     <script>
         const easl = new Easl();
 
-        const code = '  {define lst [1 2 3 4]}
-                        (list.length lst)        `;
+        const code = '  {let lst [1 2 3 4]}
+                        (list.length lst)   `;
                         
         const res = eas.evaluate(code);
         console.log(res);

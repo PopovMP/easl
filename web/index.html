@@ -69,8 +69,8 @@ npm run test
 <pre><code>const Easl = require("../bin/easl.js").Easl;
 const easl = new Easl();
 
-const code = '  {define lst [1 2 3 4]}
-                (list.length lst)        `;
+const code = '  {let lst [1 2 3 4]}
+                (list.length lst)    `;
 
 const res = eas.evaluate(code);
 
@@ -83,8 +83,8 @@ console.log(res);
 &lt;script&gt;
     const easl = new Easl();
 
-    const code = '  {define lst [1 2 3 4]}
-                    (list.length lst)        `;
+    const code = '  {let lst [1 2 3 4]}
+                    (list.length lst)    `;
 
     const res = eas.evaluate(code);
     console.log(res);
@@ -121,7 +121,7 @@ console.log(res);
 <h3 id="valuetypes">Value types</h3>
 
 <pre><code>boolean  - true, false
-number   - 0, 42, 3.14
+number   - 0, 42, 3.14, 1-000-000
 string   - "Hello World!"
 null     - the "null" keyword
 function - a function
