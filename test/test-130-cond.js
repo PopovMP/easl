@@ -5,7 +5,6 @@ const Easl = require("../bin/easl.js").Easl;
 
 const easl = new Easl();
 
-
 describe('cond', function () {
     it('One clause with number', function () {
         assert.strictEqual(easl.evaluate(`  {cond
@@ -14,6 +13,10 @@ describe('cond', function () {
     it('One clause with expression', function () {
         assert.strictEqual(easl.evaluate(`  {cond
                                                 (true (+ 2 3))}    `), 5);
+    });
+    it('Not a case', function () {
+        assert.strictEqual(easl.evaluate(`  {cond
+                                                (false 3)}         `), null);
     });
     it('Two clauses: false, true', function () {
         assert.strictEqual(easl.evaluate(`  {cond

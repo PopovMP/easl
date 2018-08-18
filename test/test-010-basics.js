@@ -184,7 +184,12 @@ describe('Eval basics', function () {
         it('subtract: (- (+ 3 2) 1) → 4', function () {
             assert.strictEqual(easl.evaluate("(- (+ 3 2) 1)"), 4);
         });
-
+        it('modulo: (% 13 2) → 1', function () {
+            assert.strictEqual(easl.evaluate("(% 13 2)"), 1);
+        });
+        it('modulo: (% 14 2) → 0', function () {
+            assert.strictEqual(easl.evaluate("(% 14 2)"), 0);
+        });
     });
 
     describe('Build list with cons', function () {

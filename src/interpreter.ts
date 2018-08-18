@@ -47,13 +47,22 @@ class Interpreter {
         if (this.isDebug) console.log("evalExpr expr:", JSON.stringify(expr), "env:", JSON.stringify(env));
 
         // Constants
-        if (expr === "null")  return null;
-        if (expr === "true")  return true;
-        if (expr === "false") return false;
+        switch (expr) {
+            case "null"     : return null;
+            case "true"     : return true;
+            case "false"    : return false;
+            case "break"    : return "break";
+            case "continue" : return "continue";
+        }
 
-        if (typeof expr === "number") return expr;
-        if (typeof expr === "string") return this.lookup(expr, env);
+        // Types
+        switch (typeof expr) {
+            case "number"   : return expr;
+            case "string"   : return this.lookup(expr, env);
+            case "boolean"  : return expr;
+        }
 
+        // Special forms
         switch (expr[0]) {
             case "list"     : return this.mapExprLst(expr.slice(1), env);
             case "string"   : return expr[1];
@@ -72,8 +81,8 @@ class Interpreter {
             case "do"       : return this.evalDo(expr, env);
         }
 
-        const res: [boolean, any] = this.resolveThroughLib(expr, env);
-        if (res[0]) return res[1];
+        const res: {resolved: boolean, val: any} = this.resolveThroughLib(expr, env);
+        if (res.resolved) return res.val;
 
         return this.applyProcedure(expr, env);
     }
@@ -180,10 +189,11 @@ class Interpreter {
 
     // [if, test-expr, then-expr, else-expr]
     private evalIf(expr: any[], env: any[]): any {
-        const value = this.isTruthy(this.evalExpr(expr[1], env))
-                            ? this.evalExpr(expr[2], env)
-                            : this.evalExpr(expr[3], env);
-        return value;
+        return this.isTruthy(this.evalExpr(expr[1], env))
+                           ? this.evalExpr(expr[2], env)
+                           : expr.length === 4
+                               ? this.evalExpr(expr[3], env)
+                               : null;
     }
 
     private isTruthy(expr: any): boolean {
@@ -195,23 +205,22 @@ class Interpreter {
         return !expr;
     }
 
-    // {cond [test-expr then-body ...] ... [else then-body ...]}
+    // {cond (test-expr then-body ...)
+    //       ...
+    //       (else then-body ...) }
     private evalCond(expr: any, env: any[]): any {
-        return this.evalCondLoop(expr.slice(1), env);
-    }
+        const clauses =  expr.slice(1);
 
-    private evalCondLoop(condClauses: any, env: any): any {
-        const clause = condClauses[0];
-
-        if (clause[0] === "else"){
-            return this.evalExprLst(clause.slice(1), env);
+        for (const clause of clauses) {
+            if (clause[0] === "else") {
+                return this.evalExprLst(clause.slice(1), env);
+            }
+            if (this.evalExpr(clause[0], env)) {
+                return this.evalExprLst(clause.slice(1), env);
+            }
         }
 
-        if (this.evalExpr(clause[0], env)) {
-            return this.evalExprLst(clause.slice(1), env);
-        }
-
-        return this.evalCondLoop(condClauses.slice(1), env);
+        return null;
     }
 
     // {case expr
@@ -220,45 +229,46 @@ class Interpreter {
     //       (else          expr) }
     private evalCase(expr: any, env: any[]): any {
         const val: any = this.evalExpr(expr[1], env);
-        return this.evalCaseLoop(val, expr.slice(2), env);
-    }
+        const clauses =  expr.slice(2);
 
-    private evalCaseLoop(val: any, condClauses: any[], env: any): any {
-        const clause = condClauses[0];
-
-        if (clause[0] === "else"){
-            return this.evalExprLst(clause.slice(1), env);
+        for (const clause of clauses) {
+            if (clause[0] === "else") {
+                return this.evalExprLst(clause.slice(1), env);
+            }
+            if (clause[0].indexOf(val) > -1) {
+                return this.evalExprLst(clause.slice(1), env);
+            }
         }
 
-        if (clause[0].indexOf(val) > -1) {
-            return this.evalExprLst(clause.slice(1), env);
-        }
-
-        return this.evalCaseLoop(val, condClauses.slice(1), env);
+        return null;
     }
 
     // {for (i 0) (< i 10) (+ i 1) exp1 exp2 ...}
     private evalFor(expr: any[], env: any[]): void {
-        const condBody: any = expr[2];
-        const incBody: any  = expr[3];
-        const forBody: any  = expr.slice(4);
-        const envFor: any[] = env.slice();
+        const condBody: any  = expr[2];
+        const incBody: any   = expr[3];
+        const loopBody: any  = expr.slice(4);
+        const loopEnv: any[] = env.slice();
 
         const cntId: string = expr[1][0];
-        const cntPair: [string, number] = [cntId, this.evalExpr(expr[1][1], envFor)];
-        envFor.unshift(cntPair);
+        const cntPair: [string, number] = [cntId, this.evalExpr(expr[1][1], loopEnv)];
+        loopEnv.unshift(cntPair);
 
         const setEnv = () => {
-            for (const cell of envFor) {
+            for (const cell of loopEnv) {
                 if (cell[0] === cntId) {
                     cell[1] = cntPair[1];
                     break;
-                }}
+                }
+            }
         };
 
-        for (; this.evalExpr(condBody, envFor);
-               cntPair[1] = this.evalExpr(incBody, envFor)) {
-            this.evalExprLst(forBody, envFor);
+        for (; this.evalExpr(condBody, loopEnv); cntPair[1] = this.evalExpr(incBody, loopEnv)) {
+            for (const bodyExpr of loopBody) {
+                const res = this.evalExpr(bodyExpr, loopEnv);
+                if (res === "continue") break;
+                if (res === "break")    return;
+            }
             setEnv();
         }
     }
@@ -269,7 +279,11 @@ class Interpreter {
         const loopBody: any = expr.slice(2);
 
         while (this.evalExpr(condBody, env)) {
-            this.evalExprLst(loopBody, env);
+            for (const bodyExpr of loopBody) {
+                const res = this.evalExpr(bodyExpr, env);
+                if (res === "continue") break;
+                if (res === "break")    return;
+            }
         }
     }
 
@@ -279,15 +293,19 @@ class Interpreter {
         const loopBody: any = expr.slice(1, expr.length - 1);
 
         do  {
-            this.evalExprLst(loopBody, env);
+            for (const bodyExpr of loopBody) {
+                const res = this.evalExpr(bodyExpr, env);
+                if (res === "continue") break;
+                if (res === "break")    return;
+            }
         } while (this.evalExpr(condBody, env));
     }
 
-    private resolveThroughLib(expr: any[], env: any[]): [boolean, any] {
+    private resolveThroughLib(expr: any[], env: any[]): {resolved: boolean, val: any} {
         for (const lib of this.libs) {
             const res = lib.libEvalExpr(expr, env);
-            if (res !== "##not-resolved##") return [true, res];
+            if (res !== "##not-resolved##") return {resolved: true, val: res};
         }
-        return [false, null];
+        return {resolved: false, val: null};
     }
 }

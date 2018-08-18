@@ -15,6 +15,10 @@ describe('case', function () {
         assert.strictEqual(easl.evaluate(`  {case (+ 1 2)
                                                 ([1 2 3] "ok") }     `), "ok");
     });
+    it('Not in options', function () {
+        assert.strictEqual(easl.evaluate(`  {case 3
+                                                ([2] "ok") }         `), null);
+    });
     it('Two clauses', function () {
         assert.strictEqual(easl.evaluate(` 
 {let n 2}
