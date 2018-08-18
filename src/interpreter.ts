@@ -9,20 +9,13 @@ class Interpreter {
     constructor() {
         this.isDebug = false;
         this.print   = console.log;
-
-        this.libs = [];
-        this.libs.push(new CoreLib(this));
-        this.libs.push(new SchemeLib(this));
-        this.libs.push(new ListLib(this));
-        this.libs.push(new StringLib(this));
-        this.libs.push(new MathLib(this));
-        this.libs.push(new NumberLib(this));
-        this.libs.push(new DateLib(this));
+        this.libs    = [];
     }
 
     public evalCodeTree(codeTree: any[], options: Options): any {
         this.isDebug = options.isDebug;
         this.print   = options.print;
+        this.libs.push( ... LibManager.getBuiltinLibs(options.libs, this));
 
         return this.evalExprLst(codeTree, []);
     }
