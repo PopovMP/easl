@@ -77,7 +77,7 @@ class Interpreter {
         const res: {resolved: boolean, val: any} = this.resolveThroughLib(expr, env);
         if (res.resolved) return res.val;
 
-        return this.applyProcedure(expr, env);
+        return this.callFunction(expr, env);
     }
 
     private lookup(symbol: string, env: any[]): any {
@@ -87,7 +87,7 @@ class Interpreter {
             }
         }
 
-        return null;
+        throw Error(`Unbound identifier: ${symbol}`);
     }
 
     private throwOnExistingDef(symbol: string, env: any[]): void {
@@ -105,12 +105,19 @@ class Interpreter {
                 return;
             }
         }
+
         throw Error(`Unbound identifier: ${symbol}`);
     }
 
-    private applyProcedure(expr: any[], env: any[]): any {
-        const closure = this.evalExpr(expr[0], env);
-        const args    = (expr.length > 1) ? this.mapExprLst(expr.slice(1), env) : [];
+    // [func-id, arg1, arg2, ...]
+    private callFunction(expr: any[], env: any[]): any {
+        const funcId : string = expr[0];
+        const closure: any[] = this.evalExpr(funcId, env);
+        const args   : any[] = expr.length === 1
+                                   ? []
+                                   : expr.length === 2
+                                       ? [this.evalExpr(expr[1], env)]
+                                       : this.mapExprLst(expr.slice(1), env);
 
         if (this.isDebug) {
             console.log("applProc proc:", JSON.stringify(closure));
@@ -118,17 +125,22 @@ class Interpreter {
         }
 
         // [closure, [par1, par2, ...], expr, env]
-        const closureBody: any  = closure[2].length === 1 ? closure[2][0] : closure[2];
-        const closureEnv: any[] = this.assocList(closure[1], args).concat(env).concat(closure[3]);
+        const params     : string[] = closure[1];
+        const closureBody: any      = closure[2].length === 1 ? closure[2][0] : closure[2];
+        const closureEnv : any[]    = this.assocArgsToParams(params, args).concat(env).concat(closure[3])
+            .concat([["func-name", funcId], ["func-params", params], ["func-args", args]]);
 
         return this.evalExpr(closureBody, closureEnv);
     }
 
-    private assocList(lst1: any[], lst2: any[]): any[] {
-        const aList: any[] = [];
-        for (let i = 0; i < lst1.length; i++) {
-            aList.push([lst1[i], lst2[i]]);
+    private assocArgsToParams(params: string[], args: any[]): [string, any][] {
+        const aList: [string, any][] = [];
+
+        for (let i = 0; i < params.length; i++) {
+            const arg: any = i < args.length ? args[i] : null;
+            aList.push([params[i], arg]);
         }
+
         return aList;
     }
 
