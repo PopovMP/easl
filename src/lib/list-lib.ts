@@ -9,27 +9,28 @@ class ListLib implements ILib {
 
     public libEvalExpr(expr: any[], env: any[]): any {
         switch (expr[0]) {
-            case "list.add"      : return this.listAdd(expr, env);
-            case "list.add!"     : return this.listAdd(expr, env, false);
-            case "list.append"   : return this.listAppend(expr, env);
-            case "list.empty"    : return [];
-            case "list.empty?"   : return this.listEmpty(expr, env);
-            case "list.first"    : return this.listFirst(expr, env);
-            case "list.flatten"  : return this.listFlatten(expr, env);
-            case "list.get"      : return this.listGet(expr, env);
-            case "list.has?"     : return this.listHas(expr, env);
-            case "list.index"    : return this.listIndex(expr, env);
-            case "list.is-list?" : return this.listIsList(expr, env);
-            case "list.join"     : return this.listJoin(expr, env);
-            case "list.last"     : return this.listLast(expr, env);
-            case "list.least"    : return this.listLeast(expr, env);
-            case "list.length"   : return this.listLength(expr, env);
-            case "list.push"     : return this.listPush(expr, env);
-            case "list.push!"    : return this.listPush(expr, env, false);
-            case "list.rest"     : return this.listRest(expr, env);
-            case "list.set"      : return this.listSet(expr, env);
-            case "list.set!"     : return this.listSet(expr, env, false);
-            case "list.slice"    : return this.listSlice(expr, env);
+            case "list.add"     : return this.listAdd(expr, env);
+            case "list.add!"    : return this.listAdd(expr, env, false);
+            case "list.append"  : return this.listAppend(expr, env);
+            case "list.empty"   : return [];
+            case "list.empty?"  : return this.listEmpty(expr, env);
+            case "list.first"   : return this.listFirst(expr, env);
+            case "list.flatten" : return this.listFlatten(expr, env);
+            case "list.get"     : return this.listGet(expr, env);
+            case "list.has?"    : return this.listHas(expr, env);
+            case "list.index"   : return this.listIndex(expr, env);
+            case "list.join"    : return this.listJoin(expr, env);
+            case "list.last"    : return this.listLast(expr, env);
+            case "list.least"   : return this.listLeast(expr, env);
+            case "list.length"  : return this.listLength(expr, env);
+            case "list.list?"   : return this.listIsList(expr, env);
+            case "list.push"    : return this.listPush(expr, env);
+            case "list.push!"   : return this.listPush(expr, env, false);
+            case "list.range"   : return this.listRange(expr, env);
+            case "list.rest"    : return this.listRest(expr, env);
+            case "list.set"     : return this.listSet(expr, env);
+            case "list.set!"    : return this.listSet(expr, env, false);
+            case "list.slice"   : return this.listSlice(expr, env);
         }
 
         return "##not-resolved##";
@@ -156,6 +157,21 @@ class ListLib implements ILib {
         }
 
         return [elm, lst];
+    }
+
+    private listRange(expr: any[], env: any[]): any[] {
+        const start: number = this.inter.evalExpr(expr[1], env);
+        const end  : number = this.inter.evalExpr(expr[2], env);
+
+        if (start >= end) return [];
+
+        const res: number[] = [];
+
+        for (let i: number = start; i <= end; i++) {
+            res.push(i);
+        }
+
+        return res;
     }
 
     private listRest(expr: any[], env: any[]): any[] {
