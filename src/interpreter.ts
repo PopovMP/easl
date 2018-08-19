@@ -37,7 +37,6 @@ class Interpreter {
     }
 
     public evalExpr(expr: any, env: any[]): any {
-        if (this.isDebug) console.log("evalExpr expr:", JSON.stringify(expr), "env:", JSON.stringify(env));
 
         // Constants
         switch (expr) {
@@ -54,6 +53,8 @@ class Interpreter {
             case "string"   : return this.lookup(expr, env);
             case "boolean"  : return expr;
         }
+
+        if (this.isDebug) console.log("evalExpr expr:", JSON.stringify(expr), "env:", JSON.stringify(env));
 
         // Special forms
         switch (expr[0]) {
@@ -77,7 +78,7 @@ class Interpreter {
         const res: {resolved: boolean, val: any} = this.resolveThroughLib(expr, env);
         if (res.resolved) return res.val;
 
-        return this.callFunction(expr, env);
+        return this.callProc(expr, env);
     }
 
     private lookup(symbol: string, env: any[]): any {
@@ -110,25 +111,22 @@ class Interpreter {
     }
 
     // [func-id, arg1, arg2, ...]
-    private callFunction(expr: any[], env: any[]): any {
-        const funcId : string = expr[0];
-        const closure: any[] = this.evalExpr(funcId, env);
-        const args   : any[] = expr.length === 1
-                                   ? []
-                                   : expr.length === 2
-                                       ? [this.evalExpr(expr[1], env)]
-                                       : this.mapExprLst(expr.slice(1), env);
+    // [[lambda, [par1, par2, ...], expr], arg1, arg2, ...]
+    private callProc(expr: any[], env: any[]): any {
+        const proc    : string | any[] = expr[0];
+        const isNamed : boolean = typeof proc === "string";
+        const closure : any[]   = isNamed ? this.lookup(<string>proc, env) : this.evalExpr(proc, env);
+        const args    : any[]   = expr.length === 1
+                                      ? []
+                                      : expr.length === 2
+                                          ? [this.evalExpr(expr[1], env)]
+                                          : this.mapExprLst(expr.slice(1), env);
 
-        if (this.isDebug) {
-            console.log("applProc proc:", JSON.stringify(closure));
-            console.log("applProc args:", JSON.stringify(args));
-        }
-
-        // [closure, [par1, par2, ...], expr, env]
+        const funcName   : string   = isNamed ? <string>proc : "lambda";
         const params     : string[] = closure[1];
         const closureBody: any      = closure[2].length === 1 ? closure[2][0] : closure[2];
         const closureEnv : any[]    = this.assocArgsToParams(params, args).concat(env).concat(closure[3])
-            .concat([["func-name", funcId], ["func-params", params], ["func-args", args]]);
+                         .concat([["func-name", funcName], ["func-params", params], ["func-args", args]]);
 
         return this.evalExpr(closureBody, closureEnv);
     }
@@ -250,12 +248,12 @@ class Interpreter {
 
     // {for (i 0) (< i 10) (+ i 1) exp1 exp2 ...}
     private evalFor(expr: any[], env: any[]): void {
-        const condBody: any  = expr[2];
-        const incBody: any   = expr[3];
-        const loopBody: any  = expr.slice(4);
-        const loopEnv: any[] = env.slice();
+        const condBody: any[] = expr[2];
+        const incBody : any[] = expr[3];
+        const loopBody: any[] = expr.slice(4);
+        const loopEnv : any[] = env;
 
-        const cntId: string = expr[1][0];
+        const cntId  : string = expr[1][0];
         const cntPair: [string, number] = [cntId, this.evalExpr(expr[1][1], loopEnv)];
         loopEnv.unshift(cntPair);
 
@@ -311,6 +309,7 @@ class Interpreter {
             const res = lib.libEvalExpr(expr, env);
             if (res !== "##not-resolved##") return {resolved: true, val: res};
         }
+
         return {resolved: false, val: null};
     }
 }
