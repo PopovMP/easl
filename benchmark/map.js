@@ -15,7 +15,6 @@ const result = easl.evaluate(`
          (list.add! (func (list.get i lst)) res)
          (set! i (+ i 1))}
     res}
-         
 
 {let range (list.range 0 1-000-000)}
 {let lst (map {lambda (e) (* e 2)} range)}

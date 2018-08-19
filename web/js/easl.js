@@ -20,241 +20,6 @@ class Easl {
 if (typeof module === "object") {
     module.exports.Easl = Easl;
 }
-class Interpreter {
-    constructor() {
-        this.isDebug = false;
-        this.print = console.log;
-        this.libs = [];
-    }
-    evalCodeTree(codeTree, options) {
-        this.isDebug = options.isDebug;
-        this.print = options.print;
-        this.libs.push(...LibManager.getBuiltinLibs(options.libs, this));
-        return this.evalExprLst(codeTree, []);
-    }
-    evalExprLst(exprLst, env) {
-        let res;
-        for (const expr of exprLst) {
-            res = this.evalExpr(expr, env);
-        }
-        return res;
-    }
-    mapExprLst(exprLst, env) {
-        const res = [];
-        for (const expr of exprLst) {
-            res.push(this.evalExpr(expr, env));
-        }
-        return res;
-    }
-    evalExpr(expr, env) {
-        if (this.isDebug)
-            console.log("evalExpr expr:", JSON.stringify(expr), "env:", JSON.stringify(env));
-        switch (expr) {
-            case "null": return null;
-            case "true": return true;
-            case "false": return false;
-            case "break": return "break";
-            case "continue": return "continue";
-        }
-        switch (typeof expr) {
-            case "number": return expr;
-            case "string": return this.lookup(expr, env);
-            case "boolean": return expr;
-        }
-        switch (expr[0]) {
-            case "list": return this.mapExprLst(expr.slice(1), env);
-            case "string": return expr[1];
-            case "let": return this.evalLet(expr, env);
-            case "set!": return this.evalSet(expr, env);
-            case "lambda": return this.evalLambda(expr, env);
-            case "function": return this.evalFunction(expr, env);
-            case "if": return this.evalIf(expr, env);
-            case "cond": return this.evalCond(expr, env);
-            case "case": return this.evalCase(expr, env);
-            case "begin": return this.evalExprLst(expr.slice(1), env);
-            case "for": return this.evalFor(expr, env);
-            case "while": return this.evalWhile(expr, env);
-            case "do": return this.evalDo(expr, env);
-        }
-        const res = this.resolveThroughLib(expr, env);
-        if (res.resolved)
-            return res.val;
-        return this.applyProcedure(expr, env);
-    }
-    lookup(symbol, env) {
-        for (const cell of env) {
-            if (symbol === cell[0]) {
-                return cell[1];
-            }
-        }
-        return null;
-    }
-    throwOnExistingDef(symbol, env) {
-        for (const cell of env) {
-            if (symbol === cell[0]) {
-            }
-        }
-    }
-    setInEnv(symbol, value, env) {
-        for (const cell of env) {
-            if (symbol === cell[0]) {
-                cell[1] = value;
-                return;
-            }
-        }
-        throw Error(`Unbound identifier: ${symbol}`);
-    }
-    applyProcedure(expr, env) {
-        const closure = this.evalExpr(expr[0], env);
-        const args = (expr.length > 1) ? this.mapExprLst(expr.slice(1), env) : [];
-        if (this.isDebug) {
-            console.log("applProc proc:", JSON.stringify(closure));
-            console.log("applProc args:", JSON.stringify(args));
-        }
-        const closureBody = closure[2].length === 1 ? closure[2][0] : closure[2];
-        const closureEnv = this.assocList(closure[1], args).concat(env).concat(closure[3]);
-        return this.evalExpr(closureBody, closureEnv);
-    }
-    assocList(lst1, lst2) {
-        const aList = [];
-        for (let i = 0; i < lst1.length; i++) {
-            aList.push([lst1[i], lst2[i]]);
-        }
-        return aList;
-    }
-    evalLambda(expr, env) {
-        return ["closure", expr[1], expr[2], env.slice()];
-    }
-    evalLet(expr, env) {
-        const symbol = expr[1];
-        this.throwOnExistingDef(symbol, env);
-        const value = this.evalLetValue(expr, env);
-        env.unshift([symbol, value]);
-        return value;
-    }
-    evalSet(expr, env) {
-        const symbol = expr[1];
-        const value = this.evalLetValue(expr, env);
-        this.setInEnv(symbol, value, env);
-        return value;
-    }
-    evalLetValue(expr, env) {
-        const letExpr = expr[2];
-        const value = (Array.isArray(letExpr) && letExpr[0] === "lambda")
-            ? this.evalLambda(["lambda", letExpr[1], letExpr[2]], env)
-            : this.evalExpr(letExpr, env);
-        return value;
-    }
-    evalFunction(expr, env) {
-        const symbol = expr[1];
-        this.throwOnExistingDef(symbol, env);
-        const body = expr.length === 4 ? expr[3] : ["begin", ...expr.slice(3)];
-        const value = this.evalLambda(["lambda", expr[2], body], env);
-        env.unshift([expr[1], value]);
-        return symbol;
-    }
-    evalIf(expr, env) {
-        return this.isTruthy(this.evalExpr(expr[1], env))
-            ? this.evalExpr(expr[2], env)
-            : expr.length === 4
-                ? this.evalExpr(expr[3], env)
-                : null;
-    }
-    isTruthy(expr) {
-        return !this.isFaulty(expr);
-    }
-    isFaulty(expr) {
-        if (Array.isArray(expr) && expr.length === 0)
-            return true;
-        return !expr;
-    }
-    evalCond(expr, env) {
-        const clauses = expr.slice(1);
-        for (const clause of clauses) {
-            if (clause[0] === "else") {
-                return this.evalExprLst(clause.slice(1), env);
-            }
-            if (this.evalExpr(clause[0], env)) {
-                return this.evalExprLst(clause.slice(1), env);
-            }
-        }
-        return null;
-    }
-    evalCase(expr, env) {
-        const val = this.evalExpr(expr[1], env);
-        const clauses = expr.slice(2);
-        for (const clause of clauses) {
-            if (clause[0] === "else") {
-                return this.evalExprLst(clause.slice(1), env);
-            }
-            if (clause[0].indexOf(val) > -1) {
-                return this.evalExprLst(clause.slice(1), env);
-            }
-        }
-        return null;
-    }
-    evalFor(expr, env) {
-        const condBody = expr[2];
-        const incBody = expr[3];
-        const loopBody = expr.slice(4);
-        const loopEnv = env.slice();
-        const cntId = expr[1][0];
-        const cntPair = [cntId, this.evalExpr(expr[1][1], loopEnv)];
-        loopEnv.unshift(cntPair);
-        const setEnv = () => {
-            for (const cell of loopEnv) {
-                if (cell[0] === cntId) {
-                    cell[1] = cntPair[1];
-                    break;
-                }
-            }
-        };
-        for (; this.evalExpr(condBody, loopEnv); cntPair[1] = this.evalExpr(incBody, loopEnv)) {
-            for (const bodyExpr of loopBody) {
-                const res = this.evalExpr(bodyExpr, loopEnv);
-                if (res === "continue")
-                    break;
-                if (res === "break")
-                    return;
-            }
-            setEnv();
-        }
-    }
-    evalWhile(expr, env) {
-        const condBody = expr[1];
-        const loopBody = expr.slice(2);
-        while (this.evalExpr(condBody, env)) {
-            for (const bodyExpr of loopBody) {
-                const res = this.evalExpr(bodyExpr, env);
-                if (res === "continue")
-                    break;
-                if (res === "break")
-                    return;
-            }
-        }
-    }
-    evalDo(expr, env) {
-        const condBody = expr[expr.length - 1];
-        const loopBody = expr.slice(1, expr.length - 1);
-        do {
-            for (const bodyExpr of loopBody) {
-                const res = this.evalExpr(bodyExpr, env);
-                if (res === "continue")
-                    break;
-                if (res === "break")
-                    return;
-            }
-        } while (this.evalExpr(condBody, env));
-    }
-    resolveThroughLib(expr, env) {
-        for (const lib of this.libs) {
-            const res = lib.libEvalExpr(expr, env);
-            if (res !== "##not-resolved##")
-                return { resolved: true, val: res };
-        }
-        return { resolved: false, val: null };
-    }
-}
 class LibManager {
     static getBuiltinLibs(libList, inter) {
         return libList.map(lib => LibManager.createLib(lib, inter));
@@ -391,13 +156,14 @@ class ListLib {
             case "list.get": return this.listGet(expr, env);
             case "list.has?": return this.listHas(expr, env);
             case "list.index": return this.listIndex(expr, env);
-            case "list.is-list?": return this.listIsList(expr, env);
             case "list.join": return this.listJoin(expr, env);
             case "list.last": return this.listLast(expr, env);
             case "list.least": return this.listLeast(expr, env);
             case "list.length": return this.listLength(expr, env);
+            case "list.list?": return this.listIsList(expr, env);
             case "list.push": return this.listPush(expr, env);
             case "list.push!": return this.listPush(expr, env, false);
+            case "list.range": return this.listRange(expr, env);
             case "list.rest": return this.listRest(expr, env);
             case "list.set": return this.listSet(expr, env);
             case "list.set!": return this.listSet(expr, env, false);
@@ -492,6 +258,17 @@ class ListLib {
             return [elm];
         }
         return [elm, lst];
+    }
+    listRange(expr, env) {
+        const start = this.inter.evalExpr(expr[1], env);
+        const end = this.inter.evalExpr(expr[2], env);
+        if (start >= end)
+            return [];
+        const res = [];
+        for (let i = start; i <= end; i++) {
+            res.push(i);
+        }
+        return res;
     }
     listRest(expr, env) {
         const lst = this.inter.evalExpr(expr[1], env);
@@ -822,4 +599,245 @@ class Parser {
 }
 if (typeof module === "object") {
     module.exports.Parser = Parser;
+}
+class Interpreter {
+    constructor() {
+        this.isDebug = false;
+        this.print = console.log;
+        this.libs = [];
+    }
+    evalCodeTree(codeTree, options) {
+        this.isDebug = options.isDebug;
+        this.print = options.print;
+        this.libs.push(...LibManager.getBuiltinLibs(options.libs, this));
+        return this.evalExprLst(codeTree, []);
+    }
+    evalExprLst(exprLst, env) {
+        let res;
+        for (const expr of exprLst) {
+            res = this.evalExpr(expr, env);
+        }
+        return res;
+    }
+    mapExprLst(exprLst, env) {
+        const res = [];
+        for (const expr of exprLst) {
+            res.push(this.evalExpr(expr, env));
+        }
+        return res;
+    }
+    evalExpr(expr, env) {
+        switch (expr) {
+            case "null": return null;
+            case "true": return true;
+            case "false": return false;
+            case "break": return "break";
+            case "continue": return "continue";
+        }
+        switch (typeof expr) {
+            case "number": return expr;
+            case "string": return this.lookup(expr, env);
+            case "boolean": return expr;
+        }
+        if (this.isDebug)
+            console.log("evalExpr expr:", JSON.stringify(expr), "env:", JSON.stringify(env));
+        switch (expr[0]) {
+            case "list": return this.mapExprLst(expr.slice(1), env);
+            case "string": return expr[1];
+            case "let": return this.evalLet(expr, env);
+            case "set!": return this.evalSet(expr, env);
+            case "lambda": return this.evalLambda(expr, env);
+            case "function": return this.evalFunction(expr, env);
+            case "if": return this.evalIf(expr, env);
+            case "cond": return this.evalCond(expr, env);
+            case "case": return this.evalCase(expr, env);
+            case "begin": return this.evalExprLst(expr.slice(1), env);
+            case "for": return this.evalFor(expr, env);
+            case "while": return this.evalWhile(expr, env);
+            case "do": return this.evalDo(expr, env);
+        }
+        const res = this.resolveThroughLib(expr, env);
+        if (res.resolved)
+            return res.val;
+        return this.callProc(expr, env);
+    }
+    lookup(symbol, env) {
+        for (const cell of env) {
+            if (symbol === cell[0]) {
+                return cell[1];
+            }
+        }
+        throw Error(`Unbound identifier: ${symbol}`);
+    }
+    throwOnExistingDef(symbol, env) {
+        for (const cell of env) {
+            if (symbol === cell[0]) {
+            }
+        }
+    }
+    setInEnv(symbol, value, env) {
+        for (const cell of env) {
+            if (symbol === cell[0]) {
+                cell[1] = value;
+                return;
+            }
+        }
+        throw Error(`Unbound identifier: ${symbol}`);
+    }
+    callProc(expr, env) {
+        const proc = expr[0];
+        const isNamed = typeof proc === "string";
+        const closure = isNamed ? this.lookup(proc, env) : this.evalExpr(proc, env);
+        const args = expr.length === 1
+            ? []
+            : expr.length === 2
+                ? [this.evalExpr(expr[1], env)]
+                : this.mapExprLst(expr.slice(1), env);
+        const funcName = isNamed ? proc : "lambda";
+        const params = closure[1];
+        const closureBody = closure[2].length === 1 ? closure[2][0] : closure[2];
+        const closureEnv = this.assocArgsToParams(params, args).concat(env).concat(closure[3])
+            .concat([["func-name", funcName], ["func-params", params], ["func-args", args]]);
+        return this.evalExpr(closureBody, closureEnv);
+    }
+    assocArgsToParams(params, args) {
+        const aList = [];
+        for (let i = 0; i < params.length; i++) {
+            const arg = i < args.length ? args[i] : null;
+            aList.push([params[i], arg]);
+        }
+        return aList;
+    }
+    evalLambda(expr, env) {
+        return ["closure", expr[1], expr[2], env.slice()];
+    }
+    evalLet(expr, env) {
+        const symbol = expr[1];
+        this.throwOnExistingDef(symbol, env);
+        const value = this.evalLetValue(expr, env);
+        env.unshift([symbol, value]);
+        return value;
+    }
+    evalSet(expr, env) {
+        const symbol = expr[1];
+        const value = this.evalLetValue(expr, env);
+        this.setInEnv(symbol, value, env);
+        return value;
+    }
+    evalLetValue(expr, env) {
+        const letExpr = expr[2];
+        const value = (Array.isArray(letExpr) && letExpr[0] === "lambda")
+            ? this.evalLambda(["lambda", letExpr[1], letExpr[2]], env)
+            : this.evalExpr(letExpr, env);
+        return value;
+    }
+    evalFunction(expr, env) {
+        const symbol = expr[1];
+        this.throwOnExistingDef(symbol, env);
+        const body = expr.length === 4 ? expr[3] : ["begin", ...expr.slice(3)];
+        const value = this.evalLambda(["lambda", expr[2], body], env);
+        env.unshift([expr[1], value]);
+        return symbol;
+    }
+    evalIf(expr, env) {
+        return this.isTruthy(this.evalExpr(expr[1], env))
+            ? this.evalExpr(expr[2], env)
+            : expr.length === 4
+                ? this.evalExpr(expr[3], env)
+                : null;
+    }
+    isTruthy(expr) {
+        return !this.isFaulty(expr);
+    }
+    isFaulty(expr) {
+        if (Array.isArray(expr) && expr.length === 0)
+            return true;
+        return !expr;
+    }
+    evalCond(expr, env) {
+        const clauses = expr.slice(1);
+        for (const clause of clauses) {
+            if (clause[0] === "else") {
+                return this.evalExprLst(clause.slice(1), env);
+            }
+            if (this.evalExpr(clause[0], env)) {
+                return this.evalExprLst(clause.slice(1), env);
+            }
+        }
+        return null;
+    }
+    evalCase(expr, env) {
+        const val = this.evalExpr(expr[1], env);
+        const clauses = expr.slice(2);
+        for (const clause of clauses) {
+            if (clause[0] === "else") {
+                return this.evalExprLst(clause.slice(1), env);
+            }
+            if (clause[0].indexOf(val) > -1) {
+                return this.evalExprLst(clause.slice(1), env);
+            }
+        }
+        return null;
+    }
+    evalFor(expr, env) {
+        const condBody = expr[2];
+        const incBody = expr[3];
+        const loopBody = expr.slice(4);
+        const loopEnv = env;
+        const cntId = expr[1][0];
+        const cntPair = [cntId, this.evalExpr(expr[1][1], loopEnv)];
+        loopEnv.unshift(cntPair);
+        const setEnv = () => {
+            for (const cell of loopEnv) {
+                if (cell[0] === cntId) {
+                    cell[1] = cntPair[1];
+                    break;
+                }
+            }
+        };
+        for (; this.evalExpr(condBody, loopEnv); cntPair[1] = this.evalExpr(incBody, loopEnv)) {
+            for (const bodyExpr of loopBody) {
+                const res = this.evalExpr(bodyExpr, loopEnv);
+                if (res === "continue")
+                    break;
+                if (res === "break")
+                    return;
+            }
+            setEnv();
+        }
+    }
+    evalWhile(expr, env) {
+        const condBody = expr[1];
+        const loopBody = expr.slice(2);
+        while (this.evalExpr(condBody, env)) {
+            for (const bodyExpr of loopBody) {
+                const res = this.evalExpr(bodyExpr, env);
+                if (res === "continue")
+                    break;
+                if (res === "break")
+                    return;
+            }
+        }
+    }
+    evalDo(expr, env) {
+        const condBody = expr[expr.length - 1];
+        const loopBody = expr.slice(1, expr.length - 1);
+        do {
+            for (const bodyExpr of loopBody) {
+                const res = this.evalExpr(bodyExpr, env);
+                if (res === "continue")
+                    break;
+                if (res === "break")
+                    return;
+            }
+        } while (this.evalExpr(condBody, env));
+    }
+    resolveThroughLib(expr, env) {
+        for (const lib of this.libs) {
+            const res = lib.libEvalExpr(expr, env);
+            if (res !== "##not-resolved##")
+                return { resolved: true, val: res };
+        }
+        return { resolved: false, val: null };
+    }
 }

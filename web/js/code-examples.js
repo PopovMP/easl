@@ -71,9 +71,49 @@ const examplesList = [
 
 
     {
+        name: "Implementation of 'map'",
+        code:
+`;; Implementation of 'map'
+
+{function map (func lst)
+    {let i    0}    
+    {let len (list.length lst)}
+    {let res []}
+
+    {while (< i len)
+         (list.add! (func (list.get i lst)) res)
+         (set! i (+ i 1))}
+
+    res}
+
+{let range (list.range 1 10)}              ;; Make a range form 1 to 10
+{let lst (map {lambda (e) (* e 2)} range)} ;; Double each element 
+`
+    },
+
+    {
+        name: "Implementation of 'for-each'",
+        code:
+            `;; Implementation of for-each
+
+{function for-each (func lst)
+    {let i 0}    
+    {let list-len (list.length lst)}
+
+    {while (< i list-len)
+         (func (list.get i lst))
+         (set! i (+ i 1))} }
+         
+{let range (list.range 1 3)}
+
+(for-each {lambda (e) (print e)} range) ;; prints the elemnts of range. Returns 'undefined'.
+`
+    },
+
+    {
         name: "Swap list elements non destructive",
         code:
-`;; Swap list elements non destructive
+            `;; Swap list elements non destructive
 
 {let lst [1 2 3 4]}
 
