@@ -26,5 +26,14 @@ describe('Eval lambda', function () {
         it('(((lambda () (lambda (a b) (+ a b)))) 2 3) → 5', function () {
             assert.strictEqual(easl.evaluate("(((lambda () (lambda (a b) (+ a b)))) 2 3)"), 5);
         });
+        it('lambda func-name', function () {
+            assert.strictEqual(easl.evaluate("({lambda (a b) func-name} 1 2 3 4)"), "lambda");
+        });
+        it('lambda func-params', function () {
+            assert.deepStrictEqual(easl.evaluate("({lambda (a b) func-params} 1 2 3 4)"), [ 'a', 'b' ]);
+        });
+        it('lambda func-args', function () {
+            assert.deepStrictEqual(easl.evaluate("({lambda (a b) func-args} 1 2 3 4)"), [ 1, 2, 3, 4 ]);
+        });
     });
 });
