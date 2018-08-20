@@ -97,16 +97,17 @@ const examplesList = [
             `;; Implementation of for-each
 
 {function for-each (func lst)
-    {let i 0}    
-    {let list-len (list.length lst)}
+    {let len (list.length lst)}
+    {let i   0}
 
-    {while (< i list-len)
+    {while (< i len)
          (func (list.get i lst))
          (set! i (+ i 1))} }
-         
-{let range (list.range 1 3)}
 
-(for-each {lambda (e) (print e)} range) ;; prints the elemnts of range. Returns 'undefined'.
+{let printer {lambda (e) (print e)} }
+{let range   (list.range 1 10) }
+
+(for-each printer range)
 `
     },
 
