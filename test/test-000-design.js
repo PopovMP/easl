@@ -75,13 +75,36 @@ describe('EASL design', function () {
     });
 
     describe('function definition', function () {
-        it('function', function () {
-            assert.strictEqual(easl.evaluate(`      {function sum (a b) (+ a b)}
-                                                    (sum 2 3)               `), 5);
+        it('func definition returns the func-name', function () {
+            assert.strictEqual(easl.evaluate(`      {function sum (a b) (+ a b)}   `), "sum");
+        });
+        it('lambda definition returns the closure', function () {
+            assert.deepStrictEqual(easl.evaluate(`  {let sum {lambda (a b) (+ a b)}}  `),
+                                                    [ 'closure', [ 'a', 'b' ], [ '+', 'a', 'b' ], [] ]);
+        });
+    });
+
+    describe('function call', function () {
+        it('builtin function', function () {
+            assert.strictEqual(easl.evaluate(`   (math.pi)        `), 3.141592653589793);
+        });
+        it('user function', function () {
+            assert.strictEqual(easl.evaluate(`  {function foo () 5} (foo)  `), 5);
+        });
+        it('function without params 1', function () {
+            assert.strictEqual(easl.evaluate(`  {function foo 5} (foo)  `), "Error: Improper function: foo");
+        });
+        it('function without params 2', function () {
+            assert.strictEqual(easl.evaluate(`  {function foo (+ 2 3)} (foo)  `), "Error: Improper function: foo");
         });
         it('lambda', function () {
-            assert.strictEqual(easl.evaluate(`      {let sum {lambda (a b) (+ a b)}}
-                                                    (sum 2 3)               `), 5);
+            assert.strictEqual(easl.evaluate(`  {let foo {lambda () 5}} (foo)  `), 5);
+        });
+        it('not a function', function () {
+            assert.strictEqual(easl.evaluate(` (42)  `), "Error: Improper function: 42");
+        });
+        it('unknown a function', function () {
+            assert.strictEqual(easl.evaluate(` (foo 42)  `), "Error: Unbound identifier: foo");
         });
     });
 
@@ -192,23 +215,4 @@ describe('EASL design', function () {
             assert.strictEqual(easl.evaluate(`   (to-number "hello")   `), null);
         });
     });
-
-    describe('function call', function () {
-        it('builtin function', function () {
-            assert.strictEqual(easl.evaluate(`   (math.pi)        `), 3.141592653589793);
-        });
-        it('user function', function () {
-            assert.strictEqual(easl.evaluate(`  {function foo () 5} (foo)  `), 5);
-        });
-        it('lambda', function () {
-            assert.strictEqual(easl.evaluate(`  {let foo {lambda () 5}} (foo)  `), 5);
-        });
-        it('not a function', function () {
-            assert.strictEqual(easl.evaluate(` (42)  `), "Error: Improper function: 42");
-        });
-        it('unknown a function', function () {
-            assert.strictEqual(easl.evaluate(` (foo 42)  `), "Error: Unbound identifier: foo");
-        });
-    });
-
 });

@@ -65,11 +65,11 @@ class Interpreter {
             case "set!"     : return this.evalSet(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
             case "function" : return this.evalFunction(expr, env);
+            case "begin"    : return this.evalBody(expr, env);
 
             case "if"       : return this.evalIf(expr, env);
             case "cond"     : return this.evalCond(expr, env);
             case "case"     : return this.evalCase(expr, env);
-            case "begin"    : return this.evalExprLst(expr.slice(1), env);
             case "for"      : return this.evalFor(expr, env);
             case "while"    : return this.evalWhile(expr, env);
             case "do"       : return this.evalDo(expr, env);
@@ -133,6 +133,10 @@ class Interpreter {
         const closureEnv : any[]    = this.assocArgsToParams(params, args).concat(env).concat(closure[3])
                          .concat([["func-name", funcName], ["func-params", params], ["func-args", args]]);
 
+        if (closureBody === "begin") {
+            throw Error(`Improper function: ${funcName}`);
+        }
+
         return this.evalExpr(closureBody, closureEnv);
     }
 
@@ -169,6 +173,14 @@ class Interpreter {
         this.setInEnv(symbol, value, env);
 
         return value;
+    }
+
+    private evalBody(expr: any[], env: any[]): any {
+
+        if (expr.length === 1) {
+            throw Error(`empty body`);
+        }
+        return this.evalExprLst(expr.slice(1), env);
     }
 
     // [let, symbol, expr]
