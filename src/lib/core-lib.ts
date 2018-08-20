@@ -26,10 +26,10 @@ class CoreLib implements ILib {
             case "or"  : return this.inter.evalExpr(expr[1], env) || this.inter.evalExpr(expr[2], env);
             case "not" : return this.evalNot(this.inter.evalExpr(expr[1], env));
 
-            case "type-of"    : return this.evalTypeOf(expr[1], env);
-            case "to-string"  : return String(this.inter.evalExpr(expr[1], env));
-            case "to-number"  : return this.toNumber(this.inter.evalExpr(expr[1], env));
-            case "to-boolean" : return this.toBoolean(this.inter.evalExpr(expr[1], env));
+            case "type-of"    : return this.evalTypeOf(expr, env);
+            case "to-string"  : return this.evalToString(expr, env);
+            case "to-number"  : return this.evalToNumber(expr, env);
+            case "to-boolean" : return this.evalToBoolean(expr, env);
 
             case "print" : return this.evalPrint(expr, env);
         }
@@ -37,9 +37,15 @@ class CoreLib implements ILib {
         return "##not-resolved##";
     }
 
-    private evalTypeOf (expr: any, env: any[]): string {
-        if (Array.isArray(expr)) {
-            switch (expr[0]) {
+    private evalTypeOf (expr: any[], env: any[]): string {
+        if (expr.length === 1) {
+            return "null";
+        }
+
+        const entity = expr[1];
+
+        if (Array.isArray(entity)) {
+            switch (entity[0]) {
                 case "list"     : return "list";
                 case "string"   : return "string";
                 case "lambda"   :
@@ -48,9 +54,9 @@ class CoreLib implements ILib {
             }
         }
 
-        if (expr === "null") return "null";
+        if (entity === "null") return "null";
 
-        const value =  this.inter.evalExpr(expr, env);
+        const value =  this.inter.evalExpr(entity, env);
 
         if (Array.isArray(value)) {
             switch (value[0]) {
@@ -67,33 +73,35 @@ class CoreLib implements ILib {
         return (Array.isArray(a) && a.length === 0) || !a;
     }
 
-    private toBoolean(a: any): boolean {
-        return !this.evalNot(a);
+    private evalToBoolean(expr: any[], env: any[]): boolean {
+        const entity = this.inter.evalExpr(expr[1], env);
+        return !this.evalNot(entity);
     }
 
-    private toNumber(a: any): number | null {
-        const number = Number(a);
+    private evalToNumber(expr: any[], env: any[]): number | null {
+        const entity = this.inter.evalExpr(expr[1], env);
+        const number = Number(entity);
         return Number.isNaN(number) ? null : number;
     }
 
-    private evalPrint(expr: any[], env: any[]): any {
+    private evalToString(expr: any[], env: any[]): string {
         function getText(entity: any): string {
             const type = typeof entity;
             if (entity === null) {
                 return "null";
             }
 
-            if (type === "string" || type === "number") {
+            if (type === "string") {
                 return entity;
             }
 
-            if (type === "boolean") {
+            if (type === "boolean" || type === "number") {
                 return String(entity);
             }
 
             if (Array.isArray(entity)) {
                 if ( entity[0] === "closure") {
-                    return "{closure (" + entity[1].join(" ") + ") (" + entity[2].join(" ") + ")}";
+                    return "{lambda (" + entity[1].join(" ") + ") (" + entity[2].join(" ") + ")}";
                 } else {
                     return entity.join(" ");
                 }
@@ -109,6 +117,11 @@ class CoreLib implements ILib {
             text = getText(this.inter.mapExprLst(expr.slice(1), env));
         }
 
+        return text;
+    }
+
+    private evalPrint(expr: any[], env: any[]): any {
+        const text = this.evalToString(expr, env);
         const res = this.inter.print(text);
         return res || "";
     }

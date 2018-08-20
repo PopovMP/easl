@@ -131,7 +131,7 @@ describe('EASL design', function () {
             assert.strictEqual(easl.evaluate(`   (to-string 42)        `), "42");
         });
         it('string', function () {
-            assert.strictEqual(easl.evaluate(`   (to-string "42")     `), "42");
+            assert.strictEqual(easl.evaluate(`   (to-string "42")      `), "42");
         });
         it('true', function () {
             assert.strictEqual(easl.evaluate(`   (to-string true)      `), "true");
@@ -147,6 +147,17 @@ describe('EASL design', function () {
         });
         it('empty list', function () {
             assert.strictEqual(easl.evaluate(`   (to-string [])        `), "");
+        });
+        it('multiple strings', function () {
+            assert.strictEqual(easl.evaluate(`   (to-string "hello" "world")  `), "hello world");
+        });
+        it('lambda', function () {
+            assert.strictEqual(easl.evaluate(`   (to-string {lambda (a b) (+ a b)} )  `), "{lambda (a b) (+ a b)}");
+        });
+        it('function', function () {
+            assert.strictEqual(easl.evaluate(` 
+              {function sum (a b) (+ a b)}
+              (to-string sum )  `), "{lambda (a b) (+ a b)}");
         });
     });
 
