@@ -10,13 +10,12 @@ describe('problems', function () {
         assert.deepStrictEqual(easl.evaluate(`   
              
 {function make-sequence (start length next)
-    {begin
         {function loop (lst i)
             {if (= i length)
                 lst
                 (loop (list.add (next (list.last lst)) lst)
                       (+ i 1)) }}
-        (loop [start] 1) }}
+        (loop [start] 1) }
 
   {make-sequence 3 10 {lambda (cur) (* cur 3)} )
                                                              `),

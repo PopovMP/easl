@@ -5,59 +5,59 @@ const Easl = require("../bin/easl.js").Easl;
 
 const easl = new Easl();
 
-describe('begin', function () {
+describe('body', function () {
 
-    it('{begin} → "Error: empty body"', function () {
-        assert.strictEqual(easl.evaluate("{begin}"), "Error: empty body");
+    it('{body} → "Error: empty body"', function () {
+        assert.strictEqual(easl.evaluate("{body}"), "Error: empty body");
     });
 
-    it('{begin 1} → 1', function () {
-        assert.strictEqual(easl.evaluate("{begin 1}"), 1);
+    it('{body 1} → 1', function () {
+        assert.strictEqual(easl.evaluate("{body 1}"), 1);
     });
 
-    it('{begin 1 2} → 2', function () {
-        assert.strictEqual(easl.evaluate("{begin 1 2}"), 2);
+    it('{body 1 2} → 2', function () {
+        assert.strictEqual(easl.evaluate("{body 1 2}"), 2);
     });
 
-    it('{begin (+ 7 1) (+ 1 2)} → 3', function () {
-        assert.strictEqual(easl.evaluate("{begin (+ 7 1) (+ 1 2)}"), 3);
+    it('{body (+ 7 1) (+ 1 2)} → 3', function () {
+        assert.strictEqual(easl.evaluate("{body (+ 7 1) (+ 1 2)}"), 3);
     });
 
-    it('let in begin', function () {
+    it('let in body', function () {
         assert.strictEqual(easl.evaluate(`
-        {begin
+        {body
                 {let a 5}
                 {let b 6}
                 (+ a b) }
         `), 11);
     });
 
-    it('nested begin', function () {
+    it('nested body', function () {
         assert.strictEqual(easl.evaluate(`
-        {begin
-            {begin
-                {begin
+        {body
+            {body
+                {body
                         {let a 5}
                         {let b 6}
                         (+ a b) }}}
         `), 11);
     });
 
-    it('scope accessible from inner begin', function () {
+    it('scope accessible from inner body', function () {
         assert.strictEqual(easl.evaluate(`
-        {begin
+        {body
             {let a 5}
-            {begin
+            {body
                 {let b 6}
-                {begin
+                {body
                    (+ a b) }}}
         `), 11);
     });
 
-    it('begin in function', function () {
+    it('body in function', function () {
         assert.strictEqual(easl.evaluate(`
             {function ff ()
-                {begin
+                {body
                         {let a 5}
                         {let b 6}
                         (+ a b) }}
@@ -65,9 +65,9 @@ describe('begin', function () {
         `), 11);
     });
 
-    it('function in begin', function () {
+    it('function in body', function () {
         assert.strictEqual(easl.evaluate(`
-        {begin
+        {body
             {function sum (a b) (+ a b)}
             (sum 2 3) }
         `), 5);

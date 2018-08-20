@@ -87,7 +87,7 @@ class CoreLib implements ILib {
     private evalToString(expr: any[], env: any[]): string {
         function bodyToString(body: any): string {
             if (Array.isArray(body)) {
-                if (body[0] === "begin") {
+                if (body[0] === "body") {
                     return body.slice(1).join(" ");
                 }
 

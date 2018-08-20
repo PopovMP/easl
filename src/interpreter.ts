@@ -65,7 +65,7 @@ class Interpreter {
             case "set!"     : return this.evalSet(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
             case "function" : return this.evalFunction(expr, env);
-            case "begin"    : return this.evalBody(expr, env);
+            case "body"    : return this.evalBody(expr, env);
 
             case "if"       : return this.evalIf(expr, env);
             case "cond"     : return this.evalCond(expr, env);
@@ -133,7 +133,7 @@ class Interpreter {
         const closureEnv : any[]    = this.assocArgsToParams(params, args).concat(env).concat(closure[3])
                          .concat([["func-name", funcName], ["func-params", params], ["func-args", args]]);
 
-        if (closureBody === "begin") {
+        if (closureBody === "body") {
             throw Error(`Improper function: ${funcName}`);
         }
 
@@ -199,7 +199,7 @@ class Interpreter {
         const symbol = expr[1];
         this.throwOnExistingDef(symbol, env);
 
-        const body : any = expr.length === 4 ? [expr[3]] : ["begin", ... expr.slice(3)];
+        const body : any = expr.length === 4 ? [expr[3]] : ["body", ... expr.slice(3)];
         const value: any = this.evalLambda(["lambda", expr[2], body], env);
 
         env.unshift([expr[1], value]);
