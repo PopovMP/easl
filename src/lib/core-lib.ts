@@ -31,7 +31,7 @@ class CoreLib implements ILib {
             case "to-number"  : return this.toNumber(this.inter.evalExpr(expr[1], env));
             case "to-boolean" : return this.toBoolean(this.inter.evalExpr(expr[1], env));
 
-            case "print" : return this.inter.print(String(this.inter.mapExprLst(expr.slice(1), env).join(" "))) || "";
+            case "print" : return this.evalPrint(expr, env);
         }
 
         return "##not-resolved##";
@@ -74,5 +74,42 @@ class CoreLib implements ILib {
     private toNumber(a: any): number | null {
         const number = Number(a);
         return Number.isNaN(number) ? null : number;
-    };
+    }
+
+    private evalPrint(expr: any[], env: any[]): any {
+        function getText(entity: any): string {
+            const type = typeof entity;
+            if (entity === null) {
+                return "null";
+            }
+
+            if (type === "string" || type === "number") {
+                return entity;
+            }
+
+            if (type === "boolean") {
+                return String(entity);
+            }
+
+            if (Array.isArray(entity)) {
+                if ( entity[0] === "closure") {
+                    return "{closure (" + entity[1].join(" ") + ") (" + entity[2].join(" ") + ")}";
+                } else {
+                    return entity.join(" ");
+                }
+            }
+
+            return JSON.stringify(entity);
+        }
+
+        let text = "";
+        if (expr.length === 2) {
+            text = getText(this.inter.evalExpr(expr[1], env));
+        } else if (expr.length > 2) {
+            text = getText(this.inter.mapExprLst(expr.slice(1), env));
+        }
+
+        const res = this.inter.print(text);
+        return res || "";
+    }
 }
