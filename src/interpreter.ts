@@ -116,6 +116,11 @@ class Interpreter {
         const proc    : string | any[] = expr[0];
         const isNamed : boolean = typeof proc === "string";
         const closure : any[]   = isNamed ? this.lookup(<string>proc, env) : this.evalExpr(proc, env);
+
+        if (!Array.isArray(closure)) {
+            throw Error(`Improper function: ${closure}`);
+        }
+
         const args    : any[]   = expr.length === 1
                                       ? []
                                       : expr.length === 2
