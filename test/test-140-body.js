@@ -8,7 +8,7 @@ const easl = new Easl();
 describe('body', function () {
 
     it('{body} → "Error: empty body"', function () {
-        assert.strictEqual(easl.evaluate("{body}"), "Error: empty body");
+        assert.strictEqual(easl.evaluate("{body}"), "Error: Empty body");
     });
 
     it('{body 1} → 1', function () {

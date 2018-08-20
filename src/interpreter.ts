@@ -60,13 +60,11 @@ class Interpreter {
         switch (expr[0]) {
             case "list"     : return this.mapExprLst(expr.slice(1), env);
             case "string"   : return expr[1];
-
             case "let"      : return this.evalLet(expr, env);
             case "set!"     : return this.evalSet(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
             case "function" : return this.evalFunction(expr, env);
-            case "body"    : return this.evalBody(expr, env);
-
+            case "body"     : return this.evalBody(expr, env);
             case "if"       : return this.evalIf(expr, env);
             case "cond"     : return this.evalCond(expr, env);
             case "case"     : return this.evalCase(expr, env);
@@ -137,6 +135,10 @@ class Interpreter {
             throw Error(`Improper function: ${funcName}`);
         }
 
+        if (closureBody.length === 0) {
+            throw Error(`Function with empty body: ${funcName}`);
+        }
+
         return this.evalExpr(closureBody, closureEnv);
     }
 
@@ -178,7 +180,7 @@ class Interpreter {
     private evalBody(expr: any[], env: any[]): any {
 
         if (expr.length === 1) {
-            throw Error(`empty body`);
+            throw Error(`Empty body`);
         }
         return this.evalExprLst(expr.slice(1), env);
     }

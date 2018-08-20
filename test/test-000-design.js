@@ -91,6 +91,9 @@ describe('EASL design', function () {
         it('user function', function () {
             assert.strictEqual(easl.evaluate(`  {function foo () 5} (foo)  `), 5);
         });
+        it('function with empty body', function () {
+            assert.strictEqual(easl.evaluate(`  {function foo () ()} (foo)  `), "Error: Function with empty body: foo");
+        });
         it('function without params 1', function () {
             assert.strictEqual(easl.evaluate(`  {function foo 5} (foo)  `), "Error: Improper function: foo");
         });

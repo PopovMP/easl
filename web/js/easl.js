@@ -68,10 +68,10 @@ class Interpreter {
             case "set!": return this.evalSet(expr, env);
             case "lambda": return this.evalLambda(expr, env);
             case "function": return this.evalFunction(expr, env);
+            case "body": return this.evalBody(expr, env);
             case "if": return this.evalIf(expr, env);
             case "cond": return this.evalCond(expr, env);
             case "case": return this.evalCase(expr, env);
-            case "begin": return this.evalExprLst(expr.slice(1), env);
             case "for": return this.evalFor(expr, env);
             case "while": return this.evalWhile(expr, env);
             case "do": return this.evalDo(expr, env);
@@ -121,6 +121,12 @@ class Interpreter {
         const closureBody = closure[2].length === 1 ? closure[2][0] : closure[2];
         const closureEnv = this.assocArgsToParams(params, args).concat(env).concat(closure[3])
             .concat([["func-name", funcName], ["func-params", params], ["func-args", args]]);
+        if (closureBody === "body") {
+            throw Error(`Improper function: ${funcName}`);
+        }
+        if (closureBody.length === 0) {
+            throw Error(`Function with empty body: ${funcName}`);
+        }
         return this.evalExpr(closureBody, closureEnv);
     }
     assocArgsToParams(params, args) {
@@ -147,6 +153,12 @@ class Interpreter {
         this.setInEnv(symbol, value, env);
         return value;
     }
+    evalBody(expr, env) {
+        if (expr.length === 1) {
+            throw Error(`Empty body`);
+        }
+        return this.evalExprLst(expr.slice(1), env);
+    }
     evalLetValue(expr, env) {
         const letExpr = expr[2];
         const value = (Array.isArray(letExpr) && letExpr[0] === "lambda")
@@ -157,7 +169,7 @@ class Interpreter {
     evalFunction(expr, env) {
         const symbol = expr[1];
         this.throwOnExistingDef(symbol, env);
-        const body = expr.length === 4 ? [expr[3]] : ["begin", ...expr.slice(3)];
+        const body = expr.length === 4 ? [expr[3]] : ["body", ...expr.slice(3)];
         const value = this.evalLambda(["lambda", expr[2], body], env);
         env.unshift([expr[1], value]);
         return symbol;
@@ -379,7 +391,7 @@ class CoreLib {
     evalToString(expr, env) {
         function bodyToString(body) {
             if (Array.isArray(body)) {
-                if (body[0] === "begin") {
+                if (body[0] === "body") {
                     return body.slice(1).join(" ");
                 }
                 return body.join(" ");
