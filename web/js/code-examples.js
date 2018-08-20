@@ -4,7 +4,7 @@ const examplesList = [
     {
         name: "List length",
         code:
-`;; Define a variable 'lst' and
+            `;; Define a variable 'lst' and
 ;; assign a list to it
 
 {let lst [1 2 3 4]}
@@ -52,6 +52,7 @@ const examplesList = [
 {print lst) ; print the list
 `
     },
+
     {
         name: "Odd or even with 'case'",
         code:
@@ -69,11 +70,27 @@ const examplesList = [
 `
     },
 
+    {
+        name: "Function with default parameters",
+        code:
+            `;; Function with default parameters
+
+{function sum (a b)
+   {let a (or a 0)} ; If 'a' is not given, it is set to 0
+   {let b (or b 0)} ; If 'b' is not given, it is set to 0
+
+   (+ a b) }
+
+(print "(sum)     →" (sum))
+(print "(sum 1)   →" (sum 1))
+(print "(sum 1 2) →" (sum 1 2))
+`
+    },
 
     {
         name: "Implementation of 'map'",
         code:
-`;; Implementation of 'map'
+            `;; Implementation of 'map'
 
 {function map (func lst)
     {let i    0}    
@@ -146,7 +163,7 @@ const examplesList = [
     {
         name: "Fibonacci - tail optimized",
         code:
-`;; Fibonacci - tail optimized
+            `;; Fibonacci - tail optimized
 
 {function fibo (n)
     {function loop (i prev cur)
@@ -165,7 +182,7 @@ const examplesList = [
     {
         name: "Mutual recursion",
         code:
-`;; Mutual recursion
+            `;; Mutual recursion
 
 {function is-even? (n)
     {or  (= n 0)
@@ -183,7 +200,7 @@ const examplesList = [
     {
         name: "Find the maximum of a list",
         code:
-`;; Find the maximum of a list
+            `;; Find the maximum of a list
 
 {function list-max (lst)
     (loop lst (list.first lst))}
@@ -203,7 +220,7 @@ const examplesList = [
     {
         name: "Closure example",
         code:
-`;; Closure
+            `;; Closure
 
 {function make-adder (a)
     {lambda (b) (+ a b)}}
@@ -211,7 +228,8 @@ const examplesList = [
 {let add2 (make-adder 2)}
 
 (add2 3)
-`   },
+`
+    },
     {
         name: "Sequence generator",
         code:
@@ -229,11 +247,12 @@ const examplesList = [
 {make-sequence 3                             ; the first element
                10                            ; the sequence length
                {lambda (prev) (* prev 3)} )  ; calculation formula
-`   },
+`
+    },
     {
         name: "Bubble sort",
         code:
-`;; Bubble sort
+            `;; Bubble sort
 
 {function bubble-up (lst)
     {if (list.empty? (cdr lst))   
