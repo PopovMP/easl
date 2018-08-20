@@ -81,7 +81,7 @@ class CoreLib implements ILib {
     private evalToNumber(expr: any[], env: any[]): number | null {
         const entity = this.inter.evalExpr(expr[1], env);
         const number = Number(entity);
-        return Number.isNaN(number) ? null : number;
+        return number !== number ? null : number;
     }
 
     private evalToString(expr: any[], env: any[]): string {
