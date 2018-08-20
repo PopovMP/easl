@@ -10,27 +10,27 @@ describe('function', function () {
     describe('basic application', function () {
         it('no args, returns constant', function () {
             assert.strictEqual(easl.evaluate(` 
-                {function f () (5)}
+                {function f () 5}
                 (f)                                 `), 5);
         });
 
         it('return val from env defined before the definition', function () {
             assert.strictEqual(easl.evaluate(` 
                 {let a 5)
-                {function f () (a)}
+                {function f () a}
                 (f)                                 `), 5);
         });
 
         it('return val from env defined after the definition', function () {
             assert.strictEqual(easl.evaluate(` 
-                {function f () (a)}
+                {function f () a}
                 {let a 5)
                 (f)                                 `), 5);
         });
 
         it('call with one arg', function () {
             assert.strictEqual(easl.evaluate(`
-                {function identity (x) (x)}
+                {function identity (x) x}
                 (identity 5)                         `), 5);
         });
 
@@ -83,6 +83,32 @@ describe('function', function () {
         (let identity (make-identity))
     
         (identity 5)
+                                                 `), 5);
+        });
+    });
+
+    describe('function calls function', function () {
+        it('no args', function () {
+            assert.strictEqual(easl.evaluate(` 
+
+            {function foo () 5}
+            
+            (function bar () (foo))
+            
+            (bar)
+                                                 `), 5);
+        });
+    });
+
+    describe('function calls function', function () {
+        it('one arg', function () {
+            assert.strictEqual(easl.evaluate(` 
+
+            {function foo (a) a}
+            
+            (function bar (a) (foo a))
+            
+            (bar 5)
                                                  `), 5);
         });
     });

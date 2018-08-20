@@ -85,6 +85,18 @@ class CoreLib implements ILib {
     }
 
     private evalToString(expr: any[], env: any[]): string {
+        function bodyToString(body: any): string {
+            if (Array.isArray(body)) {
+                if (body[0] === "begin") {
+                    return body.slice(1).join(" ");
+                }
+
+                return body.join(" ");
+            }
+
+            return String(body);
+        }
+
         function getText(entity: any): string {
             const type = typeof entity;
             if (entity === null) {
@@ -101,7 +113,7 @@ class CoreLib implements ILib {
 
             if (Array.isArray(entity)) {
                 if ( entity[0] === "closure") {
-                    return "{lambda (" + entity[1].join(" ") + ") (" + entity[2].join(" ") + ")}";
+                    return "{lambda (" + entity[1].join(" ") + ") (" + bodyToString(entity[2]) + ")}";
                 } else {
                     return entity.join(" ");
                 }

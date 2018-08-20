@@ -182,7 +182,7 @@ class Interpreter {
         const symbol = expr[1];
         this.throwOnExistingDef(symbol, env);
 
-        const body : any = expr.length === 4 ? expr[3] : ["begin", ... expr.slice(3)];
+        const body : any = expr.length === 4 ? [expr[3]] : ["begin", ... expr.slice(3)];
         const value: any = this.evalLambda(["lambda", expr[2], body], env);
 
         env.unshift([expr[1], value]);
