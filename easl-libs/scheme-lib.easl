@@ -1,0 +1,27 @@
+{function eq?    (a b) (= a b) }
+{function eqv?   (a b) (= a b) }
+{function equal? (a b) (= a b) }
+
+{function boolean? (a) (= (type-of a) "boolean") }
+{function null?    (a) (= (type-of a) "null"   ) }
+{function number?  (a) (= (type-of a) "number" ) }
+{function string?  (a) (= (type-of a) "string" ) }
+{function list?    (a) (list.list? a) }
+{function pair?    (a) (and (list.list? a) (> list.length 0)) }
+{function empty?   (a) (list.empty? a) }
+
+{function length   (a) (list.length a) }
+
+{function cons (a b)
+	{if (null? b)
+        (list a)
+        {if (list? b)
+            (list.push a b)
+            (list a b) }}}
+
+{function car  (a) (list.first a) }
+{function cdr  (a) (list.slice 1 (list.length a) a) }
+{function caar (a) (list.first (list.first a)) }
+{function cadr (a) (list.get 1 a) }
+{function cdar (a) (cdr (car a)) }
+{function cddr (a) (list.slice 2 (list.length a) a) }
