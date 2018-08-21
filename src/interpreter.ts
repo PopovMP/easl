@@ -79,6 +79,15 @@ class Interpreter {
         return this.callProc(expr, env);
     }
 
+    public isTruthy(value: any): boolean {
+        return !this.isFaulty(value);
+    }
+
+    public isFaulty(value: any): boolean {
+        if (Array.isArray(value) && value.length === 0) return true;
+        return !value;
+    }
+
     private lookup(symbol: string, env: any[]): any {
         for (const cell of env) {
             if (symbol === cell[0]) {
@@ -216,15 +225,6 @@ class Interpreter {
                            : expr.length === 4
                                ? this.evalExpr(expr[3], env)
                                : null;
-    }
-
-    private isTruthy(expr: any): boolean {
-        return !this.isFaulty(expr);
-    }
-
-    private isFaulty(expr: any): boolean {
-        if (Array.isArray(expr) && expr.length === 0) return true;
-        return !expr;
     }
 
     // {cond (test-expr then-body ...)

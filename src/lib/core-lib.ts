@@ -9,35 +9,138 @@ class CoreLib implements ILib {
 
     public libEvalExpr(expr: any[], env: any[]): any {
         switch (expr[0]) {
-            case "+"   : return this.inter.evalExpr(expr[1], env) + this.inter.evalExpr(expr[2], env);
-            case "-"   : return this.inter.evalExpr(expr[1], env) - this.inter.evalExpr(expr[2], env);
-            case "*"   : return this.inter.evalExpr(expr[1], env) * this.inter.evalExpr(expr[2], env);
-            case "/"   : return this.inter.evalExpr(expr[1], env) / this.inter.evalExpr(expr[2], env);
-            case "%"   : return this.inter.evalExpr(expr[1], env) % this.inter.evalExpr(expr[2], env);
-
-            case "="   : return this.inter.evalExpr(expr[1], env) === this.inter.evalExpr(expr[2], env);
-            case ">"   : return this.inter.evalExpr(expr[1], env) >   this.inter.evalExpr(expr[2], env);
-            case "<"   : return this.inter.evalExpr(expr[1], env) <   this.inter.evalExpr(expr[2], env);
-            case "!="  : return this.inter.evalExpr(expr[1], env) !== this.inter.evalExpr(expr[2], env);
-            case ">="  : return this.inter.evalExpr(expr[1], env) >=  this.inter.evalExpr(expr[2], env);
-            case "<="  : return this.inter.evalExpr(expr[1], env) <=  this.inter.evalExpr(expr[2], env);
-
-            case "and" : return this.inter.evalExpr(expr[1], env) && this.inter.evalExpr(expr[2], env);
-            case "or"  : return this.inter.evalExpr(expr[1], env) || this.inter.evalExpr(expr[2], env);
-            case "not" : return this.evalNot(this.inter.evalExpr(expr[1], env));
-
+            case "+"          : return this.evalPlus(expr, env);
+            case "-"          : return this.evalSubtract(expr, env);
+            case "*"          : return this.evalMultiply(expr, env);
+            case "/"          : return this.evalDivide(expr, env);
+            case "%"          : return this.evalModulo(expr, env);
+            case "="          : return this.evalEqual(expr, env);
+            case ">"          : return this.inter.evalExpr(expr[1], env) > this.inter.evalExpr(expr[2], env);
+            case "<"          : return this.inter.evalExpr(expr[1], env) < this.inter.evalExpr(expr[2], env);
+            case "!="         : return this.inter.evalExpr(expr[1], env) !== this.inter.evalExpr(expr[2], env);
+            case ">="         : return this.inter.evalExpr(expr[1], env) >= this.inter.evalExpr(expr[2], env);
+            case "<="         : return this.inter.evalExpr(expr[1], env) <= this.inter.evalExpr(expr[2], env);
+            case "and"        : return this.evalAnd(expr, env);
+            case "or"         : return this.evalOr(expr, env);
+            case "not"        : return this.evalNot(this.inter.evalExpr(expr[1], env));
             case "type-of"    : return this.evalTypeOf(expr, env);
             case "to-string"  : return this.evalToString(expr, env);
             case "to-number"  : return this.evalToNumber(expr, env);
             case "to-boolean" : return this.evalToBoolean(expr, env);
-
-            case "print" : return this.evalPrint(expr, env);
+            case "print"      : return this.evalPrint(expr, env);
         }
 
         return "##not-resolved##";
     }
 
-    private evalTypeOf (expr: any[], env: any[]): string {
+    private evalPlus(expr: any[], env: any[]): any {
+        if (expr.length === 1) {
+            return 0;
+        } else if (expr.length === 2) {
+            return this.inter.evalExpr(expr[1], env);
+        } else if (expr.length === 3) {
+            return this.inter.evalExpr(expr[1], env) + this.inter.evalExpr(expr[2], env);
+        } else {
+            return this.inter.evalExpr(expr[1], env) + this.evalPlus(expr.slice(1), env);
+        }
+    }
+
+    private evalSubtract(expr: any[], env: any[]): any {
+        if (expr.length === 1) {
+            throw Error("Wrong number of arguments: " + "-");
+        } else if (expr.length === 2) {
+            return -this.inter.evalExpr(expr[1], env);
+        } else if (expr.length === 3) {
+            return this.inter.evalExpr(expr[1], env) - this.inter.evalExpr(expr[2], env);
+        } else {
+            return this.inter.evalExpr(expr[1], env) - this.evalPlus(expr.slice(1), env);
+        }
+    }
+
+    private evalMultiply(expr: any[], env: any[]): any {
+        if (expr.length === 1) {
+            return 1;
+        } else if (expr.length === 2) {
+            return this.inter.evalExpr(expr[1], env);
+        } else if (expr.length === 3) {
+            return this.inter.evalExpr(expr[1], env) * this.inter.evalExpr(expr[2], env);
+        } else {
+            return this.inter.evalExpr(expr[1], env) * this.evalMultiply(expr.slice(1), env);
+        }
+    }
+
+    private evalDivide(expr: any[], env: any[]): any {
+        if (expr.length === 1) {
+            throw Error("Wrong number of arguments: " + "/");
+        } else if (expr.length === 2) {
+            return 1 / this.inter.evalExpr(expr[1], env);
+        } else if (expr.length === 3) {
+            if (this.inter.evalExpr(expr[2], env) === 0) {
+                throw Error("Division by zero");
+            }
+            return this.inter.evalExpr(expr[1], env) / this.inter.evalExpr(expr[2], env);
+        } else {
+            return this.inter.evalExpr(expr[1], env) / this.evalMultiply(expr.slice(1), env);
+        }
+    }
+
+    private evalModulo(expr: any[], env: any[]): any {
+        if (expr.length === 3) {
+            const n: number = this.inter.evalExpr(expr[1], env);
+            const m: number = this.inter.evalExpr(expr[2], env);
+            return n % m;
+        } else {
+            throw Error("Wrong number of arguments: " + "%");
+        }
+    }
+
+    private evalEqual(expr: any[], env: any[]): any {
+        if (expr.length === 3) {
+            return this.inter.evalExpr(expr[1], env) === this.inter.evalExpr(expr[2], env);
+        } else if (expr.length > 3){
+            const first =  this.inter.evalExpr(expr[1], env);
+            for (let i = 2; i < expr.length; i++) {
+                if (this.inter.evalExpr(expr[i], env) !== first) return false;
+            }
+            return true
+        } else {
+            throw Error("Wrong number of arguments: " + "=");
+        }
+    }
+
+    private evalAnd(expr: any[], env: any[]): boolean {
+        if (expr.length === 1) {
+            return true;
+        } else if (expr.length === 2) {
+            return this.inter.evalExpr(expr[1], env);
+        } else if (expr.length === 3) {
+            const val: any = this.inter.evalExpr(expr[1], env);
+            return this.inter.isTruthy(val) ? this.inter.evalExpr(expr[2], env) : val;
+        } else {
+            const val: any =  this.inter.evalExpr(expr[1], env);
+            return this.inter.isTruthy(val) ? this.evalAnd(expr.slice(1), env) : val;
+        }
+    }
+
+    private evalOr(expr: any[], env: any[]): any {
+        if (expr.length === 1) {
+            return false;
+        } else if (expr.length === 2) {
+            return this.inter.evalExpr(expr[1], env);
+        } else if (expr.length === 3) {
+            const val: any = this.inter.evalExpr(expr[1], env);
+            return this.inter.isTruthy(val) ? val : this.inter.evalExpr(expr[2], env);
+        } else {
+            const val: any =  this.inter.evalExpr(expr[1], env);
+            return this.inter.isTruthy(val) ? val : this.evalOr(expr.slice(1), env);
+        }
+    }
+
+    private evalNot(a: any): boolean {
+        return (Array.isArray(a) && a.length === 0) || !a;
+    }
+
+    private evalTypeOf(expr: any[], env: any[]): string {
         if (expr.length === 1) {
             return "null";
         }
@@ -56,7 +159,7 @@ class CoreLib implements ILib {
 
         if (entity === "null") return "null";
 
-        const value =  this.inter.evalExpr(entity, env);
+        const value = this.inter.evalExpr(entity, env);
 
         if (Array.isArray(value)) {
             switch (value[0]) {
@@ -67,10 +170,6 @@ class CoreLib implements ILib {
         }
 
         return typeof value;
-    }
-
-    private evalNot(a: any): boolean {
-        return (Array.isArray(a) && a.length === 0) || !a;
     }
 
     private evalToBoolean(expr: any[], env: any[]): boolean {
@@ -112,7 +211,7 @@ class CoreLib implements ILib {
             }
 
             if (Array.isArray(entity)) {
-                if ( entity[0] === "closure") {
+                if (entity[0] === "closure") {
                     return "{lambda (" + entity[1].join(" ") + ") (" + bodyToString(entity[2]) + ")}";
                 } else {
                     return entity.join(" ");
