@@ -27,10 +27,10 @@ if (typeof module === "object") {
 }
 class Interpreter {
     constructor() {
-        this.options = new Options();
+        this.libs = [];
         this.isDebug = false;
         this.print = console.log;
-        this.libs = [];
+        this.options = new Options();
     }
     evalCodeTree(codeTree, options, callback) {
         this.options = options;
@@ -91,8 +91,6 @@ class Interpreter {
             case "for": return this.evalFor(expr, env);
             case "while": return this.evalWhile(expr, env);
             case "do": return this.evalDo(expr, env);
-            case "parse": return this.evalParse(expr, env);
-            case "eval": return this.evalEval(expr, env);
         }
         const res = this.resolveThroughLib(expr, env);
         if (res.resolved)
@@ -285,15 +283,6 @@ class Interpreter {
             }
         } while (this.evalExpr(condBody, env));
     }
-    evalParse(expr, env) {
-        const codeText = this.evalExpr(expr[1], env);
-        return Parser.parse(codeText);
-    }
-    evalEval(expr, env) {
-        const codeTree = this.evalExpr(expr[1], env);
-        const res = this.evalCodeTree(codeTree, this.options);
-        return res;
-    }
     manageImports(codeTree, callback) {
         const code = [];
         let currentCodeIndex = 0;
@@ -459,6 +448,8 @@ class CoreLib {
             case "to-string": return this.evalToString(expr, env);
             case "to-number": return this.evalToNumber(expr, env);
             case "to-boolean": return this.evalToBoolean(expr, env);
+            case "parse": return this.evalParse(expr, env);
+            case "eval": return this.evalEval(expr, env);
             case "print": return this.evalPrint(expr, env);
         }
         return "##not-resolved##";
@@ -657,6 +648,15 @@ class CoreLib {
             text = getText(this.inter.mapExprLst(expr.slice(1), env));
         }
         return text;
+    }
+    evalParse(expr, env) {
+        const codeText = this.inter.evalExpr(expr[1], env);
+        return Parser.parse(codeText);
+    }
+    evalEval(expr, env) {
+        const codeTree = this.inter.evalExpr(expr[1], env);
+        const res = this.inter.evalCodeTree(codeTree, this.inter.options);
+        return res;
     }
     evalPrint(expr, env) {
         const text = this.evalToString(expr, env);

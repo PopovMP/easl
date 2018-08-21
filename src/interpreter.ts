@@ -1,17 +1,17 @@
 "use strict";
 
 class Interpreter {
-    private options: Options;
     private readonly libs: ILib[];
     private isDebug: boolean;
 
     public print: Function;
+    public options: Options;
 
     constructor() {
-        this.options = new Options();
+        this.libs    = [];
         this.isDebug = false;
         this.print   = console.log;
-        this.libs    = [];
+        this.options = new Options();
     }
 
     public evalCodeTree(codeTree: any[], options: Options, callback?: Function): any {
@@ -83,8 +83,6 @@ class Interpreter {
             case "for"      : return this.evalFor(expr, env);
             case "while"    : return this.evalWhile(expr, env);
             case "do"       : return this.evalDo(expr, env);
-            case "parse"    : return this.evalParse(expr, env);
-            case "eval"     : return this.evalEval(expr, env);
         }
 
         const res: {resolved: boolean, val: any} = this.resolveThroughLib(expr, env);
@@ -335,17 +333,6 @@ class Interpreter {
                 if (res === "break")    return;
             }
         } while (this.evalExpr(condBody, env));
-    }
-
-    private evalParse(expr: any[], env: any[]): any[] {
-        const codeText: string = this.evalExpr(expr[1], env);
-        return Parser.parse(codeText);
-    }
-
-    private evalEval(expr: any[], env: any[]): any[] {
-        const codeTree: any[] = this.evalExpr(expr[1], env);
-        const res = this.evalCodeTree(codeTree, this.options);
-        return res;
     }
 
     private manageImports(codeTree: any[], callback: (codeTree: any[]) => void): void {

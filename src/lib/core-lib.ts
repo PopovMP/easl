@@ -27,6 +27,8 @@ class CoreLib implements ILib {
             case "to-string"  : return this.evalToString(expr, env);
             case "to-number"  : return this.evalToNumber(expr, env);
             case "to-boolean" : return this.evalToBoolean(expr, env);
+            case "parse"      : return this.evalParse(expr, env);
+            case "eval"       : return this.evalEval(expr, env);
             case "print"      : return this.evalPrint(expr, env);
         }
 
@@ -229,6 +231,17 @@ class CoreLib implements ILib {
         }
 
         return text;
+    }
+
+    private evalParse(expr: any[], env: any[]): any[] {
+        const codeText: string = this.inter.evalExpr(expr[1], env);
+        return Parser.parse(codeText);
+    }
+
+    private evalEval(expr: any[], env: any[]): any[] {
+        const codeTree: any[] = this.inter.evalExpr(expr[1], env);
+        const res = this.inter.evalCodeTree(codeTree, this.inter.options);
+        return res;
     }
 
     private evalPrint(expr: any[], env: any[]): any {
