@@ -1,26 +1,38 @@
 "use strict";
 
 class Interpreter {
+    private options: Options;
     private readonly libs: ILib[];
     private isDebug: boolean;
 
     public print: Function;
 
     constructor() {
+        this.options = new Options();
         this.isDebug = false;
         this.print   = console.log;
         this.libs    = [];
     }
 
-    public evalCodeTree(codeTree: any[], options: Options): any {
+    public evalCodeTree(codeTree: any[], options: Options, callback?: Function): any {
+        this.options = options;
         this.isDebug = options.isDebug;
         this.print   = options.print;
         this.libs.push( ... LibManager.getBuiltinLibs(options.libs, this));
 
-        return this.evalExprLst(codeTree, []);
+        if (typeof callback === "function") {
+            this.manageImports(codeTree, this.manageImport_ready.bind(this, callback));
+        } else {
+            return this.evalExprLst(codeTree, []);
+        }
     }
 
-    public evalExprLst(exprLst: any[], env: any[]): any {
+    private  manageImport_ready(callback: Function, codeTree: any[]): any {
+        const res: any = this.evalExprLst(codeTree, []);
+        callback(res);
+    }
+
+    public evalExprLst(exprLst: any[], env: any[]): void {
         let res: any;
         for (const expr of exprLst) {
             res = this.evalExpr(expr, env);
@@ -71,6 +83,8 @@ class Interpreter {
             case "for"      : return this.evalFor(expr, env);
             case "while"    : return this.evalWhile(expr, env);
             case "do"       : return this.evalDo(expr, env);
+            case "parse"    : return this.evalParse(expr, env);
+            case "eval"     : return this.evalEval(expr, env);
         }
 
         const res: {resolved: boolean, val: any} = this.resolveThroughLib(expr, env);
@@ -321,6 +335,45 @@ class Interpreter {
                 if (res === "break")    return;
             }
         } while (this.evalExpr(condBody, env));
+    }
+
+    private evalParse(expr: any[], env: any[]): any[] {
+        const codeText: string = this.evalExpr(expr[1], env);
+        return Parser.parse(codeText);
+    }
+
+    private evalEval(expr: any[], env: any[]): any[] {
+        const codeTree: any[] = this.evalExpr(expr[1], env);
+        const res = this.evalCodeTree(codeTree, this.options);
+        return res;
+    }
+
+    private manageImports(codeTree: any[], callback: (codeTree: any[]) => void): void {
+        const code: any[] = [];
+        let currentCodeIndex = 0;
+
+        searchImports(currentCodeIndex);
+
+        function searchImports(index: number): void {
+            for (let i = index; i < codeTree.length; i++) {
+                const expr: any = codeTree[i];
+                if (Array.isArray(expr) && expr[0] === "import") {
+                    currentCodeIndex = i;
+                    const libUrl: string = expr[1][1];
+                    LibManager.importLibrary(libUrl, libManager_import_ready);
+                    return;
+                } else {
+                    code.push(expr);
+                }
+            }
+
+            callback(code);
+        }
+
+        function libManager_import_ready(libCodeTree: any[]) :void {
+            code.push(... libCodeTree);
+            searchImports(currentCodeIndex + 1);
+        }
     }
 
     private resolveThroughLib(expr: any[], env: any[]): {resolved: boolean, val: any} {

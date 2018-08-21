@@ -23,10 +23,7 @@
 
         const builtins = makeKeywords(
             // Core lib
-            "+ - * / = > < != >= <= and or not type-of to-string to-number to-boolean print " +
-
-            // scheme lib
-            "eq? boolean? null? number? string? pair? list? cons car cdr caar cadr cdar cddr length " +
+            "+ - * / = > < != >= <= and or not type-of to-string to-number to-boolean print parse eval " +
 
             // list lib
             "list.empty list.empty? list.has? list.length list.first list.rest list.last list.least list.add list.add! list.push list.push! list.index " +

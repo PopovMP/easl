@@ -36,8 +36,8 @@ describe('cond', function () {
     });
     it('Expression as a condition', function () {
         assert.strictEqual(easl.evaluate(`   {cond
-                                                ((eq? 1 2) 0)
-                                                ((eq? 1 1) 5)}      `), 5);
+                                                ((= 1 2) 0)
+                                                ((= 1 1) 5)}      `), 5);
     });
 });
 

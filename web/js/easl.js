@@ -3,17 +3,22 @@ class Easl {
     constructor() {
         this.interpreter = new Interpreter();
     }
-    evaluate(codeText, optionsParam) {
+    evaluate(codeText, optionsParam, callback) {
         const options = optionsParam
             ? Options.parse(optionsParam)
             : new Options();
         try {
             const codeTree = Parser.parse(codeText);
-            const output = this.interpreter.evalCodeTree(codeTree, options);
+            const output = this.interpreter.evalCodeTree(codeTree, options, callback);
             return output;
         }
         catch (e) {
-            return e.toString();
+            if (typeof callback === "function") {
+                callback(String(e));
+            }
+            else {
+                return e.toString();
+            }
         }
     }
 }
@@ -22,15 +27,26 @@ if (typeof module === "object") {
 }
 class Interpreter {
     constructor() {
+        this.options = new Options();
         this.isDebug = false;
         this.print = console.log;
         this.libs = [];
     }
-    evalCodeTree(codeTree, options) {
+    evalCodeTree(codeTree, options, callback) {
+        this.options = options;
         this.isDebug = options.isDebug;
         this.print = options.print;
         this.libs.push(...LibManager.getBuiltinLibs(options.libs, this));
-        return this.evalExprLst(codeTree, []);
+        if (typeof callback === "function") {
+            this.manageImports(codeTree, this.manageImport_ready.bind(this, callback));
+        }
+        else {
+            return this.evalExprLst(codeTree, []);
+        }
+    }
+    manageImport_ready(callback, codeTree) {
+        const res = this.evalExprLst(codeTree, []);
+        callback(res);
     }
     evalExprLst(exprLst, env) {
         let res;
@@ -75,11 +91,21 @@ class Interpreter {
             case "for": return this.evalFor(expr, env);
             case "while": return this.evalWhile(expr, env);
             case "do": return this.evalDo(expr, env);
+            case "parse": return this.evalParse(expr, env);
+            case "eval": return this.evalEval(expr, env);
         }
         const res = this.resolveThroughLib(expr, env);
         if (res.resolved)
             return res.val;
         return this.callProc(expr, env);
+    }
+    isTruthy(value) {
+        return !this.isFaulty(value);
+    }
+    isFaulty(value) {
+        if (Array.isArray(value) && value.length === 0)
+            return true;
+        return !value;
     }
     lookup(symbol, env) {
         for (const cell of env) {
@@ -181,14 +207,6 @@ class Interpreter {
                 ? this.evalExpr(expr[3], env)
                 : null;
     }
-    isTruthy(expr) {
-        return !this.isFaulty(expr);
-    }
-    isFaulty(expr) {
-        if (Array.isArray(expr) && expr.length === 0)
-            return true;
-        return !expr;
-    }
     evalCond(expr, env) {
         const clauses = expr.slice(1);
         for (const clause of clauses) {
@@ -267,6 +285,39 @@ class Interpreter {
             }
         } while (this.evalExpr(condBody, env));
     }
+    evalParse(expr, env) {
+        const codeText = this.evalExpr(expr[1], env);
+        return Parser.parse(codeText);
+    }
+    evalEval(expr, env) {
+        const codeTree = this.evalExpr(expr[1], env);
+        const res = this.evalCodeTree(codeTree, this.options);
+        return res;
+    }
+    manageImports(codeTree, callback) {
+        const code = [];
+        let currentCodeIndex = 0;
+        searchImports(currentCodeIndex);
+        function searchImports(index) {
+            for (let i = index; i < codeTree.length; i++) {
+                const expr = codeTree[i];
+                if (Array.isArray(expr) && expr[0] === "import") {
+                    currentCodeIndex = i;
+                    const libUrl = expr[1][1];
+                    LibManager.importLibrary(libUrl, libManager_import_ready);
+                    return;
+                }
+                else {
+                    code.push(expr);
+                }
+            }
+            callback(code);
+        }
+        function libManager_import_ready(libCodeTree) {
+            code.push(...libCodeTree);
+            searchImports(currentCodeIndex + 1);
+        }
+    }
     resolveThroughLib(expr, env) {
         for (const lib of this.libs) {
             const res = lib.libEvalExpr(expr, env);
@@ -292,12 +343,30 @@ class LibManager {
                 return new MathLib(inter);
             case "number-lib":
                 return new NumberLib(inter);
-            case "scheme-lib":
-                return new SchemeLib(inter);
             case "string-lib":
                 return new StringLib(inter);
             default:
                 throw Error("Unknown lib: " + libName);
+        }
+    }
+    static importLibrary(libUrl, callback) {
+        if (typeof libUrl !== "string" || libUrl.length === 0) {
+            throw Error("Empty library name");
+        }
+        const storedLib = IoService.getItemFromLocalStorage(libUrl);
+        if (Array.isArray(storedLib) && storedLib.length > 0) {
+            callback(storedLib);
+            return;
+        }
+        const libName = libUrl.substring(libUrl.lastIndexOf('/') + 1);
+        IoService.get(libUrl, ioService_get_ready);
+        function ioService_get_ready(libText) {
+            if (typeof libUrl !== "string" || libUrl.length === 0) {
+                throw Error("Cannot load library content: " + libName);
+            }
+            const libCode = Parser.parse(libText);
+            IoService.setItemToLocalStorage(libUrl, libCode);
+            callback(libCode);
         }
     }
 }
@@ -305,8 +374,7 @@ class Options {
     constructor() {
         this.print = console.log;
         this.isDebug = false;
-        this.libs = ["core-lib", "date-lib", "list-lib", "math-lib",
-            "number-lib", "scheme-lib", "string-lib"];
+        this.libs = ["core-lib", "date-lib", "list-lib", "math-lib", "number-lib", "string-lib"];
     }
     static parse(options) {
         const evalOptions = new Options();
@@ -322,25 +390,70 @@ class Options {
         return evalOptions;
     }
 }
+const XMLHttpRequestLib = (typeof XMLHttpRequest === "function")
+    ? XMLHttpRequest
+    : require("xmlhttprequest").XMLHttpRequest;
+const localStorageLib = (typeof localStorage === "object" && localStorage !== null)
+    ? localStorage
+    : new (require("node-localstorage").LocalStorage)("./easl-local-storage");
+class IoService {
+    static get(url, callback) {
+        const xmlHttp = new XMLHttpRequestLib();
+        xmlHttp.onreadystatechange = readyStateChange;
+        xmlHttp.onerror = error;
+        xmlHttp.open("GET", url, true);
+        xmlHttp.send();
+        function readyStateChange() {
+            if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+                callback(xmlHttp.responseText);
+            }
+        }
+        function error(e) {
+            throw Error("Error while getting: " + url + ", " + e.message);
+        }
+    }
+    static setItemToLocalStorage(key, item) {
+        try {
+            if (typeof item === "string") {
+                localStorageLib.setItem(key, item);
+            }
+            else {
+                localStorageLib.setItem(key, JSON.stringify(item));
+            }
+        }
+        catch (e) {
+            throw Error("Set item to local storage: " + key + ", " + e.message);
+        }
+    }
+    static getItemFromLocalStorage(key) {
+        try {
+            const value = localStorageLib.getItem(key);
+            return value && JSON.parse(value);
+        }
+        catch (e) {
+            throw Error("Get item to local storage: " + key + ", " + e.message);
+        }
+    }
+}
 class CoreLib {
     constructor(interpreter) {
         this.inter = interpreter;
     }
     libEvalExpr(expr, env) {
         switch (expr[0]) {
-            case "+": return this.inter.evalExpr(expr[1], env) + this.inter.evalExpr(expr[2], env);
-            case "-": return this.inter.evalExpr(expr[1], env) - this.inter.evalExpr(expr[2], env);
-            case "*": return this.inter.evalExpr(expr[1], env) * this.inter.evalExpr(expr[2], env);
-            case "/": return this.inter.evalExpr(expr[1], env) / this.inter.evalExpr(expr[2], env);
-            case "%": return this.inter.evalExpr(expr[1], env) % this.inter.evalExpr(expr[2], env);
-            case "=": return this.inter.evalExpr(expr[1], env) === this.inter.evalExpr(expr[2], env);
+            case "+": return this.evalPlus(expr, env);
+            case "-": return this.evalSubtract(expr, env);
+            case "*": return this.evalMultiply(expr, env);
+            case "/": return this.evalDivide(expr, env);
+            case "%": return this.evalModulo(expr, env);
+            case "=": return this.evalEqual(expr, env);
             case ">": return this.inter.evalExpr(expr[1], env) > this.inter.evalExpr(expr[2], env);
             case "<": return this.inter.evalExpr(expr[1], env) < this.inter.evalExpr(expr[2], env);
             case "!=": return this.inter.evalExpr(expr[1], env) !== this.inter.evalExpr(expr[2], env);
             case ">=": return this.inter.evalExpr(expr[1], env) >= this.inter.evalExpr(expr[2], env);
             case "<=": return this.inter.evalExpr(expr[1], env) <= this.inter.evalExpr(expr[2], env);
-            case "and": return this.inter.evalExpr(expr[1], env) && this.inter.evalExpr(expr[2], env);
-            case "or": return this.inter.evalExpr(expr[1], env) || this.inter.evalExpr(expr[2], env);
+            case "and": return this.evalAnd(expr, env);
+            case "or": return this.evalOr(expr, env);
             case "not": return this.evalNot(this.inter.evalExpr(expr[1], env));
             case "type-of": return this.evalTypeOf(expr, env);
             case "to-string": return this.evalToString(expr, env);
@@ -349,6 +462,126 @@ class CoreLib {
             case "print": return this.evalPrint(expr, env);
         }
         return "##not-resolved##";
+    }
+    evalPlus(expr, env) {
+        if (expr.length === 1) {
+            return 0;
+        }
+        else if (expr.length === 2) {
+            return this.inter.evalExpr(expr[1], env);
+        }
+        else if (expr.length === 3) {
+            return this.inter.evalExpr(expr[1], env) + this.inter.evalExpr(expr[2], env);
+        }
+        else {
+            return this.inter.evalExpr(expr[1], env) + this.evalPlus(expr.slice(1), env);
+        }
+    }
+    evalSubtract(expr, env) {
+        if (expr.length === 1) {
+            throw Error("Wrong number of arguments: " + "-");
+        }
+        else if (expr.length === 2) {
+            return -this.inter.evalExpr(expr[1], env);
+        }
+        else if (expr.length === 3) {
+            return this.inter.evalExpr(expr[1], env) - this.inter.evalExpr(expr[2], env);
+        }
+        else {
+            return this.inter.evalExpr(expr[1], env) - this.evalPlus(expr.slice(1), env);
+        }
+    }
+    evalMultiply(expr, env) {
+        if (expr.length === 1) {
+            return 1;
+        }
+        else if (expr.length === 2) {
+            return this.inter.evalExpr(expr[1], env);
+        }
+        else if (expr.length === 3) {
+            return this.inter.evalExpr(expr[1], env) * this.inter.evalExpr(expr[2], env);
+        }
+        else {
+            return this.inter.evalExpr(expr[1], env) * this.evalMultiply(expr.slice(1), env);
+        }
+    }
+    evalDivide(expr, env) {
+        if (expr.length === 1) {
+            throw Error("Wrong number of arguments: " + "/");
+        }
+        else if (expr.length === 2) {
+            return 1 / this.inter.evalExpr(expr[1], env);
+        }
+        else if (expr.length === 3) {
+            if (this.inter.evalExpr(expr[2], env) === 0) {
+                throw Error("Division by zero");
+            }
+            return this.inter.evalExpr(expr[1], env) / this.inter.evalExpr(expr[2], env);
+        }
+        else {
+            return this.inter.evalExpr(expr[1], env) / this.evalMultiply(expr.slice(1), env);
+        }
+    }
+    evalModulo(expr, env) {
+        if (expr.length === 3) {
+            const n = this.inter.evalExpr(expr[1], env);
+            const m = this.inter.evalExpr(expr[2], env);
+            return n % m;
+        }
+        else {
+            throw Error("Wrong number of arguments: " + "%");
+        }
+    }
+    evalEqual(expr, env) {
+        if (expr.length === 3) {
+            return this.inter.evalExpr(expr[1], env) === this.inter.evalExpr(expr[2], env);
+        }
+        else if (expr.length > 3) {
+            const first = this.inter.evalExpr(expr[1], env);
+            for (let i = 2; i < expr.length; i++) {
+                if (this.inter.evalExpr(expr[i], env) !== first)
+                    return false;
+            }
+            return true;
+        }
+        else {
+            throw Error("Wrong number of arguments: " + "=");
+        }
+    }
+    evalAnd(expr, env) {
+        if (expr.length === 1) {
+            return true;
+        }
+        else if (expr.length === 2) {
+            return this.inter.evalExpr(expr[1], env);
+        }
+        else if (expr.length === 3) {
+            const val = this.inter.evalExpr(expr[1], env);
+            return this.inter.isTruthy(val) ? this.inter.evalExpr(expr[2], env) : val;
+        }
+        else {
+            const val = this.inter.evalExpr(expr[1], env);
+            return this.inter.isTruthy(val) ? this.evalAnd(expr.slice(1), env) : val;
+        }
+    }
+    evalOr(expr, env) {
+        if (expr.length === 1) {
+            return false;
+        }
+        else if (expr.length === 2) {
+            return this.inter.evalExpr(expr[1], env);
+        }
+        else if (expr.length === 3) {
+            const val = this.inter.evalExpr(expr[1], env);
+            return this.inter.isTruthy(val) ? val : this.inter.evalExpr(expr[2], env);
+        }
+        else {
+            const val = this.inter.evalExpr(expr[1], env);
+            return this.inter.isTruthy(val) ? val : this.evalOr(expr.slice(1), env);
+        }
+    }
+    evalNot(a) {
+        return (Array.isArray(a) && a.length === 0) || !a;
     }
     evalTypeOf(expr, env) {
         if (expr.length === 1) {
@@ -376,9 +609,6 @@ class CoreLib {
         }
         return typeof value;
     }
-    evalNot(a) {
-        return (Array.isArray(a) && a.length === 0) || !a;
-    }
     evalToBoolean(expr, env) {
         const entity = this.inter.evalExpr(expr[1], env);
         return !this.evalNot(entity);
@@ -386,7 +616,7 @@ class CoreLib {
     evalToNumber(expr, env) {
         const entity = this.inter.evalExpr(expr[1], env);
         const number = Number(entity);
-        return Number.isNaN(number) ? null : number;
+        return number !== number ? null : number;
     }
     evalToString(expr, env) {
         function bodyToString(body) {
@@ -608,15 +838,14 @@ class MathLib {
             case "math.abs": return Math.abs(this.inter.evalExpr(expr[1], env));
             case "math.ceil": return Math.ceil(this.inter.evalExpr(expr[1], env));
             case "math.floor": return Math.floor(this.inter.evalExpr(expr[1], env));
-            case "math.log": return Math.log10(this.inter.evalExpr(expr[1], env));
+            case "math.log": return Math.log(this.inter.evalExpr(expr[1], env)) * Math.LOG10E;
+            case "math.ln": return Math.log(this.inter.evalExpr(expr[1], env));
             case "math.max": return Math.max(this.inter.evalExpr(expr[1], env), this.inter.evalExpr(expr[2], env));
             case "math.min": return Math.min(this.inter.evalExpr(expr[1], env), this.inter.evalExpr(expr[2], env));
             case "math.pow": return Math.pow(this.inter.evalExpr(expr[1], env), this.inter.evalExpr(expr[2], env));
             case "math.random": return Math.random();
             case "math.round": return Math.round(this.inter.evalExpr(expr[1], env));
-            case "math.sign": return Math.sign(this.inter.evalExpr(expr[1], env));
             case "math.sqrt": return Math.sqrt(this.inter.evalExpr(expr[1], env));
-            case "math.trunc": return Math.trunc(this.inter.evalExpr(expr[1], env));
         }
         return "##not-resolved##";
     }
@@ -627,64 +856,48 @@ class NumberLib {
     }
     libEvalExpr(expr, env) {
         switch (expr[0]) {
-            case "numb.epsilon": return Number.EPSILON;
+            case "numb.finite?": return this.evalIsFine(expr, env);
+            case "numb.integer?": return this.evalIsInteger(expr, env);
             case "numb.max-value": return Number.MAX_VALUE;
             case "numb.min-value": return Number.MIN_VALUE;
-            case "numb.is-integer": return Number.isInteger(this.inter.evalExpr(expr[1], env));
-            case "numb.parse-float": return Number.parseFloat(this.inter.evalExpr(expr[1], env));
-            case "numb.parse-integer": return Number.parseInt(this.inter.evalExpr(expr[1], env));
-            case "numb.to-fixed": return (this.inter.evalExpr(expr[1], env)).toFixed(this.inter.evalExpr(expr[1], env));
-            case "numb.to-string": return (this.inter.evalExpr(expr[1], env)).toString(10);
+            case "numb.parse-float": return this.evalParseFloat(expr, env);
+            case "numb.parse-int": return this.evalParseInt(expr, env);
+            case "numb.to-fixed": return this.evalToFixed(expr, env);
+            case "numb.to-precision": return this.evalToPrecision(expr, env);
+            case "numb.to-string": return this.evalToString(expr, env);
         }
         return "##not-resolved##";
     }
-}
-class SchemeLib {
-    constructor(interpreter) {
-        this.isNull = (a) => a === null;
-        this.isNumber = (a) => typeof a === "number";
-        this.isString = (a) => typeof a === "string";
-        this.isBoolean = (a) => typeof a === "boolean";
-        this.isList = (a) => Array.isArray(a);
-        this.isPair = (lst) => Array.isArray(lst) && lst.length > 0;
-        this.length = (lst) => Array.isArray(lst) ? lst.length : -1;
-        this.car = (lst) => lst[0];
-        this.cdr = (lst) => lst.slice(1);
-        this.caar = (lst) => lst[0][0];
-        this.cadr = (lst) => lst[1];
-        this.cdar = (lst) => lst[0].slice(1);
-        this.cddr = (lst) => lst.slice(2);
-        this.inter = interpreter;
+    evalIsFine(expr, env) {
+        const value = this.inter.evalExpr(expr[1], env);
+        return typeof value === "number" && isFinite(value);
     }
-    libEvalExpr(expr, env) {
-        switch (expr[0]) {
-            case "eq?": return this.inter.evalExpr(expr[1], env) === this.inter.evalExpr(expr[2], env);
-            case "boolean?": return this.isBoolean(this.inter.evalExpr(expr[1], env));
-            case "null?": return this.isNull(this.inter.evalExpr(expr[1], env));
-            case "number?": return this.isNumber(this.inter.evalExpr(expr[1], env));
-            case "string?": return this.isString(this.inter.evalExpr(expr[1], env));
-            case "pair?": return this.isPair(this.inter.evalExpr(expr[1], env));
-            case "list?": return this.isList(this.inter.evalExpr(expr[1], env));
-            case "cons": return this.evalCons(expr, env);
-            case "car": return this.car(this.inter.evalExpr(expr[1], env));
-            case "cdr": return this.cdr(this.inter.evalExpr(expr[1], env));
-            case "caar": return this.caar(this.inter.evalExpr(expr[1], env));
-            case "cadr": return this.cadr(this.inter.evalExpr(expr[1], env));
-            case "cdar": return this.cdar(this.inter.evalExpr(expr[1], env));
-            case "cddr": return this.cddr(this.inter.evalExpr(expr[1], env));
-            case "length": return this.length(this.inter.evalExpr(expr[1], env));
-        }
-        return "##not-resolved##";
+    evalIsInteger(expr, env) {
+        const value = this.inter.evalExpr(expr[1], env);
+        return typeof typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
     }
-    evalCons(expr, env) {
-        const a = this.inter.evalExpr(expr[1], env);
-        const b = this.inter.evalExpr(expr[2], env);
-        if (b === null)
-            return [a];
-        if (this.isList(b)) {
-            return b.unshift(a) && b;
-        }
-        return [a, b];
+    evalParseFloat(expr, env) {
+        const value = this.inter.evalExpr(expr[1], env);
+        return parseFloat(value);
+    }
+    evalParseInt(expr, env) {
+        const value = this.inter.evalExpr(expr[1], env);
+        return parseInt(value);
+    }
+    evalToFixed(expr, env) {
+        const value = this.inter.evalExpr(expr[1], env);
+        const digits = expr[2] ? this.inter.evalExpr(expr[2], env) : 0;
+        return value.toFixed(digits);
+    }
+    evalToPrecision(expr, env) {
+        const value = this.inter.evalExpr(expr[1], env);
+        const precision = expr[2] ? this.inter.evalExpr(expr[2], env) : 0;
+        return value.toPrecision(precision);
+    }
+    evalToString(expr, env) {
+        const value = this.inter.evalExpr(expr[1], env);
+        const radix = expr[2] ? this.inter.evalExpr(expr[2], env) : 10;
+        return value.toString(radix);
     }
 }
 class StringLib {

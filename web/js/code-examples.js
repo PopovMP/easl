@@ -199,8 +199,7 @@ const examplesList = [
 
     {
         name: "Find the maximum of a list",
-        code:
-            `;; Find the maximum of a list
+        code: `;; Find the maximum of a list
 
 {function list-max (lst)
     (loop lst (list.first lst))}
@@ -219,8 +218,7 @@ const examplesList = [
     },
     {
         name: "Closure example",
-        code:
-            `;; Closure
+        code: `;; Closure
 
 {function make-adder (a)
     {lambda (b) (+ a b)}}
@@ -232,8 +230,7 @@ const examplesList = [
     },
     {
         name: "Sequence generator",
-        code:
-            `;; Sequence generator
+        code: `;; Sequence generator
 
 {function make-sequence (first length next)
     {function loop (lst i)
@@ -249,31 +246,7 @@ const examplesList = [
                {lambda (prev) (* prev 3)} )  ; calculation formula
 `
     },
-    {
-        name: "Bubble sort",
-        code:
-            `;; Bubble sort
 
-{function bubble-up (lst)
-    {if (list.empty? (cdr lst))   
-        lst    
-        {if (< (car lst) (cadr lst))   
-            (cons (car  lst) (bubble-up (cdr lst)))   
-            (cons (cadr lst) (bubble-up (cons (car lst)
-                                              (cddr lst)))) }}}
-
-{function bubble-sort-aux (n lst)
-    {if (= n 1)
-        (bubble-up lst)
-        (bubble-sort-aux (- n 1)
-                         (bubble-up lst)) }} 
-
-{function sort (lst) 
-    (bubble-sort-aux (list.length lst) lst) }
-    
-(sort [6 5 10 9 8 7])
-`
-    },
     {
         name: "Y combinator - factorial",
         code:
@@ -284,6 +257,51 @@ const examplesList = [
                               1
                               (* ((! !) (- n 1))
                                  n))))) 5) 
+`
+    },
+
+    {
+        name: "Bubble sort Scheme-like",
+        code: `;; Bubble sort Scheme-like
+
+;; Loads scheme library
+{import "https://raw.githubusercontent.com/PopovMP/easl/master/easl-libs/scheme-lib.easl"}
+
+{function bubble-up (lst)
+{if (empty? (cdr lst))
+    lst
+    {if (< (car lst) (cadr lst))
+        (cons (car  lst) (bubble-up (cdr lst)))
+        (cons (cadr lst) (bubble-up (cons (car lst)
+                                          (cddr lst)))) }}}
+
+{function bubble-sort-aux (n lst)
+    {if (= n 1)
+        (bubble-up lst)
+        (bubble-sort-aux (- n 1)
+                         (bubble-up lst)) }}
+
+{function sort (lst)
+    (bubble-sort-aux (length lst) lst) }
+
+(sort (list 6 5 10 9 8 7))
+`
+    },
+
+    {
+        name: "EASL interprets EASL",
+        code: `;; EASL interprets EASL
+
+;; EASL source code in a string
+{let code-text "{let lst [1 2 3 4 5 6 7]} {let len (list.length lst)} (* 6 len)"}
+
+;; Code parsed to EASL intermediate code
+{let code-tree (parse code-text)}
+
+;; Evaluation of the code tree
+{let res (eval code-tree)}
+
+(print "The answer is:" res)
 `
     },
 ];

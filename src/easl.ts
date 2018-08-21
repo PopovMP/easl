@@ -8,17 +8,21 @@ class Easl {
         this.interpreter = new Interpreter();
     }
 
-    public evaluate(codeText: string, optionsParam?: Options) {
+    public evaluate(codeText: string, optionsParam?: Options, callback?: Function) {
         const options = optionsParam
             ? Options.parse(optionsParam)
             : new Options();
 
         try {
             const codeTree = Parser.parse(codeText);
-            const output = this.interpreter.evalCodeTree(codeTree, options);
+            const output = this.interpreter.evalCodeTree(codeTree, options, callback);
             return output;
         } catch (e) {
-            return e.toString();
+            if (typeof callback === "function") {
+                callback(String(e));
+            } else {
+                return e.toString();
+            }
         }
     }
 }

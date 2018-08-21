@@ -8,8 +8,7 @@ class Options {
     constructor() {
         this.print = console.log;
         this.isDebug = false;
-        this.libs = ["core-lib", "date-lib", "list-lib", "math-lib",
-            "number-lib", "scheme-lib", "string-lib"];
+        this.libs = ["core-lib", "date-lib", "list-lib", "math-lib", "number-lib", "string-lib"];
     }
 
     public static parse(options: any): Options {

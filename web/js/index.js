@@ -50,7 +50,10 @@ function setDefaultCode() {
 
 function runCode(codeText) {
     clearOutput();
-    const output = app.easl.evaluate(codeText, app.evalOptions);
+    app.easl.evaluate(codeText, app.evalOptions, eval_ready);
+}
+
+function eval_ready(output) {
     showOutput(output);
 }
 
