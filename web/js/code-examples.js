@@ -76,14 +76,18 @@ const examplesList = [
             `;; Function with default parameters
 
 {function sum (a b)
-   {let a (or a 0)} ; If 'a' is not given, it is set to 0
-   {let b (or b 0)} ; If 'b' is not given, it is set to 0
+   {let a (or a 0)}
+   {let b (or b 0)}
+   {if (<= (list.length func-args) 2) 
+       (+ a b)
+       (+ a b (sum (list.get 2 func-args)
+                   (list.get 3 func-args))) }}
 
-   (+ a b) }
-
-(print "(sum)     →" (sum))
-(print "(sum 1)   →" (sum 1))
-(print "(sum 1 2) →" (sum 1 2))
+(print "(sum)         →" (sum))
+(print "(sum 1)       →" (sum 1))
+(print "(sum 1 2)     →" (sum 1 2))
+(print "(sum 1 2 3)   →" (sum 1 2 3))
+(print "(sum 1 2 3 4) →" (sum 1 2 3 4)) ; Magic !?!
 `
     },
 

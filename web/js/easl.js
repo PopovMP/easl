@@ -143,8 +143,9 @@ class Interpreter {
         const funcName = isNamed ? proc : "lambda";
         const params = closure[1];
         const closureBody = closure[2].length === 1 ? closure[2][0] : closure[2];
-        const closureEnv = this.assocArgsToParams(params, args).concat(env).concat(closure[3])
-            .concat([["func-name", funcName], ["func-params", params], ["func-args", args]]);
+        const closureEnv = this.assocArgsToParams(params, args)
+            .concat([["func-name", funcName], ["func-params", params], ["func-args", args]])
+            .concat(env).concat(closure[3]);
         if (closureBody === "body") {
             throw Error(`Improper function: ${funcName}`);
         }
