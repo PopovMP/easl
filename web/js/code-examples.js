@@ -25,14 +25,14 @@ const examplesList = [
         code:
             `;; Print numbers from 1 to 10
 
-{let n 1 }                         ; initialize a counter
+{let n 1}                     ; initialize a counter
 
 (print (+ "Start from " n))
 
-{while (<= n 10)                   ; evaluate the condition
-                                   ; repeat the loop until the condition is true
-    (print  (+ "It is number " n)) ; the 'while' loop body
-    {set! n (+ n 1)} }             ; increase the counter and return back
+{while (<= n 10)              ; evaluate the condition
+                              ; repeat the loop until the condition is true
+    (print  "It is number" n) ; the 'while' loop body
+    {set! n (+ n 1) }}        ; increase the counter and return back
 
 (print (+ "The loop is not executed for: " n))
 `
@@ -45,11 +45,11 @@ const examplesList = [
 {let lst (list.empty)}                    ; make an empty list
 
 {for (i 0) (< i 10) (+ i 1)               ; cycle 10 times
-    {let rand-num (* (math.random) 100)}  ; generate a random number between 0 and 100
-    {let rounded  (math.round rand-num)}  ; round the number
+    {let random   (* (math.random) 100)}  ; generate a random number between 0 and 100
+    {let rounded  (math.round random)  }  ; round the number
     (list.add! rounded lst) }             ; add the number to the end of the list
     
-{print lst) ; print the list
+(print lst) ; print the list
 `
     },
 
@@ -63,10 +63,10 @@ const examplesList = [
 
 ; Check which list of options contains the value of 'n' and return the text.
 {let type {case n
-             ([0 2 4 6 8] " is even")
-             ([1 3 5 7 9] " is odd" ) }}
+             ([0 2 4 6 8] "even")
+             ([1 3 5 7 9] "odd" ) }}
 
-(print (+ n type))
+(print n "is" type)
 `
     },
 
@@ -94,7 +94,7 @@ const examplesList = [
     {
         name: "Implementation of 'map'",
         code:
-            `;; Implementation of 'map'
+            `;; Implementation of 'map' in EASL
 
 {function map (func lst)
     {let i    0}    
@@ -115,7 +115,7 @@ const examplesList = [
     {
         name: "Implementation of 'for-each'",
         code:
-            `;; Implementation of for-each
+            `;; Implementation of 'for-each' in EASL
 
 {function for-each (func lst)
     {let len (list.length lst)}
@@ -306,6 +306,40 @@ const examplesList = [
 {let res (eval code-tree)}
 
 (print "The answer is:" res)
+`
+    },
+
+    {
+        name: "Message based OOP",
+        code: `;; Demonstration of a message based OOP implemented with closure.
+
+;; Person factory
+{function make-person (first-name last-name)
+    {lambda (message arg)
+        {case message
+            ("first name" (if (= (type-of arg) "string") (make-person arg  last-name) first-name))
+            ("last name"  (if (= (type-of arg) "string") (make-person first-name arg) last-name ))
+            ("clone"      (make-person first-name last-name))
+            (else         (+ "I am " first-name " " last-name "!")) }}}
+
+;; Create a person: John Smith
+{let john-smith (make-person "John" "Smith")}
+
+;; Get properties
+(print (john-smith))
+(print "My first name is:" (john-smith "first name"))
+(print "My last name is:"  (john-smith "last name" ))
+
+;; When set a property, the factory returns a new object
+{let john-doe (john-smith "last name" "Doe")}
+(print (john-doe))
+
+;; clone an object
+{let john-doe-clone (john-doe "clone")}
+
+;; Change the first name of the clone
+{let jane-doe (john-doe-clone "first name" "Jane")}
+(print (jane-doe))
 `
     },
 ];

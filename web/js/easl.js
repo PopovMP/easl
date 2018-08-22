@@ -238,15 +238,7 @@ class Interpreter {
         const cntId = expr[1][0];
         const cntPair = [cntId, this.evalExpr(expr[1][1], loopEnv)];
         loopEnv.unshift(cntPair);
-        const setEnv = () => {
-            for (const cell of loopEnv) {
-                if (cell[0] === cntId) {
-                    cell[1] = cntPair[1];
-                    break;
-                }
-            }
-        };
-        for (; this.evalExpr(condBody, loopEnv); cntPair[1] = this.evalExpr(incBody, loopEnv)) {
+        while (this.evalExpr(condBody, loopEnv)) {
             for (const bodyExpr of loopBody) {
                 const res = this.evalExpr(bodyExpr, loopEnv);
                 if (res === "continue")
@@ -254,7 +246,12 @@ class Interpreter {
                 if (res === "break")
                     return null;
             }
-            setEnv();
+            for (const cell of loopEnv) {
+                if (cell[0] === cntId) {
+                    cell[1] = this.evalExpr(incBody, loopEnv);
+                    break;
+                }
+            }
         }
         return null;
     }
@@ -292,8 +289,10 @@ class Interpreter {
     }
     dumpState(expr, env) {
         const envDumpList = [];
-        for (const e of env) {
-            envDumpList.push(`${e[0]} : ${JSON.stringify(e[1])}`);
+        const maxLength = Math.min(env.length, 10);
+        for (let i = 0; i < maxLength; i++) {
+            const record = env[i];
+            envDumpList.push(`${record[0]} : ${JSON.stringify(record[1]).substr(0, 500)}`);
         }
         const envDumpText = envDumpList.join("\n      ");
         const message = `Expr: ${JSON.stringify(expr)}\nEnv : ${envDumpText}`;
@@ -384,7 +383,7 @@ class Options {
     }
     static parse(options) {
         const evalOptions = new Options();
-        if (typeof options.print === "function") {
+        if (typeof options.printer === "function") {
             evalOptions.printer = options.printer;
         }
         if (Array.isArray(options.libs)) {
