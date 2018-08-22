@@ -1,4 +1,4 @@
-;; Simply assert lib for EASL
+;; Simple assert lib for EASL
 
 {function assert.print-passed (message)
  	(print "✓ passed:" message)}

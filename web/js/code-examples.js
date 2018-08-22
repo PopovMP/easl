@@ -342,4 +342,27 @@ const examplesList = [
 (print (jane-doe))
 `
     },
+
+    {
+        name: "Unit testing with 'assert-lib'",
+        code: `;; Unit tests
+
+{import "https://raw.githubusercontent.com/PopovMP/easl/master/easl-libs/assert-lib.easl"}
+
+(assert.equal (+ 2 3) 5 "Sum two numbers")
+
+(assert.true? [1 2 3] "A non empty list is true.")
+
+(assert.equal {if true  4 5} 4 "'if' returns the first expression, if the condition is true")
+(assert.equal {if false 4 5} 5 "'if' returns the second expression, if the condition is false")
+(assert.equal {if true 4 (print "I'M NOT PRINTED")} 4 "'if' evaluates only the first expression, if the condition is true")
+
+;; The function is closed in 'lambda' to prevent pollution of the global scope
+({lambda () {block
+	{function sum (a b) (+ a b)}
+    (assert.equal (sum 2 3) 5 "Call a function with two args.") }})
+
+(assert.equal 13 42 "The answer to Life, the Universe, and Everything!")
+`
+    },
 ];
