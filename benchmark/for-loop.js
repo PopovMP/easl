@@ -18,10 +18,6 @@ const result = easl.evaluate(`
 
 (print (- (date.now) now))
 
-`, {
-    print: console.log,
-    isDebug: false,
-    libs: ["core-lib", "math-lib", "list-lib", "date-lib"]
-});
+`, {libs: ["core-lib", "math-lib", "list-lib", "date-lib"]});
 
 console.log(result);

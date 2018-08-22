@@ -21,10 +21,7 @@ function initialize() {
 
     app.view.buttonRun.addEventListener("click", buttonRun_click);
 
-    app.evalOptions = {
-        isDebug: false,
-        print: interpreter_print
-    };
+    app.evalOptions = {printer: interpreter_print};
 
     setExamples();
     setDefaultCode();
@@ -58,7 +55,9 @@ function eval_ready(output) {
 }
 
 function showOutput(output) {
-    app.view.codeOutputElem.value += output;
+    if (output !== null) {
+        app.view.codeOutputElem.value += output;
+    }
 }
 
 function clearOutput() {
@@ -80,5 +79,7 @@ function buttonRun_click(event) {
 }
 
 function interpreter_print(text) {
-    showOutput(text + "\n");
+    if (text !== null) {
+        showOutput(text + "\n");
+    }
 }

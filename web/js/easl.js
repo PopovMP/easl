@@ -27,15 +27,12 @@ if (typeof module === "object") {
 }
 class Interpreter {
     constructor() {
-        this.libs = [];
         this.isDebug = false;
-        this.print = console.log;
+        this.libs = [];
         this.options = new Options();
     }
     evalCodeTree(codeTree, options, callback) {
         this.options = options;
-        this.isDebug = options.isDebug;
-        this.print = options.print;
         this.libs.push(...LibManager.getBuiltinLibs(options.libs, this));
         if (typeof callback === "function") {
             this.manageImports(codeTree, this.manageImport_ready.bind(this, callback));
@@ -75,8 +72,9 @@ class Interpreter {
             case "string": return this.lookup(expr, env);
             case "boolean": return expr;
         }
-        if (this.isDebug)
-            console.log("evalExpr expr:", JSON.stringify(expr), "env:", JSON.stringify(env));
+        if (this.isDebug) {
+            this.dumpState(expr, env);
+        }
         switch (expr[0]) {
             case "list": return this.mapExprLst(expr.slice(1), env);
             case "string": return expr[1];
@@ -84,13 +82,14 @@ class Interpreter {
             case "set!": return this.evalSet(expr, env);
             case "lambda": return this.evalLambda(expr, env);
             case "function": return this.evalFunction(expr, env);
-            case "body": return this.evalBody(expr, env);
+            case "block": return this.evalBlock(expr, env);
             case "if": return this.evalIf(expr, env);
             case "cond": return this.evalCond(expr, env);
             case "case": return this.evalCase(expr, env);
             case "for": return this.evalFor(expr, env);
             case "while": return this.evalWhile(expr, env);
             case "do": return this.evalDo(expr, env);
+            case "debug": return this.evalDebug();
         }
         const res = this.resolveThroughLib(expr, env);
         if (res.resolved)
@@ -146,7 +145,7 @@ class Interpreter {
         const closureEnv = this.assocArgsToParams(params, args)
             .concat([["func-name", funcName], ["func-params", params], ["func-args", args]])
             .concat(env).concat(closure[3]);
-        if (closureBody === "body") {
+        if (closureBody === "block") {
             throw Error(`Improper function: ${funcName}`);
         }
         if (closureBody.length === 0) {
@@ -178,7 +177,7 @@ class Interpreter {
         this.setInEnv(symbol, value, env);
         return value;
     }
-    evalBody(expr, env) {
+    evalBlock(expr, env) {
         if (expr.length === 1) {
             throw Error(`Empty body`);
         }
@@ -194,7 +193,7 @@ class Interpreter {
     evalFunction(expr, env) {
         const symbol = expr[1];
         this.throwOnExistingDef(symbol, env);
-        const body = expr.length === 4 ? [expr[3]] : ["body", ...expr.slice(3)];
+        const body = expr.length === 4 ? [expr[3]] : ["block", ...expr.slice(3)];
         const value = this.evalLambda(["lambda", expr[2], body], env);
         env.unshift([expr[1], value]);
         return symbol;
@@ -253,10 +252,11 @@ class Interpreter {
                 if (res === "continue")
                     break;
                 if (res === "break")
-                    return;
+                    return null;
             }
             setEnv();
         }
+        return null;
     }
     evalWhile(expr, env) {
         const condBody = expr[1];
@@ -267,9 +267,10 @@ class Interpreter {
                 if (res === "continue")
                     break;
                 if (res === "break")
-                    return;
+                    return null;
             }
         }
+        return null;
     }
     evalDo(expr, env) {
         const condBody = expr[expr.length - 1];
@@ -280,9 +281,25 @@ class Interpreter {
                 if (res === "continue")
                     break;
                 if (res === "break")
-                    return;
+                    return null;
             }
         } while (this.evalExpr(condBody, env));
+        return null;
+    }
+    evalDebug() {
+        this.isDebug = true;
+        return null;
+    }
+    dumpState(expr, env) {
+        const envDumpList = [];
+        for (const e of env) {
+            envDumpList.push(`${e[0]} : ${JSON.stringify(e[1])}`);
+        }
+        const envDumpText = envDumpList.join("\n      ");
+        const message = `Expr: ${JSON.stringify(expr)}\nEnv : ${envDumpText}`;
+        this.options.printer(message);
+        this.isDebug = false;
+        return null;
     }
     manageImports(codeTree, callback) {
         const code = [];
@@ -362,17 +379,13 @@ class LibManager {
 }
 class Options {
     constructor() {
-        this.print = console.log;
-        this.isDebug = false;
+        this.printer = console.log;
         this.libs = ["core-lib", "date-lib", "list-lib", "math-lib", "number-lib", "string-lib"];
     }
     static parse(options) {
         const evalOptions = new Options();
         if (typeof options.print === "function") {
-            evalOptions.print = options.print;
-        }
-        if (typeof options.isDebug === "boolean") {
-            evalOptions.isDebug = options.isDebug;
+            evalOptions.printer = options.printer;
         }
         if (Array.isArray(options.libs)) {
             evalOptions.libs = options.libs.slice();
@@ -613,7 +626,7 @@ class CoreLib {
     evalToString(expr, env) {
         function bodyToString(body) {
             if (Array.isArray(body)) {
-                if (body[0] === "body") {
+                if (body[0] === "block") {
                     return body.slice(1).join(" ");
                 }
                 return body.join(" ");
@@ -656,13 +669,12 @@ class CoreLib {
     }
     evalEval(expr, env) {
         const codeTree = this.inter.evalExpr(expr[1], env);
-        const res = this.inter.evalCodeTree(codeTree, this.inter.options);
-        return res;
+        return this.inter.evalCodeTree(codeTree, this.inter.options);
     }
     evalPrint(expr, env) {
         const text = this.evalToString(expr, env);
-        const res = this.inter.print(text);
-        return res || "";
+        this.inter.options.printer(text);
+        return null;
     }
 }
 class DateLib {

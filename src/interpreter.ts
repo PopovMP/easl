@@ -1,23 +1,19 @@
 "use strict";
 
 class Interpreter {
-    private readonly libs: ILib[];
     private isDebug: boolean;
+    private readonly libs: ILib[];
 
-    public print: Function;
     public options: Options;
 
     constructor() {
-        this.libs    = [];
         this.isDebug = false;
-        this.print   = console.log;
+        this.libs    = [];
         this.options = new Options();
     }
 
     public evalCodeTree(codeTree: any[], options: Options, callback?: Function): any {
         this.options = options;
-        this.isDebug = options.isDebug;
-        this.print   = options.print;
         this.libs.push( ... LibManager.getBuiltinLibs(options.libs, this));
 
         if (typeof callback === "function") {
@@ -66,7 +62,9 @@ class Interpreter {
             case "boolean"  : return expr;
         }
 
-        if (this.isDebug) console.log("evalExpr expr:", JSON.stringify(expr), "env:", JSON.stringify(env));
+        if (this.isDebug) {
+            this.dumpState(expr, env);
+        }
 
         // Special forms
         switch (expr[0]) {
@@ -76,13 +74,14 @@ class Interpreter {
             case "set!"     : return this.evalSet(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
             case "function" : return this.evalFunction(expr, env);
-            case "body"     : return this.evalBody(expr, env);
+            case "block"    : return this.evalBlock(expr, env);
             case "if"       : return this.evalIf(expr, env);
             case "cond"     : return this.evalCond(expr, env);
             case "case"     : return this.evalCase(expr, env);
             case "for"      : return this.evalFor(expr, env);
             case "while"    : return this.evalWhile(expr, env);
             case "do"       : return this.evalDo(expr, env);
+            case "debug"    : return this.evalDebug();
         }
 
         const res: {resolved: boolean, val: any} = this.resolveThroughLib(expr, env);
@@ -153,7 +152,7 @@ class Interpreter {
                                     .concat([["func-name", funcName], ["func-params", params], ["func-args", args]])
                                     .concat(env).concat(closure[3]);
 
-        if (closureBody === "body") {
+        if (closureBody === "block") {
             throw Error(`Improper function: ${funcName}`);
         }
 
@@ -199,11 +198,11 @@ class Interpreter {
         return value;
     }
 
-    private evalBody(expr: any[], env: any[]): any {
-
+    private evalBlock(expr: any[], env: any[]): any {
         if (expr.length === 1) {
             throw Error(`Empty body`);
         }
+
         return this.evalExprLst(expr.slice(1), env);
     }
 
@@ -223,7 +222,7 @@ class Interpreter {
         const symbol = expr[1];
         this.throwOnExistingDef(symbol, env);
 
-        const body : any = expr.length === 4 ? [expr[3]] : ["body", ... expr.slice(3)];
+        const body : any = expr.length === 4 ? [expr[3]] : ["block", ... expr.slice(3)];
         const value: any = this.evalLambda(["lambda", expr[2], body], env);
 
         env.unshift([expr[1], value]);
@@ -279,7 +278,7 @@ class Interpreter {
     }
 
     // {for (i 0) (< i 10) (+ i 1) exp1 exp2 ...}
-    private evalFor(expr: any[], env: any[]): void {
+    private evalFor(expr: any[], env: any[]): null {
         const condBody: any[] = expr[2];
         const incBody : any[] = expr[3];
         const loopBody: any[] = expr.slice(4);
@@ -289,27 +288,26 @@ class Interpreter {
         const cntPair: [string, number] = [cntId, this.evalExpr(expr[1][1], loopEnv)];
         loopEnv.unshift(cntPair);
 
-        const setEnv = () => {
-            for (const cell of loopEnv) {
-                if (cell[0] === cntId) {
-                    cell[1] = cntPair[1];
-                    break;
-                }
-            }
-        };
-
-        for (; this.evalExpr(condBody, loopEnv); cntPair[1] = this.evalExpr(incBody, loopEnv)) {
+        while (this.evalExpr(condBody, loopEnv)) {
             for (const bodyExpr of loopBody) {
                 const res = this.evalExpr(bodyExpr, loopEnv);
                 if (res === "continue") break;
-                if (res === "break")    return;
+                if (res === "break"   ) return null;
             }
-            setEnv();
+
+            for (const cell of loopEnv) {
+                if (cell[0] === cntId) {
+                    cell[1] = this.evalExpr(incBody, loopEnv);
+                    break;
+                }
+            }
         }
+
+        return null;
     }
 
     // {while, condition, expr1, expr2, ...}
-    private evalWhile(expr: any[], env: any[]): void {
+    private evalWhile(expr: any[], env: any[]): null {
         const condBody: any = expr[1];
         const loopBody: any = expr.slice(2);
 
@@ -317,13 +315,15 @@ class Interpreter {
             for (const bodyExpr of loopBody) {
                 const res = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
-                if (res === "break")    return;
+                if (res === "break"   ) return null;
             }
         }
+
+        return null;
     }
 
     // {do, expr1, expr2, ..., condition}
-    private evalDo(expr: any[], env: any[]): void {
+    private evalDo(expr: any[], env: any[]): null {
         const condBody: any = expr[expr.length - 1];
         const loopBody: any = expr.slice(1, expr.length - 1);
 
@@ -331,9 +331,34 @@ class Interpreter {
             for (const bodyExpr of loopBody) {
                 const res = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
-                if (res === "break")    return;
+                if (res === "break"   ) return null;
             }
         } while (this.evalExpr(condBody, env));
+
+        return null;
+    }
+
+    private evalDebug(): null {
+        this.isDebug = true;
+        return null;
+    }
+
+    private dumpState(expr: any[], env: any[]): null {
+        const envDumpList: string[] = [];
+        const maxLength= Math.min(env.length, 10);
+
+        for (let i = 0; i < maxLength; i++) {
+            const record = env[i];
+            envDumpList.push(`${record[0]} : ${JSON.stringify(record[1]).substr(0, 500)}`);
+        }
+
+        const envDumpText = envDumpList.join("\n      ");
+        const message     = `Expr: ${JSON.stringify(expr)}\nEnv : ${envDumpText}`;
+
+        this.options.printer(message);
+        this.isDebug = false;
+
+        return null;
     }
 
     private manageImports(codeTree: any[], callback: (codeTree: any[]) => void): void {

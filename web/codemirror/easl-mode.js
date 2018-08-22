@@ -19,7 +19,7 @@
         const atoms = makeKeywords("true false null func-name func-params func-args");
 
         const keywords = makeKeywords(
-            "list string let set! lambda function if do while cond case else begin for case break continue");
+            "block break case cond continue debug do else for function if import lambda let list set! string while");
 
         const builtins = makeKeywords(
             // Core lib
@@ -50,8 +50,8 @@
             hex: /[0-9a-f]/i,
             sign: /[+-]/,
             exponent: /e/i,
-            keyword_char: /[^\s\(\[\;\)\]]/,
-            symbol: /[\w*+!\-\._?:<>\/\xa1-\uffff]/,
+            keyword_char: /[^\s(\[;)\]]/,
+            symbol: /[\w*+!\-._?:<>\/\xa1-\uffff]/,
             block_indent: /^(?:def|with)[^\/]+$|\/(?:def|with)/
         };
 

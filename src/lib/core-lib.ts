@@ -188,7 +188,7 @@ class CoreLib implements ILib {
     private evalToString(expr: any[], env: any[]): string {
         function bodyToString(body: any): string {
             if (Array.isArray(body)) {
-                if (body[0] === "body") {
+                if (body[0] === "block") {
                     return body.slice(1).join(" ");
                 }
 
@@ -240,13 +240,12 @@ class CoreLib implements ILib {
 
     private evalEval(expr: any[], env: any[]): any[] {
         const codeTree: any[] = this.inter.evalExpr(expr[1], env);
-        const res = this.inter.evalCodeTree(codeTree, this.inter.options);
-        return res;
+        return this.inter.evalCodeTree(codeTree, this.inter.options);
     }
 
     private evalPrint(expr: any[], env: any[]): any {
         const text = this.evalToString(expr, env);
-        const res = this.inter.print(text);
-        return res || "";
+        this.inter.options.printer(text);
+        return null;
     }
 }

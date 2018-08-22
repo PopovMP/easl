@@ -5,59 +5,59 @@ const Easl = require("../bin/easl.js").Easl;
 
 const easl = new Easl();
 
-describe('body', function () {
+describe('block', function () {
 
-    it('{body} → "Error: empty body"', function () {
-        assert.strictEqual(easl.evaluate("{body}"), "Error: Empty body");
+    it('{block} → "Error: empty body"', function () {
+        assert.strictEqual(easl.evaluate("{block}"), "Error: Empty body");
     });
 
-    it('{body 1} → 1', function () {
-        assert.strictEqual(easl.evaluate("{body 1}"), 1);
+    it('{block 1} → 1', function () {
+        assert.strictEqual(easl.evaluate("{block 1}"), 1);
     });
 
-    it('{body 1 2} → 2', function () {
-        assert.strictEqual(easl.evaluate("{body 1 2}"), 2);
+    it('{block 1 2} → 2', function () {
+        assert.strictEqual(easl.evaluate("{block 1 2}"), 2);
     });
 
-    it('{body (+ 7 1) (+ 1 2)} → 3', function () {
-        assert.strictEqual(easl.evaluate("{body (+ 7 1) (+ 1 2)}"), 3);
+    it('{block (+ 7 1) (+ 1 2)} → 3', function () {
+        assert.strictEqual(easl.evaluate("{block (+ 7 1) (+ 1 2)}"), 3);
     });
 
-    it('let in body', function () {
+    it('let in block', function () {
         assert.strictEqual(easl.evaluate(`
-        {body
+        {block
                 {let a 5}
                 {let b 6}
                 (+ a b) }
         `), 11);
     });
 
-    it('nested body', function () {
+    it('nested block', function () {
         assert.strictEqual(easl.evaluate(`
-        {body
-            {body
-                {body
+        {block
+            {block
+                {block
                         {let a 5}
                         {let b 6}
                         (+ a b) }}}
         `), 11);
     });
 
-    it('scope accessible from inner body', function () {
+    it('scope accessible from inner block', function () {
         assert.strictEqual(easl.evaluate(`
-        {body
+        {block
             {let a 5}
-            {body
+            {block
                 {let b 6}
-                {body
+                {block
                    (+ a b) }}}
         `), 11);
     });
 
-    it('body in function', function () {
+    it('block in function', function () {
         assert.strictEqual(easl.evaluate(`
             {function ff ()
-                {body
+                {block
                         {let a 5}
                         {let b 6}
                         (+ a b) }}
@@ -65,9 +65,9 @@ describe('body', function () {
         `), 11);
     });
 
-    it('function in body', function () {
+    it('function in block', function () {
         assert.strictEqual(easl.evaluate(`
-        {body
+        {block
             {function sum (a b) (+ a b)}
             (sum 2 3) }
         `), 5);
