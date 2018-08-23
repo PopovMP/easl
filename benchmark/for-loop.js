@@ -3,7 +3,7 @@
 const Easl = require("../bin/easl.js").Easl;
 const easl = new Easl();
 
-const result = easl.evaluate(`
+const code = `
 
 {let now (date.now)}
 
@@ -16,7 +16,14 @@ const result = easl.evaluate(`
 
 (print (- (date.now) now))
 
-`);
+`;
 
-console.log(result);
+easl.evaluate(code, {printer: eval_ready}, eval_ready);
+
+function eval_ready(result) {
+    if (result !== null) {
+        console.log(result);
+    }
+}
+
 // 2018.08.23 1380
