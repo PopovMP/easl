@@ -20,6 +20,7 @@ const result = easl.evaluate(`
 
 (print (- (date.now) now))
 
-`, {libs: ["core-lib", "math-lib", "list-lib", "date-lib"]});
+`);
 
 console.log(result);
+// 2018.08.23 1350

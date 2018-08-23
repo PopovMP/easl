@@ -24,3 +24,4 @@ const result = easl.evaluate(`
 `);
 
 console.log(result);
+// 2018.08.23 1758

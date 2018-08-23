@@ -109,6 +109,7 @@ const examplesList = [
 
 {let range (list.range 1 10)}              ;; Make a range form 1 to 10
 {let lst (map {lambda (e) (* e 2)} range)} ;; Double each element 
+(print lst)
 `
     },
 

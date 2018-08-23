@@ -102,27 +102,28 @@ class Interpreter {
     }
 
     private lookup(symbol: string, env: any[]): any {
-        for (const cell of env) {
-            if (symbol === cell[0]) {
-                return cell[1];
+        for (let i = env.length - 1; i > -1; i--) {
+            if (symbol === env[i][0]) {
+                return env[i][1];
             }
         }
 
         throw Error(`Unbound identifier: ${symbol}`);
     }
 
+    // noinspection JSUnusedLocalSymbols
     private throwOnExistingDef(symbol: string, env: any[]): void {
-        for (const cell of env) {
-            if (symbol === cell[0]) {
-                // ToDo Fix: throw Error(`Identifier already defined: ${symbol}`);
+        for (let i = env.length - 1; i > -1; i--) {
+            if (symbol === env[i][0]) {
+                throw Error(`Identifier already defined: ${symbol}`);
             }
         }
     }
 
     private setInEnv(symbol: string, value: any, env: any[]): void {
-        for (const cell of env) {
-            if (symbol === cell[0]) {
-                cell[1] = value;
+        for (let i = env.length - 1; i > -1; i--) {
+            if (symbol === env[i][0]) {
+                env[i][1] = value;
                 return;
             }
         }
@@ -141,14 +142,8 @@ class Interpreter {
             throw Error(`Improper function: ${closure}`);
         }
 
-        const args       : any[]    = expr.length === 1 ? [] : expr.length === 2
-            ? [this.evalExpr(expr[1], env)]
-            : this.mapExprLst(expr.slice(1), env);
-        const funcName   : string   = isNamed ? <string>proc : "lambda";
-        const params     : string[] = closure[1];
-        const closureBody: any      = closure[2].length === 1 ? closure[2][0] : closure[2];
-        const closureEnv : any[]    = this.assocArgsToParams(params, args)
-            .concat([["func-name", funcName], ["func-params", params], ["func-args", args]], closure[3]);
+        const funcName   : string = isNamed ? <string>proc : "lambda";
+        const closureBody: any[] | string = closure[2].length === 1 ? closure[2][0] : closure[2];
 
         if (closureBody === "block") {
             throw Error(`Improper function: ${funcName}`);
@@ -158,18 +153,21 @@ class Interpreter {
             throw Error(`Function with empty body: ${funcName}`);
         }
 
+        const args : any[] = expr.length === 1 ? [] : expr.length === 2
+            ? [this.evalExpr(expr[1], env)] : this.mapExprLst(expr.slice(1), env);
+        const closureEnv : any[] = this.makeProcEnv(funcName, closure[1], args, closure[3]);
+
         return this.evalExpr(closureBody, closureEnv);
     }
 
-    private assocArgsToParams(params: string[], args: any[]): [string, any][] {
-        const aList: [string, any][] = [];
+    private makeProcEnv(funcName: string, params: string[], args: any[], env: any[]): any[] {
+        const closureEnv = env.concat([["func-name", funcName], ["func-params", params], ["func-args", args]]);
 
         for (let i = 0; i < params.length; i++) {
-            const arg: any = i < args.length ? args[i] : null;
-            aList.push([params[i], arg]);
+            closureEnv.push([params[i], i < args.length ? args[i] : null]);
         }
 
-        return aList;
+        return closureEnv;
     }
 
     // [lambda, [par1, par2, ...], expr]
@@ -179,10 +177,10 @@ class Interpreter {
 
     private evalLet(expr: any, env: any[]): any {
         const symbol: string = expr[1];
-        this.throwOnExistingDef(symbol, env);
+        // this.throwOnExistingDef(symbol, env);
         const value: any = this.evalLetValue(expr, env);
 
-        env.unshift([symbol, value]);
+        env.push([symbol, value]);
 
         return null;
     }
@@ -218,12 +216,12 @@ class Interpreter {
     // [function, symbol, [par1, par2, ...], expr1, expr2, ...]
     private evalFunction(expr: any[], env: any[]): any {
         const symbol: string = expr[1];
-        this.throwOnExistingDef(symbol, env);
+        // this.throwOnExistingDef(symbol, env);
 
         const body : any = expr.length === 4 ? [expr[3]] : ["block", ... expr.slice(3)];
         const value: any = this.evalLambda(["lambda", expr[2], body], env);
 
-        env.unshift([symbol, value]);
+        env.push([symbol, value]);
 
         return null;
     }
@@ -283,8 +281,7 @@ class Interpreter {
         const loopEnv : any[] = env;
 
         const cntId  : string = expr[1][0];
-        const cntPair: [string, number] = [cntId, this.evalExpr(expr[1][1], loopEnv)];
-        loopEnv.unshift(cntPair);
+        loopEnv.push([cntId, this.evalExpr(expr[1][1], loopEnv)]);
 
         while (this.evalExpr(condBody, loopEnv)) {
             for (const bodyExpr of loopBody) {
@@ -293,9 +290,9 @@ class Interpreter {
                 if (res === "break"   ) return null;
             }
 
-            for (const cell of loopEnv) {
-                if (cell[0] === cntId) {
-                    cell[1] = this.evalExpr(incBody, loopEnv);
+            for (let i = loopEnv.length - 1; i > -1; i--) {
+                if (loopEnv[i][0] === cntId) {
+                    loopEnv[i][1] = this.evalExpr(incBody, loopEnv);
                     break;
                 }
             }
@@ -356,7 +353,7 @@ class Interpreter {
             };
         };
 
-        for (let i = 0; i < maxLength; i++) {
+        for (let i = maxLength; i > -1; i--) {
             const record = env[i];
             envDumpList.push(`${record[0]} : ${JSON.stringify(record[1], getCircularReplacer()).substr(0, 500)}`);
         }

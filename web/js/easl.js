@@ -106,23 +106,24 @@ class Interpreter {
         return !value;
     }
     lookup(symbol, env) {
-        for (const cell of env) {
-            if (symbol === cell[0]) {
-                return cell[1];
+        for (let i = env.length - 1; i > -1; i--) {
+            if (symbol === env[i][0]) {
+                return env[i][1];
             }
         }
         throw Error(`Unbound identifier: ${symbol}`);
     }
     throwOnExistingDef(symbol, env) {
-        for (const cell of env) {
-            if (symbol === cell[0]) {
+        for (let i = env.length - 1; i > -1; i--) {
+            if (symbol === env[i][0]) {
+                throw Error(`Identifier already defined: ${symbol}`);
             }
         }
     }
     setInEnv(symbol, value, env) {
-        for (const cell of env) {
-            if (symbol === cell[0]) {
-                cell[1] = value;
+        for (let i = env.length - 1; i > -1; i--) {
+            if (symbol === env[i][0]) {
+                env[i][1] = value;
                 return;
             }
         }
@@ -135,38 +136,33 @@ class Interpreter {
         if (!Array.isArray(closure)) {
             throw Error(`Improper function: ${closure}`);
         }
-        const args = expr.length === 1 ? [] : expr.length === 2
-            ? [this.evalExpr(expr[1], env)]
-            : this.mapExprLst(expr.slice(1), env);
         const funcName = isNamed ? proc : "lambda";
-        const params = closure[1];
         const closureBody = closure[2].length === 1 ? closure[2][0] : closure[2];
-        const closureEnv = this.assocArgsToParams(params, args)
-            .concat([["func-name", funcName], ["func-params", params], ["func-args", args]], closure[3]);
         if (closureBody === "block") {
             throw Error(`Improper function: ${funcName}`);
         }
         if (closureBody.length === 0) {
             throw Error(`Function with empty body: ${funcName}`);
         }
+        const args = expr.length === 1 ? [] : expr.length === 2
+            ? [this.evalExpr(expr[1], env)] : this.mapExprLst(expr.slice(1), env);
+        const closureEnv = this.makeProcEnv(funcName, closure[1], args, closure[3]);
         return this.evalExpr(closureBody, closureEnv);
     }
-    assocArgsToParams(params, args) {
-        const aList = [];
+    makeProcEnv(funcName, params, args, env) {
+        const closureEnv = env.concat([["func-name", funcName], ["func-params", params], ["func-args", args]]);
         for (let i = 0; i < params.length; i++) {
-            const arg = i < args.length ? args[i] : null;
-            aList.push([params[i], arg]);
+            closureEnv.push([params[i], i < args.length ? args[i] : null]);
         }
-        return aList;
+        return closureEnv;
     }
     evalLambda(expr, env) {
         return ["closure", expr[1], expr[2], env];
     }
     evalLet(expr, env) {
         const symbol = expr[1];
-        this.throwOnExistingDef(symbol, env);
         const value = this.evalLetValue(expr, env);
-        env.unshift([symbol, value]);
+        env.push([symbol, value]);
         return null;
     }
     evalSet(expr, env) {
@@ -190,10 +186,9 @@ class Interpreter {
     }
     evalFunction(expr, env) {
         const symbol = expr[1];
-        this.throwOnExistingDef(symbol, env);
         const body = expr.length === 4 ? [expr[3]] : ["block", ...expr.slice(3)];
         const value = this.evalLambda(["lambda", expr[2], body], env);
-        env.unshift([symbol, value]);
+        env.push([symbol, value]);
         return null;
     }
     evalIf(expr, env) {
@@ -234,8 +229,7 @@ class Interpreter {
         const loopBody = expr.slice(4);
         const loopEnv = env;
         const cntId = expr[1][0];
-        const cntPair = [cntId, this.evalExpr(expr[1][1], loopEnv)];
-        loopEnv.unshift(cntPair);
+        loopEnv.push([cntId, this.evalExpr(expr[1][1], loopEnv)]);
         while (this.evalExpr(condBody, loopEnv)) {
             for (const bodyExpr of loopBody) {
                 const res = this.evalExpr(bodyExpr, loopEnv);
@@ -244,9 +238,9 @@ class Interpreter {
                 if (res === "break")
                     return null;
             }
-            for (const cell of loopEnv) {
-                if (cell[0] === cntId) {
-                    cell[1] = this.evalExpr(incBody, loopEnv);
+            for (let i = loopEnv.length - 1; i > -1; i--) {
+                if (loopEnv[i][0] === cntId) {
+                    loopEnv[i][1] = this.evalExpr(incBody, loopEnv);
                     break;
                 }
             }
@@ -299,7 +293,7 @@ class Interpreter {
                 return value;
             };
         };
-        for (let i = 0; i < maxLength; i++) {
+        for (let i = maxLength; i > -1; i--) {
             const record = env[i];
             envDumpList.push(`${record[0]} : ${JSON.stringify(record[1], getCircularReplacer()).substr(0, 500)}`);
         }
