@@ -340,7 +340,7 @@ class Interpreter {
 
     private dumpState(expr: any[], env: any[]): null {
         const envDumpList: string[] = [];
-        const maxLength: number = Math.min(env.length, 10);
+        const maxLength: number = Math.min(env.length - 1, 10);
 
         const getCircularReplacer = () => {
             const seen = new WeakSet();

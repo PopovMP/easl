@@ -281,7 +281,7 @@ class Interpreter {
     }
     dumpState(expr, env) {
         const envDumpList = [];
-        const maxLength = Math.min(env.length, 10);
+        const maxLength = Math.min(env.length - 1, 10);
         const getCircularReplacer = () => {
             const seen = new WeakSet();
             return (key, value) => {
