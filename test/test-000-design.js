@@ -75,12 +75,11 @@ describe('EASL design', function () {
     });
 
     describe('function definition', function () {
-        it('func definition returns the func-name', function () {
-            assert.strictEqual(easl.evaluate(`      {function sum (a b) (+ a b)}   `), "sum");
+        it('func definition returns null', function () {
+            assert.strictEqual(easl.evaluate(`  {function sum (a b) (+ a b)}      `), null);
         });
-        it('lambda definition returns the closure', function () {
-            assert.deepStrictEqual(easl.evaluate(`  {let sum {lambda (a b) (+ a b)}}  `),
-                                                    [ 'closure', [ 'a', 'b' ], [ '+', 'a', 'b' ], [] ]);
+        it('lambda definition returns null', function () {
+            assert.strictEqual(easl.evaluate(`  {let sum {lambda (a b) (+ a b)}}  `), null);
         });
     });
 

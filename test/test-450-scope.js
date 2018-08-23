@@ -20,22 +20,6 @@ describe('scope', function () {
             (fun)                `), 1);
     });
 
-    it("function doesn't access vars defined after the function call", function () {
-        assert.strictEqual(easl.evaluate(`
-            {function fun () a}
-            (fun) 
-            {let a 1}            `), "Error: Unbound identifier: a");
-    });
-
-
-    it("The var defined in a function body are not accessed from outside the function", function () {
-        assert.strictEqual(easl.evaluate(`
-            {function fun ()
-               {let a 1} }
-            (fun) 
-            a                    `), "Error: Unbound identifier: a");
-    });
-
     it("The vars defined in the function body doesn't override vars defined before the function", function () {
         assert.strictEqual(easl.evaluate(`
             {let a 1}
@@ -54,13 +38,39 @@ describe('scope', function () {
             a                    `), 1);
     });
 
-    it("Function from outer scope has access to vars from the scope before its call.", function () {
+    it("Function in a function see vars from outer scope", function () {
+        assert.strictEqual(easl.evaluate(`
+            {function foo ()
+               {function bar () a}
+               {let a 1}
+               {bar) }
+            
+            (foo)                `), 1);
+    });
+
+    it("function doesn't access global vars defined after the function call", function () {
+        assert.strictEqual(easl.evaluate(`
+            {function fun () a}
+            (fun) 
+            {let a 1}            `), "Error: Unbound identifier: a");
+    });
+
+    it("The var defined in a function body are not accessed from outside the function", function () {
+        assert.strictEqual(easl.evaluate(`
+            {function fun ()
+               {let a 1}
+               a }
+            (fun) 
+            a                    `), "Error: Unbound identifier: a");
+    });
+
+    it("Function from outer scope doesn't see vars from the scope before its call.", function () {
         assert.strictEqual(easl.evaluate(`
             {function foo ()
                {let a 1}
                {bar) }
             {function bar () a}
-            (foo)                `), 1);
+            (foo)                `), "Error: Unbound identifier: a");
     });
 
 });

@@ -148,7 +148,7 @@ class Interpreter {
         const params     : string[] = closure[1];
         const closureBody: any      = closure[2].length === 1 ? closure[2][0] : closure[2];
         const closureEnv : any[]    = this.assocArgsToParams(params, args)
-            .concat([["func-name", funcName], ["func-params", params], ["func-args", args]], env, closure[3]);
+            .concat([["func-name", funcName], ["func-params", params], ["func-args", args]], closure[3]);
 
         if (closureBody === "block") {
             throw Error(`Improper function: ${funcName}`);
@@ -174,7 +174,7 @@ class Interpreter {
 
     // [lambda, [par1, par2, ...], expr]
     private evalLambda(expr: any, env: any[]): any[] {
-        return ["closure", expr[1], expr[2], env.slice()];
+        return ["closure", expr[1], expr[2], env];
     }
 
     private evalLet(expr: any, env: any[]): any {
@@ -184,7 +184,7 @@ class Interpreter {
 
         env.unshift([symbol, value]);
 
-        return value;
+        return null;
     }
 
     private evalSet(expr: any, env: any[]): any {
@@ -193,7 +193,7 @@ class Interpreter {
 
         this.setInEnv(symbol, value, env);
 
-        return value;
+        return null;
     }
 
     private evalBlock(expr: any[], env: any[]): any {
@@ -223,9 +223,9 @@ class Interpreter {
         const body : any = expr.length === 4 ? [expr[3]] : ["block", ... expr.slice(3)];
         const value: any = this.evalLambda(["lambda", expr[2], body], env);
 
-        env.unshift([expr[1], value]);
+        env.unshift([symbol, value]);
 
-        return symbol;
+        return null;
     }
 
     // [if, test-expr, then-expr, else-expr]
@@ -345,9 +345,20 @@ class Interpreter {
         const envDumpList: string[] = [];
         const maxLength: number = Math.min(env.length, 10);
 
+        const getCircularReplacer = () => {
+            const seen = new WeakSet();
+            return (key: string, value: any) => {
+                if (typeof value === "object" && value !== null) {
+                    if (seen.has(value)) return;
+                    seen.add(value);
+                }
+                return value;
+            };
+        };
+
         for (let i = 0; i < maxLength; i++) {
             const record = env[i];
-            envDumpList.push(`${record[0]} : ${JSON.stringify(record[1]).substr(0, 500)}`);
+            envDumpList.push(`${record[0]} : ${JSON.stringify(record[1], getCircularReplacer()).substr(0, 500)}`);
         }
 
         const envDumpText = envDumpList.join("\n      ");
