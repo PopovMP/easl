@@ -111,12 +111,11 @@ class Interpreter {
         throw Error(`Unbound identifier: ${symbol}`);
     }
 
-    // noinspection JSUnusedLocalSymbols
     private throwOnExistingDef(symbol: string, env: any[]): void {
         for (let i = env.length - 1; i > -1; i--) {
-            if (symbol === env[i][0]) {
-                throw Error(`Identifier already defined: ${symbol}`);
-            }
+            const cellKey = env[i][0];
+            if (cellKey === "block-start") return;
+            if (cellKey === symbol) throw Error(`Identifier already defined: ${symbol}`);
         }
     }
 
@@ -149,7 +148,7 @@ class Interpreter {
             throw Error(`Improper function: ${funcName}`);
         }
 
-        if (closureBody.length === 0) {
+        if (closureBody.length === 0 || (closureBody[0] === "block" && closureBody[1].length === 0)) {
             throw Error(`Function with empty body: ${funcName}`);
         }
 
@@ -171,13 +170,13 @@ class Interpreter {
     }
 
     // [lambda, [par1, par2, ...], expr]
-    private evalLambda(expr: any, env: any[]): any[] {
+    private evalLambda(expr: any[], env: any[]): any[] {
         return ["closure", expr[1], expr[2], env];
     }
 
     private evalLet(expr: any, env: any[]): any {
         const symbol: string = expr[1];
-        // this.throwOnExistingDef(symbol, env);
+        this.throwOnExistingDef(symbol, env);
         const value: any = this.evalLetValue(expr, env);
 
         env.push([symbol, value]);
@@ -199,7 +198,22 @@ class Interpreter {
             throw Error(`Empty body`);
         }
 
-        return this.evalExprLst(expr.slice(1), env);
+        env.push(["block-start", null]);
+
+        const res =  expr.length === 1
+                         ? this.evalExpr(expr[1], env)
+                         : this.evalExprLst(expr.slice(1), env);
+
+        this.cleanEnv("block-start", env);
+
+        return res;
+    }
+
+    private cleanEnv(tag: string, env: any[]): void {
+        let slice = [];
+        do {
+            slice = env.pop();
+        } while (slice[0] !== tag);
     }
 
     // [let, symbol, expr]
@@ -216,9 +230,9 @@ class Interpreter {
     // [function, symbol, [par1, par2, ...], expr1, expr2, ...]
     private evalFunction(expr: any[], env: any[]): any {
         const symbol: string = expr[1];
-        // this.throwOnExistingDef(symbol, env);
+        this.throwOnExistingDef(symbol, env);
 
-        const body : any = expr.length === 4 ? [expr[3]] : ["block", ... expr.slice(3)];
+        const body : any = ["block", ... expr.slice(3)];
         const value: any = this.evalLambda(["lambda", expr[2], body], env);
 
         env.push([symbol, value]);
@@ -275,27 +289,32 @@ class Interpreter {
 
     // {for (i 0) (< i 10) (+ i 1) exp1 exp2 ...}
     private evalFor(expr: any[], env: any[]): null {
-        const condBody: any[] = expr[2];
-        const incBody : any[] = expr[3];
-        const loopBody: any[] = expr.slice(4);
-        const loopEnv : any[] = env;
+        const condBody: any[]  = expr[2];
+        const incBody : any[]  = expr[3];
+        const loopBody: any[]  = expr.slice(4);
+        const cntId   : string = expr[1][0];
 
-        const cntId  : string = expr[1][0];
-        loopEnv.push([cntId, this.evalExpr(expr[1][1], loopEnv)]);
+        env.push([cntId, this.evalExpr(expr[1][1], env)]);
 
-        while (this.evalExpr(condBody, loopEnv)) {
+        while (this.evalExpr(condBody, env)) {
+            env.push(["for-start", null]);
             for (const bodyExpr of loopBody) {
-                const res: any = this.evalExpr(bodyExpr, loopEnv);
+                const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
-                if (res === "break"   ) return null;
+                if (res === "break") {
+                    this.cleanEnv("for-start", env);
+                    return null;
+                }
             }
 
-            for (let i = loopEnv.length - 1; i > -1; i--) {
-                if (loopEnv[i][0] === cntId) {
-                    loopEnv[i][1] = this.evalExpr(incBody, loopEnv);
+            for (let i = env.length - 1; i > -1; i--) {
+                if (env[i][0] === cntId) {
+                    env[i][1] = this.evalExpr(incBody, env);
                     break;
                 }
             }
+
+           this.cleanEnv("for-start", env);
         }
 
         return null;
@@ -307,11 +326,16 @@ class Interpreter {
         const loopBody: any = expr.slice(2);
 
         while (this.evalExpr(condBody, env)) {
+            env.push(["while-start", null]);
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
-                if (res === "break"   ) return null;
+                if (res === "break") {
+                    this.cleanEnv("while-start", env);
+                    return null;
+                }
             }
+            this.cleanEnv("while-start", env);
         }
 
         return null;
@@ -323,11 +347,16 @@ class Interpreter {
         const loopBody: any = expr.slice(1, expr.length - 1);
 
         do  {
+            env.push(["do-start", null]);
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
-                if (res === "break"   ) return null;
+                if (res === "break") {
+                    this.cleanEnv("do-start", env);
+                    return null;
+                }
             }
+            this.cleanEnv("do-start", env);
         } while (this.evalExpr(condBody, env));
 
         return null;

@@ -24,7 +24,8 @@ describe('scope', function () {
         assert.strictEqual(easl.evaluate(`
             {let a 1}
             {function fun ()
-               {let a 2} }
+               {let a 2}
+               {let b a} }
             (fun) 
             a                    `), 1);
     });
@@ -32,7 +33,8 @@ describe('scope', function () {
     it("The vars defined in the function body doesn't override vars defined after the function", function () {
         assert.strictEqual(easl.evaluate(`
             {function fun ()
-               {let a 2} }
+               {let a 2}
+               {let b a} }
             {let a 1}
             (fun) 
             a                    `), 1);
@@ -71,6 +73,39 @@ describe('scope', function () {
                {bar) }
             {function bar () a}
             (foo)                `), "Error: Unbound identifier: a");
+    });
+
+    it("'for' is a scope", function () {
+        assert.strictEqual(easl.evaluate(`
+            {for (i 0) (< i 2) (+ i 1)
+                {let a 1 }}
+            a                 `), "Error: Unbound identifier: a");
+    });
+
+    it("'while' is a scope", function () {
+        assert.strictEqual(easl.evaluate(`
+            {let n 0}
+            {while (< n 2)
+                {let a 1}
+                {set! n (+ n 1) }}
+            a                 `), "Error: Unbound identifier: a");
+    });
+
+    it("'do' is a scope", function () {
+        assert.strictEqual(easl.evaluate(`
+            {let n 0}
+            {do
+                {let a 1}
+                {set! n (+ n 1)
+                (< n 2) }}
+            a                 `), "Error: Unbound identifier: a");
+    });
+
+    it("'block' is a scope", function () {
+        assert.strictEqual(easl.evaluate(`
+            {block
+                {let a 1 }}
+            a                 `), "Error: Unbound identifier: a");
     });
 
 });

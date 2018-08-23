@@ -115,9 +115,11 @@ class Interpreter {
     }
     throwOnExistingDef(symbol, env) {
         for (let i = env.length - 1; i > -1; i--) {
-            if (symbol === env[i][0]) {
+            const cellKey = env[i][0];
+            if (cellKey === "block-start")
+                return;
+            if (cellKey === symbol)
                 throw Error(`Identifier already defined: ${symbol}`);
-            }
         }
     }
     setInEnv(symbol, value, env) {
@@ -141,7 +143,7 @@ class Interpreter {
         if (closureBody === "block") {
             throw Error(`Improper function: ${funcName}`);
         }
-        if (closureBody.length === 0) {
+        if (closureBody.length === 0 || (closureBody[0] === "block" && closureBody[1].length === 0)) {
             throw Error(`Function with empty body: ${funcName}`);
         }
         const args = expr.length === 1 ? [] : expr.length === 2
@@ -161,6 +163,7 @@ class Interpreter {
     }
     evalLet(expr, env) {
         const symbol = expr[1];
+        this.throwOnExistingDef(symbol, env);
         const value = this.evalLetValue(expr, env);
         env.push([symbol, value]);
         return null;
@@ -175,7 +178,18 @@ class Interpreter {
         if (expr.length === 1) {
             throw Error(`Empty body`);
         }
-        return this.evalExprLst(expr.slice(1), env);
+        env.push(["block-start", null]);
+        const res = expr.length === 1
+            ? this.evalExpr(expr[1], env)
+            : this.evalExprLst(expr.slice(1), env);
+        this.cleanEnv("block-start", env);
+        return res;
+    }
+    cleanEnv(tag, env) {
+        let slice = [];
+        do {
+            slice = env.pop();
+        } while (slice[0] !== tag);
     }
     evalLetValue(expr, env) {
         const letExpr = expr[2];
@@ -186,7 +200,8 @@ class Interpreter {
     }
     evalFunction(expr, env) {
         const symbol = expr[1];
-        const body = expr.length === 4 ? [expr[3]] : ["block", ...expr.slice(3)];
+        this.throwOnExistingDef(symbol, env);
+        const body = ["block", ...expr.slice(3)];
         const value = this.evalLambda(["lambda", expr[2], body], env);
         env.push([symbol, value]);
         return null;
@@ -227,23 +242,26 @@ class Interpreter {
         const condBody = expr[2];
         const incBody = expr[3];
         const loopBody = expr.slice(4);
-        const loopEnv = env;
         const cntId = expr[1][0];
-        loopEnv.push([cntId, this.evalExpr(expr[1][1], loopEnv)]);
-        while (this.evalExpr(condBody, loopEnv)) {
+        env.push([cntId, this.evalExpr(expr[1][1], env)]);
+        while (this.evalExpr(condBody, env)) {
+            env.push(["for-start", null]);
             for (const bodyExpr of loopBody) {
-                const res = this.evalExpr(bodyExpr, loopEnv);
+                const res = this.evalExpr(bodyExpr, env);
                 if (res === "continue")
                     break;
-                if (res === "break")
+                if (res === "break") {
+                    this.cleanEnv("for-start", env);
                     return null;
+                }
             }
-            for (let i = loopEnv.length - 1; i > -1; i--) {
-                if (loopEnv[i][0] === cntId) {
-                    loopEnv[i][1] = this.evalExpr(incBody, loopEnv);
+            for (let i = env.length - 1; i > -1; i--) {
+                if (env[i][0] === cntId) {
+                    env[i][1] = this.evalExpr(incBody, env);
                     break;
                 }
             }
+            this.cleanEnv("for-start", env);
         }
         return null;
     }
@@ -251,13 +269,17 @@ class Interpreter {
         const condBody = expr[1];
         const loopBody = expr.slice(2);
         while (this.evalExpr(condBody, env)) {
+            env.push(["while-start", null]);
             for (const bodyExpr of loopBody) {
                 const res = this.evalExpr(bodyExpr, env);
                 if (res === "continue")
                     break;
-                if (res === "break")
+                if (res === "break") {
+                    this.cleanEnv("while-start", env);
                     return null;
+                }
             }
+            this.cleanEnv("while-start", env);
         }
         return null;
     }
@@ -265,13 +287,17 @@ class Interpreter {
         const condBody = expr[expr.length - 1];
         const loopBody = expr.slice(1, expr.length - 1);
         do {
+            env.push(["do-start", null]);
             for (const bodyExpr of loopBody) {
                 const res = this.evalExpr(bodyExpr, env);
                 if (res === "continue")
                     break;
-                if (res === "break")
+                if (res === "break") {
+                    this.cleanEnv("do-start", env);
                     return null;
+                }
             }
+            this.cleanEnv("do-start", env);
         } while (this.evalExpr(condBody, env));
         return null;
     }

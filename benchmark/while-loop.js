@@ -7,14 +7,12 @@ const result = easl.evaluate(`
 
 {let now (date.now)}
 
-{let lst     []}
-{let rand-num 0}
-{let rounded  0}
-{let i        0}
+{let lst []}
+{let i   0}
 
 {while (< i 1-000-000)
-    {set! rand-num (* (math.random) 100)}
-    {set! rounded  (math.round rand-num)}
+    {let random  (* (math.random) 100)}
+    {let rounded (math.round random)}
     (list.add! rounded lst)
     (set! i (+ i 1)) }
 
@@ -23,4 +21,4 @@ const result = easl.evaluate(`
 `);
 
 console.log(result);
-// 2018.08.23 1350
+// 2018.08.23 1420

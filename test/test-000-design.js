@@ -72,6 +72,10 @@ describe('EASL design', function () {
             assert.strictEqual(easl.evaluate(`      {let len (list.length [4 5 6])}
                                                     len                     `), 3);
         });
+        it('can define variable once', function () {
+            assert.strictEqual(easl.evaluate(`      {let a 1}
+                                                    {let a 2}               `), "Error: Identifier already defined: a");
+        });
     });
 
     describe('function definition', function () {
@@ -81,29 +85,33 @@ describe('EASL design', function () {
         it('lambda definition returns null', function () {
             assert.strictEqual(easl.evaluate(`  {let sum {lambda (a b) (+ a b)}}  `), null);
         });
+        it('function with empty body', function () {
+            assert.strictEqual(easl.evaluate(`  {function foo () ()} (foo)    `), "Error: Function with empty body: foo");
+        });
+        it('function without params 1', function () {
+            assert.strictEqual(easl.evaluate(`  {function foo 5} (foo)        `), "Error: Improper function: foo");
+        });
+        it('function without params 2', function () {
+            assert.strictEqual(easl.evaluate(`  {function foo (+ 2 3)} (foo)  `), "Error: Improper function: foo");
+        });
+        it('can define function once', function () {
+            assert.strictEqual(easl.evaluate(`      {function foo () 1}
+                                                    {function foo () 2}       `), "Error: Identifier already defined: foo");
+        });
     });
 
     describe('function call', function () {
         it('builtin function', function () {
-            assert.strictEqual(easl.evaluate(`   (math.pi)        `), 3.141592653589793);
+            assert.strictEqual(easl.evaluate(`  (math.pi)                      `), 3.141592653589793);
         });
         it('user function', function () {
-            assert.strictEqual(easl.evaluate(`  {function foo () 5} (foo)  `), 5);
-        });
-        it('function with empty body', function () {
-            assert.strictEqual(easl.evaluate(`  {function foo () ()} (foo)  `), "Error: Function with empty body: foo");
-        });
-        it('function without params 1', function () {
-            assert.strictEqual(easl.evaluate(`  {function foo 5} (foo)  `), "Error: Improper function: foo");
-        });
-        it('function without params 2', function () {
-            assert.strictEqual(easl.evaluate(`  {function foo (+ 2 3)} (foo)  `), "Error: Improper function: foo");
+            assert.strictEqual(easl.evaluate(`  {function foo () 5} (foo)      `), 5);
         });
         it('lambda', function () {
             assert.strictEqual(easl.evaluate(`  {let foo {lambda () 5}} (foo)  `), 5);
         });
         it('not a function', function () {
-            assert.strictEqual(easl.evaluate(` (42)  `), "Error: Improper function: 42");
+            assert.strictEqual(easl.evaluate(`  (42)     `), "Error: Improper function: 42");
         });
         it('unknown a function', function () {
             assert.strictEqual(easl.evaluate(` (foo 42)  `), "Error: Unbound identifier: foo");
@@ -130,7 +138,7 @@ describe('EASL design', function () {
         it('type-of let expression', function () {
             assert.strictEqual(easl.evaluate(` 
              {let a (+ 3 4) }
-             (type-of a)                           `), "number");
+             (type-of a)                             `), "number");
         });
 
         it('type-of function', function () {

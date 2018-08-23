@@ -354,9 +354,11 @@ const examplesList = [
 
 (assert.true? [1 2 3] "A non empty list is true.")
 
-(assert.equal {if true  4 5} 4 "'if' returns the first expression, if the condition is true")
-(assert.equal {if false 4 5} 5 "'if' returns the second expression, if the condition is false")
-(assert.equal {if true 4 (print "I'M NOT PRINTED")} 4 "'if' evaluates only the first expression, if the condition is true")
+(assert.equal {if true  4 5} 4 "When the condition is true, 'if' returns the first expression")
+(assert.equal {if false 4 5} 5 "When the condition is false, 'if' returns the second expression")
+
+(assert.equal {if true  4 (print "I'M NOT PRINTED")} 4 "When the condition is true, 'if' evaluates only the first expression")
+(assert.equal {if false (print "I'M NOT PRINTED") 5} 5 "When the condition is false, 'if' evaluates only the second expression")
 
 ;; The function is closed in 'lambda' to prevent pollution of the global scope
 ({lambda () {block
