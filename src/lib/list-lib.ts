@@ -11,7 +11,7 @@ class ListLib implements ILib {
         switch (expr[0]) {
             case "list.add"     : return this.listAdd(expr, env);
             case "list.add!"    : return this.listAdd(expr, env, false);
-            case "list.append"  : return this.listAppend(expr, env);
+            case "list.concat"  : return this.listConcat(expr, env);
             case "list.empty"   : return [];
             case "list.empty?"  : return this.listEmpty(expr, env);
             case "list.first"   : return this.listFirst(expr, env);
@@ -53,11 +53,11 @@ class ListLib implements ILib {
         return [lst, elm];
     }
 
-    private listAppend(expr: any[], env: any): any[] {
+    private listConcat(expr: any[], env: any): any[] {
         const lst1: any[] = this.inter.evalExpr(expr[1], env);
         const lst2: any[] = this.inter.evalExpr(expr[2], env);
 
-        return Array.isArray(lst2) ? lst2.concat(lst1) : lst1;
+        return Array.isArray(lst1) ? lst1.concat(lst2) : lst1;
     }
 
     private listEmpty(expr: any[], env: any[]): boolean {
@@ -194,11 +194,12 @@ class ListLib implements ILib {
         return lst;
     }
 
-    private listSlice(expr: any[], env: any): any[] {
-        const from: any  = this.inter.evalExpr(expr[1], env);
-        const to: any    = this.inter.evalExpr(expr[2], env);
-        const lst: any[] = this.inter.evalExpr(expr[3], env);
+    private listSlice(expr: any[], env: any[]): any[] {
+        const lst   : any[]  = this.inter.evalExpr(expr[expr.length - 1], env);
+        const args  : number = expr.length - 2;
+        const begin : number = args > 0 ? this.inter.evalExpr(expr[1], env) : 0;
+        const end   : number = args > 1 ? this.inter.evalExpr(expr[2], env) : lst.length;
 
-        return lst.slice(from, to);
+        return lst.slice(begin, end);
     }
 }

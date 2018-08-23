@@ -32,6 +32,11 @@ describe('list', function () {
     });
 
     describe('list.add!', function () {
+        it('it adds', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [2 3]}
+             (list.add! 1 lst)    `), [2, 3, 1]);
+        });
         it('it mutates', function () {
             assert.deepStrictEqual(easl.evaluate(`  
              {let lst [2 3]}
@@ -40,9 +45,9 @@ describe('list', function () {
         });
     });
 
-    describe('list.append', function () {
-        it('set element:  (list.append [3 4] [1 2]) → [1 2 3 4]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.append [3 4] [1 2])     `), [ 1, 2, 3, 4 ]);
+    describe('list.concat', function () {
+        it('set element:  (list.concat [1 2] [3 4]) → [1 2 3 4]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.concat [1 2] [3 4])     `), [ 1, 2, 3, 4 ]);
         });
     });
 
@@ -227,6 +232,25 @@ describe('list', function () {
              {let lst [2 3]}
              (list.set! 5 1 lst)
              lst                  `), [2, 5]);
+        });
+    });
+
+
+    describe('list.slice', function () {
+        it('called with no args, slices the whole list', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [1 2 3 4 5]}
+             (list.slice lst)           `), [1, 2, 3, 4, 5]);
+        });
+        it('called with one arg, slices from that index to the end', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [1 2 3 4 5]}
+             (list.slice 2 lst)         `), [3, 4, 5]);
+        });
+        it('called with two args, slices from to (exclusive)', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [1 2 3 4 5]}
+             (list.slice 1 3 lst)      `), [2, 3]);
         });
     });
 });

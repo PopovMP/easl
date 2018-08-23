@@ -70,14 +70,15 @@ class Interpreter {
         switch (typeof expr) {
             case "number": return expr;
             case "string": return this.lookup(expr, env);
-            case "boolean": return expr;
+        }
+        switch (expr[0]) {
+            case "list": return this.mapExprLst(expr.slice(1), env);
+            case "string": return expr[1];
         }
         if (this.isDebug) {
             this.dumpState(expr, env);
         }
         switch (expr[0]) {
-            case "list": return this.mapExprLst(expr.slice(1), env);
-            case "string": return expr[1];
             case "let": return this.evalLet(expr, env);
             case "set!": return this.evalSet(expr, env);
             case "lambda": return this.evalLambda(expr, env);
@@ -134,17 +135,14 @@ class Interpreter {
         if (!Array.isArray(closure)) {
             throw Error(`Improper function: ${closure}`);
         }
-        const args = expr.length === 1
-            ? []
-            : expr.length === 2
-                ? [this.evalExpr(expr[1], env)]
-                : this.mapExprLst(expr.slice(1), env);
+        const args = expr.length === 1 ? [] : expr.length === 2
+            ? [this.evalExpr(expr[1], env)]
+            : this.mapExprLst(expr.slice(1), env);
         const funcName = isNamed ? proc : "lambda";
         const params = closure[1];
         const closureBody = closure[2].length === 1 ? closure[2][0] : closure[2];
         const closureEnv = this.assocArgsToParams(params, args)
-            .concat([["func-name", funcName], ["func-params", params], ["func-args", args]])
-            .concat(env).concat(closure[3]);
+            .concat([["func-name", funcName], ["func-params", params], ["func-args", args]], env, closure[3]);
         if (closureBody === "block") {
             throw Error(`Improper function: ${funcName}`);
         }
@@ -696,7 +694,7 @@ class ListLib {
         switch (expr[0]) {
             case "list.add": return this.listAdd(expr, env);
             case "list.add!": return this.listAdd(expr, env, false);
-            case "list.append": return this.listAppend(expr, env);
+            case "list.concat": return this.listConcat(expr, env);
             case "list.empty": return [];
             case "list.empty?": return this.listEmpty(expr, env);
             case "list.first": return this.listFirst(expr, env);
@@ -732,10 +730,10 @@ class ListLib {
         }
         return [lst, elm];
     }
-    listAppend(expr, env) {
+    listConcat(expr, env) {
         const lst1 = this.inter.evalExpr(expr[1], env);
         const lst2 = this.inter.evalExpr(expr[2], env);
-        return Array.isArray(lst2) ? lst2.concat(lst1) : lst1;
+        return Array.isArray(lst1) ? lst1.concat(lst2) : lst1;
     }
     listEmpty(expr, env) {
         const lst = this.inter.evalExpr(expr[1], env);
@@ -834,10 +832,11 @@ class ListLib {
         return lst;
     }
     listSlice(expr, env) {
-        const from = this.inter.evalExpr(expr[1], env);
-        const to = this.inter.evalExpr(expr[2], env);
-        const lst = this.inter.evalExpr(expr[3], env);
-        return lst.slice(from, to);
+        const lst = this.inter.evalExpr(expr[expr.length - 1], env);
+        const args = expr.length - 2;
+        const begin = args > 0 ? this.inter.evalExpr(expr[1], env) : 0;
+        const end = args > 1 ? this.inter.evalExpr(expr[2], env) : lst.length;
+        return lst.slice(begin, end);
     }
 }
 class MathLib {
