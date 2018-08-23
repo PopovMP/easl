@@ -59,7 +59,11 @@ class Interpreter {
         switch (typeof expr) {
             case "number"   : return expr;
             case "string"   : return this.lookup(expr, env);
-            case "boolean"  : return expr;
+        }
+
+        switch (expr[0]) {
+            case "list"     : return this.mapExprLst(expr.slice(1), env);
+            case "string"   : return expr[1];
         }
 
         if (this.isDebug) {
@@ -68,8 +72,6 @@ class Interpreter {
 
         // Special forms
         switch (expr[0]) {
-            case "list"     : return this.mapExprLst(expr.slice(1), env);
-            case "string"   : return expr[1];
             case "let"      : return this.evalLet(expr, env);
             case "set!"     : return this.evalSet(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
@@ -139,18 +141,14 @@ class Interpreter {
             throw Error(`Improper function: ${closure}`);
         }
 
-        const args    : any[]   = expr.length === 1
-                                      ? []
-                                      : expr.length === 2
-                                          ? [this.evalExpr(expr[1], env)]
-                                          : this.mapExprLst(expr.slice(1), env);
-
+        const args       : any[]    = expr.length === 1 ? [] : expr.length === 2
+            ? [this.evalExpr(expr[1], env)]
+            : this.mapExprLst(expr.slice(1), env);
         const funcName   : string   = isNamed ? <string>proc : "lambda";
         const params     : string[] = closure[1];
         const closureBody: any      = closure[2].length === 1 ? closure[2][0] : closure[2];
         const closureEnv : any[]    = this.assocArgsToParams(params, args)
-                                    .concat([["func-name", funcName], ["func-params", params], ["func-args", args]])
-                                    .concat(env).concat(closure[3]);
+            .concat([["func-name", funcName], ["func-params", params], ["func-args", args]], env, closure[3]);
 
         if (closureBody === "block") {
             throw Error(`Improper function: ${funcName}`);
@@ -180,7 +178,7 @@ class Interpreter {
     }
 
     private evalLet(expr: any, env: any[]): any {
-        const symbol = expr[1];
+        const symbol: string = expr[1];
         this.throwOnExistingDef(symbol, env);
         const value: any = this.evalLetValue(expr, env);
 
@@ -190,7 +188,7 @@ class Interpreter {
     }
 
     private evalSet(expr: any, env: any[]): any {
-        const symbol = expr[1];
+        const symbol:string = expr[1];
         const value: any = this.evalLetValue(expr, env);
 
         this.setInEnv(symbol, value, env);
@@ -219,7 +217,7 @@ class Interpreter {
     // [function, symbol, [par1, par2, ...], expr]
     // [function, symbol, [par1, par2, ...], expr1, expr2, ...]
     private evalFunction(expr: any[], env: any[]): any {
-        const symbol = expr[1];
+        const symbol: string = expr[1];
         this.throwOnExistingDef(symbol, env);
 
         const body : any = expr.length === 4 ? [expr[3]] : ["block", ... expr.slice(3)];
@@ -243,7 +241,7 @@ class Interpreter {
     //       ...
     //       (else then-body ...) }
     private evalCond(expr: any, env: any[]): any {
-        const clauses =  expr.slice(1);
+        const clauses: any[] =  expr.slice(1);
 
         for (const clause of clauses) {
             if (clause[0] === "else") {
@@ -263,7 +261,7 @@ class Interpreter {
     //       (else          expr) }
     private evalCase(expr: any, env: any[]): any {
         const val: any = this.evalExpr(expr[1], env);
-        const clauses =  expr.slice(2);
+        const clauses: any[] =  expr.slice(2);
 
         for (const clause of clauses) {
             if (clause[0] === "else") {
@@ -290,7 +288,7 @@ class Interpreter {
 
         while (this.evalExpr(condBody, loopEnv)) {
             for (const bodyExpr of loopBody) {
-                const res = this.evalExpr(bodyExpr, loopEnv);
+                const res: any = this.evalExpr(bodyExpr, loopEnv);
                 if (res === "continue") break;
                 if (res === "break"   ) return null;
             }
@@ -313,7 +311,7 @@ class Interpreter {
 
         while (this.evalExpr(condBody, env)) {
             for (const bodyExpr of loopBody) {
-                const res = this.evalExpr(bodyExpr, env);
+                const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
                 if (res === "break"   ) return null;
             }
@@ -329,7 +327,7 @@ class Interpreter {
 
         do  {
             for (const bodyExpr of loopBody) {
-                const res = this.evalExpr(bodyExpr, env);
+                const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
                 if (res === "break"   ) return null;
             }
@@ -345,7 +343,7 @@ class Interpreter {
 
     private dumpState(expr: any[], env: any[]): null {
         const envDumpList: string[] = [];
-        const maxLength= Math.min(env.length, 10);
+        const maxLength: number = Math.min(env.length, 10);
 
         for (let i = 0; i < maxLength; i++) {
             const record = env[i];
@@ -363,7 +361,7 @@ class Interpreter {
 
     private manageImports(codeTree: any[], callback: (codeTree: any[]) => void): void {
         const code: any[] = [];
-        let currentCodeIndex = 0;
+        let currentCodeIndex: number = 0;
 
         searchImports(currentCodeIndex);
 
@@ -391,7 +389,7 @@ class Interpreter {
 
     private resolveThroughLib(expr: any[], env: any[]): {resolved: boolean, val: any} {
         for (const lib of this.libs) {
-            const res = lib.libEvalExpr(expr, env);
+            const res: any = lib.libEvalExpr(expr, env);
             if (res !== "##not-resolved##") return {resolved: true, val: res};
         }
 
