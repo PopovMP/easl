@@ -48,4 +48,18 @@ describe('for loop', function () {
                     {set! m (+ m 1)} }
                 m                                      `), 50);
     });
+
+    it('the counter is not exposed after the loop', function () {
+        assert.strictEqual(easl.evaluate(`
+                {for (i 0) (< i 1) (+ i 1) }
+                i                                      `), "Error: Unbound identifier: i");
+    });
+
+    it("the counter doesn't override a variable" , function () {
+        assert.strictEqual(easl.evaluate(`
+                {let i 42}
+                {for (i 0) (< i 1) (+ i 1) }
+                i                                      `), 42);
+    });
+
 });

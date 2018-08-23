@@ -193,6 +193,7 @@ class Interpreter {
         return null;
     }
 
+    // {block, expr1, expr2, ...}
     private evalBlock(expr: any[], env: any[]): any {
         if (expr.length === 1) {
             throw Error(`Empty body`);
@@ -200,7 +201,7 @@ class Interpreter {
 
         env.push(["block-start", null]);
 
-        const res =  expr.length === 1
+        const res =  expr.length === 2
                          ? this.evalExpr(expr[1], env)
                          : this.evalExprLst(expr.slice(1), env);
 
@@ -298,11 +299,14 @@ class Interpreter {
 
         while (this.evalExpr(condBody, env)) {
             env.push(["for-start", null]);
+
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
+
                 if (res === "continue") break;
                 if (res === "break") {
                     this.cleanEnv("for-start", env);
+                    env.pop();
                     return null;
                 }
             }
@@ -317,6 +321,7 @@ class Interpreter {
            this.cleanEnv("for-start", env);
         }
 
+        env.pop();
         return null;
     }
 
@@ -327,6 +332,7 @@ class Interpreter {
 
         while (this.evalExpr(condBody, env)) {
             env.push(["while-start", null]);
+
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
@@ -335,6 +341,7 @@ class Interpreter {
                     return null;
                 }
             }
+
             this.cleanEnv("while-start", env);
         }
 
@@ -348,6 +355,7 @@ class Interpreter {
 
         do  {
             env.push(["do-start", null]);
+
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
@@ -356,6 +364,7 @@ class Interpreter {
                     return null;
                 }
             }
+
             this.cleanEnv("do-start", env);
         } while (this.evalExpr(condBody, env));
 
