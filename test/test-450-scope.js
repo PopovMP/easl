@@ -121,5 +121,4 @@ describe('scope', function () {
                 {[5] {let a 1}} }
             a                 `), "Error: Unbound identifier: a");
     });
-
 });

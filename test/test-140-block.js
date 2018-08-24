@@ -25,52 +25,47 @@ describe('block', function () {
 
     it('let in block', function () {
         assert.strictEqual(easl.evaluate(`
-        {block
+            {block
                 {let a 5}
                 {let b 6}
-                (+ a b) }
-        `), 11);
+                (+ a b) }           `), 11);
     });
 
     it('nested block', function () {
         assert.strictEqual(easl.evaluate(`
-        {block
             {block
                 {block
+                    {block
                         {let a 5}
                         {let b 6}
-                        (+ a b) }}}
-        `), 11);
+                        (+ a b) }}} `), 11);
     });
 
     it('scope accessible from inner block', function () {
         assert.strictEqual(easl.evaluate(`
-        {block
-            {let a 5}
             {block
-                {let b 6}
+                {let a 5}
                 {block
-                   (+ a b) }}}
-        `), 11);
+                    {let b 6}
+                    {block
+                       (+ a b) }}}  `), 11);
     });
 
     it('block in function', function () {
         assert.strictEqual(easl.evaluate(`
-            {function ff ()
+            {function f ()
                 {block
-                        {let a 5}
-                        {let b 6}
-                        (+ a b) }}
-            (ff)
-        `), 11);
+                    {let a 5}
+                    {let b 6}
+                    (+ a b) }}
+            (f)                     `), 11);
     });
 
     it('function in block', function () {
         assert.strictEqual(easl.evaluate(`
-        {block
-            {function sum (a b) (+ a b)}
-            (sum 2 3) }
-        `), 5);
+            {block
+                {function sum (a b) (+ a b)}
+                (sum 2 3) }         `), 5);
     });
 
 });

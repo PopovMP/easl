@@ -39,48 +39,47 @@ describe('let', function () {
                
              {let full-name (str.concat first-name second-name)}
              
-             full-name
-                                                                        `), "John Smith");
+             full-name                                      `), "John Smith");
         });
     });
 
     describe('let with lists', function () {
         it('{let lst [1 2 3]} lst  → [1, 2, 3]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   {let lst [1 2 3]} lst `), [1, 2, 3]);
+            assert.deepStrictEqual(easl.evaluate(`
+                {let lst [1 2 3]} lst `), [1, 2, 3]);
         });
 
         it('two lists', function () {
             assert.deepStrictEqual(easl.evaluate(`   
              
-             {let lst1  [1 2]}
-             {let lst2  [3 4]} 
-
-             {let new-list (list.concat lst1 lst2)}
-
-             new-list
-                                                                        `), [1, 2, 3, 4]);
+                {let lst1  [1 2]}
+                {let lst2  [3 4]} 
+        
+                {let new-list (list.concat lst1 lst2)}
+        
+                new-list                                     `), [1, 2, 3, 4]);
         });
     });
 
     describe('let lambda', function () {
         it('no arguments', function () {
             assert.strictEqual(easl.evaluate(` 
-                                                {let answer
-                                                    {lambda () 42}}
-                                                (answer)                                `), 42);
+                    {let answer
+                        {lambda () 42}}
+                    (answer)                                `), 42);
         });
 
         it('one argument', function () {
             assert.strictEqual(easl.evaluate(` 
-                                                {let double
-                                                    {lambda (a) (* 2 a)}}
-                                                (double 2)                              `), 4);
+                    {let double
+                        {lambda (a) (* 2 a)}}
+                    (double 2)                              `), 4);
         });
         it('two arguments', function () {
             assert.strictEqual(easl.evaluate(`    
-                                                {let sum
-                                                    {lambda (a b) (+ a b)}}
-                                                (sum 2 3)                               `), 5);
+                    {let sum
+                        {lambda (a b) (+ a b)}}
+                    (sum 2 3)                               `), 5);
         });
     });
 

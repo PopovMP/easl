@@ -8,26 +8,54 @@ const easl = new Easl();
 
 describe('case', function () {
     it('One clause with number', function () {
-        assert.strictEqual(easl.evaluate(`  {case 1
-                                                ([1 2 3] "ok") }     `), "ok");
+        assert.strictEqual(easl.evaluate(`
+            {case 1
+                ([1 2 3] "ok") }            `), "ok");
     });
+
     it('One clause with expression', function () {
-        assert.strictEqual(easl.evaluate(`  {case (+ 1 2)
-                                                ([1 2 3] "ok") }     `), "ok");
+        assert.strictEqual(easl.evaluate(`
+            {case (+ 1 2)
+                ([1 2 3] "ok") }            `), "ok");
     });
+
     it('Not in options', function () {
-        assert.strictEqual(easl.evaluate(`  {case 3
-                                                ([2] "ok") }         `), null);
+        assert.strictEqual(easl.evaluate(`
+            {case 3
+                ([2] "ok") }                `), null);
     });
+
     it('Two clauses', function () {
         assert.strictEqual(easl.evaluate(` 
-{let n 2}
+            {let n 2}
+            {let type {case n
+                         ([0 2 4 6 8] "even")
+                         ([1 3 5 7 9]  "odd") }}
+            type                            `), "even");
+    });
 
-{let type {case n
-             ([0 2 4 6 8] "even" )
-             ([1 3 5 7 9] "odd") }}
-             
-type                                                   `), "even");
+    it('Else', function () {
+        assert.strictEqual(easl.evaluate(` 
+            {let n "hello"}
+            {let type {case n
+                         ([0 2 4 6 8] "even")
+                         ([1 3 5 7 9]  "odd")
+                         (else "mhm") }}
+            type                            `), "mhm");
+    });
+
+    it('Not a case', function () {
+        assert.strictEqual(easl.evaluate(` 
+            {let n "hello"}
+            {let type {case n
+                         ([0 2 4 6 8] "even")
+                         ([1 3 5 7 9]  "odd")  }}
+            type                            `), null);
+    });
+
+    it('multiple expressions', function () {
+        assert.strictEqual(easl.evaluate(`
+            {case 1
+                ([1] 1 2 3) }               `), 3);
     });
 });
-
