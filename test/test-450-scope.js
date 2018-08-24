@@ -45,7 +45,7 @@ describe('scope', function () {
             {function foo ()
                {function bar () a}
                {let a 1}
-               {bar) }
+               (bar) }
             
             (foo)                `), 1);
     });
@@ -70,7 +70,7 @@ describe('scope', function () {
         assert.strictEqual(easl.evaluate(`
             {function foo ()
                {let a 1}
-               {bar) }
+               (bar) }
             {function bar () a}
             (foo)                `), "Error: Unbound identifier: a");
     });
@@ -78,7 +78,7 @@ describe('scope', function () {
     it("'for' is a scope", function () {
         assert.strictEqual(easl.evaluate(`
             {for (i 0) (< i 2) (+ i 1)
-                {let a 1 }}
+                {let a 1} }
             a                 `), "Error: Unbound identifier: a");
     });
 
@@ -87,7 +87,7 @@ describe('scope', function () {
             {let n 0}
             {while (< n 2)
                 {let a 1}
-                {set! n (+ n 1) }}
+                {set! n (+ n 1)} }
             a                 `), "Error: Unbound identifier: a");
     });
 
@@ -104,7 +104,21 @@ describe('scope', function () {
     it("'block' is a scope", function () {
         assert.strictEqual(easl.evaluate(`
             {block
-                {let a 1 }}
+                {let a 1} }
+            a                 `), "Error: Unbound identifier: a");
+    });
+
+    it("'cond' is a scope", function () {
+        assert.strictEqual(easl.evaluate(`
+            {cond
+                {true {let a 1}} }
+            a                 `), "Error: Unbound identifier: a");
+    });
+
+    it("'case' is a scope", function () {
+        assert.strictEqual(easl.evaluate(`
+            {case 5
+                {[5] {let a 1}} }
             a                 `), "Error: Unbound identifier: a");
     });
 

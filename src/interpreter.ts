@@ -262,16 +262,17 @@ class Interpreter {
     //       (else then-body ...) }
     private evalCond(expr: any, env: any[]): any {
         const clauses: any[] =  expr.slice(1);
+        env.push(["cond-start", null]);
 
         for (const clause of clauses) {
-            if (clause[0] === "else") {
-                return this.evalExprLst(clause.slice(1), env);
-            }
-            if (this.evalExpr(clause[0], env)) {
-                return this.evalExprLst(clause.slice(1), env);
+            if (clause[0] === "else" || this.evalExpr(clause[0], env)) {
+                const res: any = this.evalExprLst(clause.slice(1), env);
+                this.cleanEnv("cond-start", env);
+                return res;
             }
         }
 
+        this.cleanEnv("cond-start", env);
         return null;
     }
 
@@ -282,16 +283,17 @@ class Interpreter {
     private evalCase(expr: any, env: any[]): any {
         const val: any = this.evalExpr(expr[1], env);
         const clauses: any[] =  expr.slice(2);
+        env.push(["case-start", null]);
 
         for (const clause of clauses) {
-            if (clause[0] === "else") {
-                return this.evalExprLst(clause.slice(1), env);
-            }
-            if (clause[0].indexOf(val) > -1) {
-                return this.evalExprLst(clause.slice(1), env);
+            if (clause[0] === "else" || clause[0].indexOf(val) > -1) {
+                const res: any = this.evalExprLst(clause.slice(1), env);
+                this.cleanEnv("case-start", env);
+                return res;
             }
         }
 
+        this.cleanEnv("case-start", env);
         return null;
     }
 
@@ -384,9 +386,6 @@ class Interpreter {
     }
 
     private dumpState(expr: any[], env: any[]): null {
-        const envDumpList: string[] = [];
-        const maxLength: number = Math.min(env.length - 1, 10);
-
         const getCircularReplacer = () => {
             const seen = new WeakSet();
             return (key: string, value: any) => {
@@ -398,17 +397,20 @@ class Interpreter {
             };
         };
 
+        const envDumpList: string[] = [];
+        const maxLength: number = Math.min(env.length - 1, 10);
+
         for (let i = maxLength; i > -1; i--) {
             const record = env[i];
             envDumpList.push(`${record[0]} : ${JSON.stringify(record[1], getCircularReplacer()).substr(0, 500)}`);
         }
 
-        const envDumpText = envDumpList.join("\n      ");
-        const message     = `Expr: ${JSON.stringify(expr)}\nEnv : ${envDumpText}`;
+        const envDumpText: string = envDumpList.join("\n      ");
+        const message: string = `Expr: ${JSON.stringify(expr)}\nEnv : ${envDumpText}`;
 
         this.options.printer(message);
-        this.isDebug = false;
 
+        this.isDebug = false;
         return null;
     }
 
