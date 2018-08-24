@@ -162,11 +162,15 @@ class Interpreter {
         return this.evalExpr(closureBody, closureEnv);
     }
 
-    private makeProcEnv(funcName: string, params: string[], args: any[], env: any[]): any[] {
+    private makeProcEnv(funcName: string, params: string | string[], args: any[], env: any[]): any[] {
         const closureEnv = env.concat([["func-name", funcName], ["func-params", params], ["func-args", args]]);
 
-        for (let i = 0; i < params.length; i++) {
-            closureEnv.push([params[i], i < args.length ? args[i] : null]);
+        if (typeof params === "string") {
+            closureEnv.push([params, args.length > 0 ? args[0] : null]);
+        } else {
+            for (let i = 0; i < params.length; i++) {
+                closureEnv.push([params[i], i < args.length ? args[i] : null]);
+            }
         }
 
         return closureEnv;

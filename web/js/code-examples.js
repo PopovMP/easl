@@ -238,7 +238,7 @@ const examplesList = [
         code: `;; Sequence generator
 
 ;; Each element is equal to the prev * 3
-{let curr {lambda (prev) (* prev 3)}}
+{let curr {lambda prev (* prev 3)}}
 
 ;; Recursive style
 {function make-sequence-rec (first length next)
