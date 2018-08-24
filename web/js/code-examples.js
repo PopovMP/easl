@@ -237,18 +237,26 @@ const examplesList = [
         name: "Sequence generator",
         code: `;; Sequence generator
 
-{function make-sequence (first length next)
-    {function loop (lst i)
-        {if (= i length)
-            lst
-            (loop (list.add (next (list.last lst)) lst)
-                  (+ i 1)) }}
-    (loop [first] 1) }                       ; start the loop with the first element preset.
+;; Each element is equal to the prev * 3
+{let curr {lambda (prev) (* prev 3)}}
 
+;; Recursive style
+{function make-sequence-rec (first length next)
+    {function loop (i res)
+        {if (< i length)
+            (loop (+ i 1) (list.add (next (list.last res)) res))
+            res }}
+    (loop 1 [first]) }
 
-{make-sequence 3                             ; the first element
-               10                            ; the sequence length
-               {lambda (prev) (* prev 3)} )  ; calculation formula
+;; Iteration style
+{function make-sequence-iter (first length next)
+ 	{let res [first]}
+    {for (i 1) (< i length) (+ i 1)
+    	(list.add! (next (list.last res)) res) }
+    res }
+
+(print "Recursive:" (make-sequence-rec  3 10 curr))
+(print "Iteration:" (make-sequence-iter 3 10 curr))
 `
     },
 
