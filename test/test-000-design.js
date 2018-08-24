@@ -105,15 +105,18 @@ describe('EASL design', function () {
             assert.strictEqual(easl.evaluate(`  (math.pi)                      `), 3.141592653589793);
         });
         it('user function', function () {
-            assert.strictEqual(easl.evaluate(`  {function foo () 5} (foo)      `), 5);
+            assert.strictEqual(easl.evaluate(`  {function double (n) (* 2 n)} (double 5)      `), 10);
         });
         it('lambda', function () {
-            assert.strictEqual(easl.evaluate(`  {let foo {lambda () 5}} (foo)  `), 5);
+            assert.strictEqual(easl.evaluate(`  {let double {lambda (n) (* 2 n)}} (double 5)  `), 10);
+        });
+        it('lambda definition and execution', function () {
+            assert.strictEqual(easl.evaluate(`  ({lambda (n) (* 2 n)} 5)       `), 10);
         });
         it('not a function', function () {
             assert.strictEqual(easl.evaluate(`  (42)     `), "Error: Improper function: 42");
         });
-        it('unknown a function', function () {
+        it('unknown function', function () {
             assert.strictEqual(easl.evaluate(` (foo 42)  `), "Error: Unbound identifier: foo");
         });
     });
@@ -143,19 +146,19 @@ describe('EASL design', function () {
 
         it('type-of function', function () {
             assert.strictEqual(easl.evaluate(` 
-             {function sum (a b) {+ a b)}
+             {function sum (a b) (+ a b)}
              (type-of sum)                           `), "function");
         });
 
         it('type-of let lambda', function () {
             assert.strictEqual(easl.evaluate(` 
-             {let sum {lambda (a b) {+ a b)} }
+             {let sum {lambda (a b) (+ a b)} }
              (type-of sum)                           `), "function");
         });
 
         it('type-of lambda', function () {
             assert.strictEqual(easl.evaluate(` 
-             (type-of {lambda (a b) {+ a b)})        `), "function");
+             (type-of {lambda (a b) (+ a b)})        `), "function");
         });
     });
 
@@ -221,7 +224,7 @@ describe('EASL design', function () {
         it('empty list', function () {
             assert.strictEqual(easl.evaluate(`   (to-number [])        `), 0);
         });
-        it('NaN', function () {
+        it('not a number', function () {
             assert.strictEqual(easl.evaluate(`   (to-number "hello")   `), null);
         });
     });

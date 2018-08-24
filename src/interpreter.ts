@@ -141,8 +141,11 @@ class Interpreter {
             throw Error(`Improper function: ${closure}`);
         }
 
-        const funcName   : string = isNamed ? <string>proc : "lambda";
-        const closureBody: any[] | string = closure[2].length === 1 ? closure[2][0] : closure[2];
+        const funcName: string = isNamed ? <string>proc : "lambda";
+
+        const closureBody: any[] | string = closure[2].length === 1 && typeof closure[2][0] === "string"
+            ? closure[2][0]
+            : closure[2];
 
         if (closureBody === "block") {
             throw Error(`Improper function: ${funcName}`);
@@ -171,6 +174,10 @@ class Interpreter {
 
     // [lambda, [par1, par2, ...], expr]
     private evalLambda(expr: any[], env: any[]): any[] {
+        if (expr.length !== 3) {
+            throw Error(`Improper function`);
+        }
+
         return ["closure", expr[1], expr[2], env];
     }
 

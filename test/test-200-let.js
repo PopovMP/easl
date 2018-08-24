@@ -66,7 +66,7 @@ describe('let', function () {
         it('no arguments', function () {
             assert.strictEqual(easl.evaluate(` 
                                                 {let answer
-                                                    {lambda () (42)}}
+                                                    {lambda () 42}}
                                                 (answer)                                `), 42);
         });
 

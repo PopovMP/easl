@@ -28,9 +28,15 @@ describe('function', function () {
                 (f)                                 `), 5);
         });
 
-        it('call with one arg', function () {
+        it('identity 1', function () {
             assert.strictEqual(easl.evaluate(`
-                {function identity (x) x}
+                {function identity (a) a}
+                (identity 5)                         `), 5);
+        });
+
+        it('identity 2', function () {
+            assert.strictEqual(easl.evaluate(`
+                {function identity a a}
                 (identity 5)                         `), 5);
         });
 
@@ -78,7 +84,7 @@ describe('function', function () {
             assert.strictEqual(easl.evaluate(` 
 
         {function make-identity ()
-            {lambda (a) (a)}}
+            {lambda (a) a}}
     
         (let identity (make-identity))
     
@@ -103,11 +109,8 @@ describe('function', function () {
     describe('function calls function', function () {
         it('one arg', function () {
             assert.strictEqual(easl.evaluate(` 
-
-            {function foo (a) a}
-            
-            (function bar (a) (foo a))
-            
+            {function foo a a}
+            (function bar a (foo a))
             (bar 5)
                                                  `), 5);
         });

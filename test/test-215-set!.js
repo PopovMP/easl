@@ -18,8 +18,8 @@ describe('set!', function () {
     it('set lambda', function () {
         assert.strictEqual(easl.evaluate(`
 
-        {let  a {lambda () (1) }}
-        {set! a {lambda () (2) }}
+        {let  a {lambda () 1 }}
+        {set! a {lambda () 2 }}
         (a)
 
         `), 2);
