@@ -2,28 +2,33 @@
 
 const examplesList = [
     {
-        name: "List length",
-        code:
-            `;; Define a variable 'lst' and
-;; assign a list to it
+        name: "Working with lists",
+        code: `;; We define a list in square brackets.
+{let lst [0 1 2 3 4 5 6]}
 
-{let lst [1 2 3 4]}
-
-;; Use the builtin function 'list.length'
-;; to take the length of the list
-
-(list.length lst)
-
-;; Try to uncomment some of the expressions below
-; (list.first lst)
-; (list.rest lst)
-; (list.last lst)
+(print "A list of numbers       :" lst)
+(print "The list length         :" (list.length lst))
+(print "The first element       :" (list.first  lst))
+(print "All but first one       :" (list.rest   lst))
+(print "The last element        :" (list.last   lst))
+(print "All but the last one    :" (list.least  lst))
+(print "The third element       :" (list.get 2  lst))
+(print "From the 2nd to the 6th :" (list.slice 1 6 lst))
+;; list.add returns a new list without mutating the original one
+(print "Add element purely      :" (list.add 77 lst))
+(print "Set 2nd element purely  :" (list.set 55 1 lst))
+(print "You see, no changes     :" lst)
+;; list.add! adds an element to the original list. That's why it ends with ! 
+(print "Add element on place    :" (list.add! 42 lst))
+;; list.set! mutates the list. That's why it also ends with !
+(print "Set 2nd element on place:" (list.set! 55 1 lst))
+(print "Push one elem in front  :" (list.push! 99 lst))
 `
     },
+
     {
         name: "Print numbers from 1 to 10",
-        code:
-            `;; Print numbers from 1 to 10
+        code: `;; Print numbers from 1 to 10
 
 {let n 1}                     ; initialize a counter
 
@@ -39,8 +44,7 @@ const examplesList = [
     },
     {
         name: "Random numbers in a list",
-        code:
-            `;; Random numbers in a list
+        code: `;; Random numbers in a list
 
 {let lst (list.empty)}                    ; make an empty list
 
@@ -55,8 +59,7 @@ const examplesList = [
 
     {
         name: "Odd or even with 'case'",
-        code:
-            `;; Odd or even with 'case'
+        code: `;; Odd or even with 'case'
 
 ; Generate a random number between 0 and 9
 {let n (math.floor (* (math.random) 10)) }
@@ -72,8 +75,7 @@ const examplesList = [
 
     {
         name: "Function with default parameters",
-        code:
-            `;; Function with default parameters
+        code: `;; Function with default parameters
 
 {function sum (a b)
    {let a (or a 0)}
@@ -93,8 +95,7 @@ const examplesList = [
 
     {
         name: "Implementation of 'map'",
-        code:
-            `;; Implementation of 'map' in EASL
+        code: `;; Implementation of 'map' in EASL
 
 {function map (func lst)
     {let i    0}    
@@ -115,8 +116,7 @@ const examplesList = [
 
     {
         name: "Implementation of 'for-each'",
-        code:
-            `;; Implementation of 'for-each' in EASL
+        code: `;; Implementation of 'for-each' in EASL
 
 {function for-each (func lst)
     {let len (list.length lst)}
@@ -135,8 +135,7 @@ const examplesList = [
 
     {
         name: "Swap list elements non destructive",
-        code:
-            `;; Swap list elements non destructive
+        code: `;; Swap list elements non destructive
 
 {let lst [1 2 3 4]}
 
@@ -153,8 +152,7 @@ const examplesList = [
 
     {
         name: "Factorial",
-        code:
-            `;; Factorial
+        code: `;; Factorial
 
 {function fac (n)
     {if (= n 0)
@@ -167,8 +165,7 @@ const examplesList = [
 
     {
         name: "Fibonacci - tail optimized",
-        code:
-            `;; Fibonacci - tail optimized
+        code: `;; Fibonacci - tail optimized
 
 {function fibo (n)
     {function loop (i prev cur)
@@ -184,10 +181,10 @@ const examplesList = [
 (fibo 10)
 `
     },
+
     {
         name: "Mutual recursion",
-        code:
-            `;; Mutual recursion
+        code: `;; Mutual recursion
 
 {function is-even? (n)
     {or  (= n 0)
@@ -200,7 +197,6 @@ const examplesList = [
 (is-odd? 3)
 `
     },
-
 
     {
         name: "Find the maximum of a list",
@@ -221,6 +217,7 @@ const examplesList = [
 (list-max [42 34 12 5 62 2])
 `
     },
+
     {
         name: "Closure example",
         code: `;; Closure
@@ -233,6 +230,7 @@ const examplesList = [
 (add2 3)
 `
     },
+
     {
         name: "Sequence generator",
         code: `;; Sequence generator
@@ -262,8 +260,7 @@ const examplesList = [
 
     {
         name: "Y combinator - factorial",
-        code:
-            `;; Y combinator - factorial
+        code: `;; Y combinator - factorial
 
 (((lambda (!) (lambda (n) ((! !) n)))
   (lambda (!) (lambda (n) (if (= n 0)
