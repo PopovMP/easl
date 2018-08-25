@@ -1,20 +1,16 @@
 "use strict";
 class Easl {
-    constructor() {
-        this.interpreter = new Interpreter();
-    }
     evaluate(codeText, optionsParam, callback) {
-        const options = optionsParam
-            ? Options.parse(optionsParam)
-            : new Options();
+        const options = optionsParam ? Options.parse(optionsParam) : new Options();
+        const parser = new Parser();
+        const interpreter = new Interpreter();
         try {
-            const codeTree = Parser.parse(codeText);
-            const output = this.interpreter.evalCodeTree(codeTree, options, callback);
-            return output;
+            const ilCode = parser.parse(codeText);
+            return interpreter.evalCodeTree(ilCode, options, callback);
         }
         catch (e) {
             if (typeof callback === "function") {
-                callback(String(e));
+                callback(e.toString());
             }
             else {
                 return e.toString();
@@ -149,7 +145,8 @@ class Interpreter {
             throw Error(`Function with empty body: ${funcName}`);
         }
         const args = expr.length === 1 ? [] : expr.length === 2
-            ? [this.evalExpr(expr[1], env)] : this.mapExprLst(expr.slice(1), env);
+            ? [this.evalExpr(expr[1], env)]
+            : this.mapExprLst(expr.slice(1), env);
         const closureEnv = this.makeProcEnv(funcName, closure[1], args, closure[3]);
         return this.evalExpr(closureBody, closureEnv);
     }
@@ -370,69 +367,11 @@ class Interpreter {
     resolveThroughLib(expr, env) {
         for (const lib of this.libs) {
             const res = lib.libEvalExpr(expr, env);
-            if (res !== "##not-resolved##")
+            if (res !== "##not-resolved##") {
                 return { resolved: true, val: res };
+            }
         }
         return { resolved: false, val: null };
-    }
-}
-class LibManager {
-    static getBuiltinLibs(libList, inter) {
-        return libList.map(lib => LibManager.createLib(lib, inter));
-    }
-    static createLib(libName, inter) {
-        switch (libName) {
-            case "core-lib":
-                return new CoreLib(inter);
-            case "date-lib":
-                return new DateLib(inter);
-            case "list-lib":
-                return new ListLib(inter);
-            case "math-lib":
-                return new MathLib(inter);
-            case "number-lib":
-                return new NumberLib(inter);
-            case "string-lib":
-                return new StringLib(inter);
-            default:
-                throw Error("Unknown lib: " + libName);
-        }
-    }
-    static importLibrary(libUrl, callback) {
-        if (typeof libUrl !== "string" || libUrl.length === 0) {
-            throw Error("Empty library name");
-        }
-        const storedLib = IoService.getItemFromLocalStorage(libUrl);
-        if (Array.isArray(storedLib) && storedLib.length > 0) {
-            callback(storedLib);
-            return;
-        }
-        const libName = libUrl.substring(libUrl.lastIndexOf('/') + 1);
-        IoService.get(libUrl, ioService_get_ready);
-        function ioService_get_ready(libText) {
-            if (typeof libUrl !== "string" || libUrl.length === 0) {
-                throw Error("Cannot load library content: " + libName);
-            }
-            const libCode = Parser.parse(libText);
-            IoService.setItemToLocalStorage(libUrl, libCode);
-            callback(libCode);
-        }
-    }
-}
-class Options {
-    constructor() {
-        this.printer = console.log;
-        this.libs = ["core-lib", "date-lib", "list-lib", "math-lib", "number-lib", "string-lib"];
-    }
-    static parse(options) {
-        const evalOptions = new Options();
-        if (typeof options.printer === "function") {
-            evalOptions.printer = options.printer;
-        }
-        if (Array.isArray(options.libs)) {
-            evalOptions.libs = options.libs.slice();
-        }
-        return evalOptions;
     }
 }
 const XMLHttpRequestLib = (typeof XMLHttpRequest === "function")
@@ -479,6 +418,186 @@ class IoService {
             throw Error("Get item to local storage: " + key + ", " + e.message);
         }
     }
+}
+class LibManager {
+    static getBuiltinLibs(libList, inter) {
+        return libList.map(lib => LibManager.createLib(lib, inter));
+    }
+    static createLib(libName, inter) {
+        switch (libName) {
+            case "core-lib": return new CoreLib(inter);
+            case "date-lib": return new DateLib(inter);
+            case "list-lib": return new ListLib(inter);
+            case "math-lib": return new MathLib(inter);
+            case "number-lib": return new NumberLib(inter);
+            case "string-lib": return new StringLib(inter);
+            default: throw Error("Unknown lib: " + libName);
+        }
+    }
+    static importLibrary(libUrl, callback) {
+        if (typeof libUrl !== "string" || libUrl.length === 0) {
+            throw Error("Empty library name");
+        }
+        const storedLib = IoService.getItemFromLocalStorage(libUrl);
+        if (Array.isArray(storedLib) && storedLib.length > 0) {
+            callback(storedLib);
+            return;
+        }
+        const libName = libUrl.substring(libUrl.lastIndexOf('/') + 1);
+        IoService.get(libUrl, ioService_get_ready);
+        function ioService_get_ready(libText) {
+            if (typeof libUrl !== "string" || libUrl.length === 0) {
+                throw Error("Cannot load library content: " + libName);
+            }
+            const parser = new Parser();
+            const libCode = parser.parse(libText);
+            IoService.setItemToLocalStorage(libUrl, libCode);
+            callback(libCode);
+        }
+    }
+}
+class Options {
+    constructor() {
+        this.printer = console.log;
+        this.libs = ["core-lib", "date-lib", "list-lib", "math-lib", "number-lib", "string-lib"];
+    }
+    static parse(options) {
+        const evalOptions = new Options();
+        if (typeof options.printer === "function") {
+            evalOptions.printer = options.printer;
+        }
+        if (Array.isArray(options.libs)) {
+            evalOptions.libs = options.libs.slice();
+        }
+        return evalOptions;
+    }
+}
+class Parser {
+    constructor() {
+        this.numberRegExp = /^[-+]?\d+(?:-\d\d\d)*(?:\.\d+)*$/;
+        this.openParenChars = ["(", "[", "{"];
+        this.closeParenChars = [")", "]", "}"];
+        this.whiteSpaceChars = [" ", "\t"];
+        this.endOfLineChars = ["\r", "\n"];
+        this.commentStartChars = [";"];
+    }
+    parse(codeText) {
+        const codeTree = this.tokenize(codeText);
+        const ilTree = this.nest(codeTree);
+        return ilTree;
+    }
+    tokenize(code) {
+        const lexList = [];
+        const pushSymbol = (symbol) => {
+            if (symbol === "")
+                return;
+            if (this.isTextNumber(symbol)) {
+                const number = this.parseNumber(symbol);
+                lexList.push(number);
+            }
+            else {
+                lexList.push(symbol);
+            }
+        };
+        for (let i = 0, symbol = ""; i < code.length; i++) {
+            const ch = code[i];
+            if (ch === '"') {
+                const charList = [];
+                for (i++; i < code.length; i++) {
+                    const c = code[i];
+                    if (c === '"' && i < code.length - 1 && code[i + 1] === '"') {
+                        charList.push('"');
+                        i++;
+                        continue;
+                    }
+                    else if (c === '"') {
+                        break;
+                    }
+                    charList.push(c);
+                }
+                const str = charList.join("");
+                lexList.push("(", "string", str, ")");
+                continue;
+            }
+            if (this.isLineComment(ch)) {
+                for (; i < code.length; i++) {
+                    const c = code[i];
+                    if (this.isEndOfLine(c)) {
+                        break;
+                    }
+                }
+                continue;
+            }
+            if (this.isParen(ch)) {
+                pushSymbol(symbol);
+                symbol = "";
+                lexList.push(ch);
+                if (ch === "[") {
+                    lexList.push("list");
+                }
+                continue;
+            }
+            if (this.isWhiteSpace(ch)) {
+                pushSymbol(symbol);
+                symbol = "";
+                continue;
+            }
+            symbol += ch;
+            if (i === code.length - 1) {
+                pushSymbol(symbol);
+                symbol = "";
+            }
+        }
+        return lexList;
+    }
+    nest(tree) {
+        let i = -1;
+        function pass(list) {
+            if (++i === tree.length)
+                return list;
+            const token = tree[i];
+            if (["{", "[", "("].indexOf(token) > -1) {
+                return list.concat([pass([])]).concat(pass([]));
+            }
+            if ([")", "]", "}"].indexOf(token) > -1) {
+                return list;
+            }
+            return pass(list.concat(token));
+        }
+        return pass([]);
+    }
+    isParen(ch) {
+        return this.isOpenParen(ch) || this.isCloseParen(ch);
+    }
+    isOpenParen(ch) {
+        return this.openParenChars.indexOf(ch) > -1;
+    }
+    isCloseParen(ch) {
+        return this.closeParenChars.indexOf(ch) > -1;
+    }
+    isWhiteSpace(ch) {
+        return this.whiteSpaceChars.indexOf(ch) > -1 ||
+            this.endOfLineChars.indexOf(ch) > -1;
+    }
+    isLineComment(ch) {
+        return this.commentStartChars.indexOf(ch) > -1;
+    }
+    isEndOfLine(ch) {
+        return this.endOfLineChars.indexOf(ch) > -1;
+    }
+    isTextNumber(text) {
+        return this.numberRegExp.test(text);
+    }
+    parseNumber(numberText) {
+        const isNegative = numberText[0] === "-";
+        const cleanedNumbText = numberText.replace(/-/g, "");
+        const parsedNumber = Number(cleanedNumbText);
+        const number = isNegative ? -parsedNumber : parsedNumber;
+        return number;
+    }
+}
+if (typeof module === "object") {
+    module.exports.Parser = Parser;
 }
 class CoreLib {
     constructor(interpreter) {
@@ -707,7 +826,8 @@ class CoreLib {
     }
     evalParse(expr, env) {
         const codeText = this.inter.evalExpr(expr[1], env);
-        return Parser.parse(codeText);
+        const parser = new Parser();
+        return parser.parse(codeText);
     }
     evalEval(expr, env) {
         const codeTree = this.inter.evalExpr(expr[1], env);
@@ -952,8 +1072,7 @@ class NumberLib {
     }
     evalToString(expr, env) {
         const value = this.inter.evalExpr(expr[1], env);
-        const radix = expr[2] ? this.inter.evalExpr(expr[2], env) : 10;
-        return value.toString(radix);
+        return value.toString();
     }
 }
 class StringLib {
@@ -988,190 +1107,4 @@ class StringLib {
         const str2 = this.inter.evalExpr(expr[2], env);
         return str1 + str2;
     }
-}
-class Grammar {
-    static isParen(ch) {
-        return Grammar.isOpenParen(ch) || Grammar.isCloseParen(ch);
-    }
-    static isOpenParen(ch) {
-        return Grammar.openParenChars.indexOf(ch) > -1;
-    }
-    static isCloseParen(ch) {
-        return Grammar.closeParenChars.indexOf(ch) > -1;
-    }
-    static isWhiteSpace(ch) {
-        return Grammar.whiteSpaceChars.indexOf(ch) > -1 ||
-            Grammar.endOfLineChars.indexOf(ch) > -1;
-    }
-    static isStringEnclosureChar(ch) {
-        return Grammar.stringEncloseChars.indexOf(ch) > -1;
-    }
-    static isLineComment(ch) {
-        return Grammar.commentStartChars.indexOf(ch) > -1;
-    }
-    static isEndOfLine(ch) {
-        return Grammar.endOfLineChars.indexOf(ch) > -1;
-    }
-    static isTextNumber(text) {
-        return Grammar.numberRegExp.test(text);
-    }
-    static isNumber(token) {
-        return typeof token === "number";
-    }
-}
-Grammar.numberRegExp = /^[-+]?\d+(?:-\d\d\d)*(?:\.\d+)*$/;
-Grammar.openParenChars = ["(", "[", "{"];
-Grammar.closeParenChars = [")", "]", "}"];
-Grammar.whiteSpaceChars = [" ", "\t"];
-Grammar.endOfLineChars = ["\r", "\n"];
-Grammar.commentStartChars = [";"];
-Grammar.stringEncloseChars = ["\""];
-class Lexer {
-    static splitCode(code) {
-        const lexList = [];
-        for (let i = 0, symbol = ""; i < code.length; i++) {
-            const ch = code[i];
-            const pushSymbol = () => {
-                if (symbol === "")
-                    return;
-                if (Grammar.isTextNumber(symbol)) {
-                    const number = Lexer.parseNumber(symbol);
-                    lexList.push(number);
-                }
-                else {
-                    lexList.push(symbol);
-                }
-                symbol = "";
-            };
-            if (Grammar.isStringEnclosureChar(ch)) {
-                const charList = [];
-                for (i++; i < code.length; i++) {
-                    const c = code[i];
-                    if (Grammar.isStringEnclosureChar(c)) {
-                        break;
-                    }
-                    else {
-                        charList.push(c);
-                    }
-                }
-                const str = charList.join("");
-                lexList.push('(');
-                lexList.push('string');
-                lexList.push(str);
-                lexList.push(')');
-            }
-            else if (Grammar.isLineComment(ch)) {
-                for (; i < code.length; i++) {
-                    const c = code[i];
-                    if (Grammar.isEndOfLine(c)) {
-                        break;
-                    }
-                }
-            }
-            else if (Grammar.isParen(ch)) {
-                pushSymbol();
-                lexList.push(ch);
-                if (ch === "[") {
-                    lexList.push("list");
-                }
-            }
-            else if (Grammar.isWhiteSpace(ch)) {
-                pushSymbol();
-            }
-            else {
-                symbol += ch;
-                if (i === code.length - 1) {
-                    pushSymbol();
-                }
-            }
-        }
-        return lexList;
-    }
-    static parseNumber(numberText) {
-        const isNegative = numberText[0] === "-";
-        const cleanedNumbText = numberText.replace(/-/g, "");
-        const parsedNumber = Number(cleanedNumbText);
-        const number = isNegative ? -parsedNumber : parsedNumber;
-        return number;
-    }
-}
-if (typeof module === "object") {
-    module.exports.Lexer = Lexer;
-}
-class Parser {
-    static parse(codeText) {
-        const lexTree = Lexer.splitCode(codeText);
-        const quotedLexTree = Parser.quoteSymbols(lexTree);
-        const fixedLexTree = Parser.replaceParens(quotedLexTree);
-        const joinedLexTree = Parser.joinLexTree(fixedLexTree);
-        const codeTree = Parser.tokenize(joinedLexTree);
-        return codeTree;
-    }
-    static quoteSymbols(lexTree) {
-        const result = [];
-        for (let i = 0; i < lexTree.length; i++) {
-            const token = lexTree[i];
-            if (Grammar.isNumber(token)) {
-                result.push(token);
-            }
-            else if (Grammar.isParen(token)) {
-                result.push(token);
-            }
-            else {
-                result.push("\"" + token + "\"");
-            }
-        }
-        return result;
-    }
-    static replaceParens(lexTree) {
-        const result = [];
-        for (let i = 0; i < lexTree.length; i++) {
-            const token = lexTree[i];
-            switch (token) {
-                case "(":
-                case "{":
-                    result.push("[");
-                    break;
-                case ")":
-                case "}":
-                    result.push("]");
-                    break;
-                default:
-                    result.push(token);
-            }
-        }
-        return result;
-    }
-    static joinLexTree(lexTree) {
-        const result = [];
-        for (let i = 0; i < lexTree.length; i++) {
-            if (lexTree[i] === "[") {
-                let parens = "";
-                for (; lexTree[i] === "["; i++) {
-                    parens += lexTree[i];
-                }
-                result.push(parens += lexTree[i]);
-            }
-            else if (lexTree[i] === "]") {
-                let parens = "";
-                for (; lexTree[i] === "]"; i++) {
-                    parens += lexTree[i];
-                }
-                result[result.length - 1] += parens;
-                i--;
-            }
-            else {
-                result.push(lexTree[i]);
-            }
-        }
-        return result.join(",");
-    }
-    static tokenize(lexText) {
-        const fixedTree = "[" + lexText + "]";
-        const codeTree = JSON.parse(fixedTree);
-        return codeTree;
-    }
-}
-if (typeof module === "object") {
-    module.exports.Parser = Parser;
 }

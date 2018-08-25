@@ -3,24 +3,22 @@
 const app = {};
 
 function initialize() {
-    app.easl = new Easl();
-
-    app.view = {};
-    app.view.codeAreaElem = document.getElementById("code-area");
-    app.view.buttonRun = document.getElementById("run-button");
-    app.view.codeOutputElem = document.getElementById("code-output");
-    app.view.codeExamplesElem = document.getElementById("select-examples");
-
-    app.editor = CodeMirror.fromTextArea(app.view.codeAreaElem, {
+    const codeMirrorOptions = {
         lineNumbers: true,
         styleActiveLine: true,
         matchBrackets: true,
         mode: "easl-mode",
         theme: "easl",
-    });
+    };
 
+    app.easl = new Easl();
+    app.view = {};
+    app.view.codeAreaElem = document.getElementById("code-area");
+    app.view.buttonRun = document.getElementById("run-button");
+    app.view.codeOutputElem = document.getElementById("code-output");
+    app.view.codeExamplesElem = document.getElementById("select-examples");
+    app.editor = CodeMirror.fromTextArea(app.view.codeAreaElem, codeMirrorOptions);
     app.view.buttonRun.addEventListener("click", buttonRun_click);
-
     app.evalOptions = {printer: interpreter_print};
 
     setExamples();
@@ -50,14 +48,9 @@ function runCode(codeText) {
     app.easl.evaluate(codeText, app.evalOptions, eval_ready);
 }
 
-function eval_ready(output) {
-    showOutput(output);
-}
-
-function showOutput(output) {
-    if (output !== null) {
-        app.view.codeOutputElem.value += output;
-    }
+function showOutput(text) {
+    if (text === null) return;
+    app.view.codeOutputElem.value += text + "\n";
 }
 
 function clearOutput() {
@@ -79,7 +72,9 @@ function buttonRun_click(event) {
 }
 
 function interpreter_print(text) {
-    if (text !== null) {
-        showOutput(text + "\n");
-    }
+    showOutput(text);
+}
+
+function eval_ready(output) {
+    showOutput(output);
 }

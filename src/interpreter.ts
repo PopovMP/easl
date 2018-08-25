@@ -8,13 +8,13 @@ class Interpreter {
 
     constructor() {
         this.isDebug = false;
-        this.libs    = [];
+        this.libs = [];
         this.options = new Options();
     }
 
     public evalCodeTree(codeTree: any[], options: Options, callback?: Function): any {
         this.options = options;
-        this.libs.push( ... LibManager.getBuiltinLibs(options.libs, this));
+        this.libs.push(... LibManager.getBuiltinLibs(options.libs, this));
 
         if (typeof callback === "function") {
             this.manageImports(codeTree, this.manageImport_ready.bind(this, callback));
@@ -23,7 +23,7 @@ class Interpreter {
         }
     }
 
-    private  manageImport_ready(callback: Function, codeTree: any[]): any {
+    private manageImport_ready(callback: Function, codeTree: any[]): any {
         const res: any = this.evalExprLst(codeTree, []);
         callback(res);
     }
@@ -86,7 +86,7 @@ class Interpreter {
             case "debug"    : return this.evalDebug();
         }
 
-        const res: {resolved: boolean, val: any} = this.resolveThroughLib(expr, env);
+        const res: { resolved: boolean, val: any } = this.resolveThroughLib(expr, env);
         if (res.resolved) return res.val;
 
         return this.callProc(expr, env);
@@ -133,9 +133,9 @@ class Interpreter {
     // [func-id, arg1, arg2, ...]
     // [[lambda, [par1, par2, ...], expr], arg1, arg2, ...]
     private callProc(expr: any[], env: any[]): any {
-        const proc    : string | any[] = expr[0];
-        const isNamed : boolean = typeof proc === "string";
-        const closure : any[]   = isNamed ? this.lookup(<string>proc, env) : this.evalExpr(proc, env);
+        const proc: string | any[] = expr[0];
+        const isNamed: boolean = typeof proc === "string";
+        const closure: any[] = isNamed ? this.lookup(<string>proc, env) : this.evalExpr(proc, env);
 
         if (!Array.isArray(closure)) {
             throw Error(`Improper function: ${closure}`);
@@ -155,9 +155,10 @@ class Interpreter {
             throw Error(`Function with empty body: ${funcName}`);
         }
 
-        const args : any[] = expr.length === 1 ? [] : expr.length === 2
-            ? [this.evalExpr(expr[1], env)] : this.mapExprLst(expr.slice(1), env);
-        const closureEnv : any[] = this.makeProcEnv(funcName, closure[1], args, closure[3]);
+        const args: any[] = expr.length === 1 ? [] : expr.length === 2
+            ? [this.evalExpr(expr[1], env)]
+            : this.mapExprLst(expr.slice(1), env);
+        const closureEnv: any[] = this.makeProcEnv(funcName, closure[1], args, closure[3]);
 
         return this.evalExpr(closureBody, closureEnv);
     }
@@ -196,7 +197,7 @@ class Interpreter {
     }
 
     private evalSet(expr: any, env: any[]): any {
-        const symbol:string = expr[1];
+        const symbol: string = expr[1];
         const value: any = this.evalLetValue(expr, env);
 
         this.setInEnv(symbol, value, env);
@@ -212,9 +213,9 @@ class Interpreter {
 
         env.push(["#scope#", null]);
 
-        const res =  expr.length === 2
-                         ? this.evalExpr(expr[1], env)
-                         : this.evalExprLst(expr.slice(1), env);
+        const res = expr.length === 2
+            ? this.evalExpr(expr[1], env)
+            : this.evalExprLst(expr.slice(1), env);
 
         this.cleanEnv("#scope#", env);
 
@@ -232,9 +233,9 @@ class Interpreter {
     // [let, symbol, [lambda, [par1, par2, ...], expr]]
     private evalLetValue(expr: any, env: any[]): any {
         const letExpr: any = expr[2];
-        const value  : any = (Array.isArray(letExpr) && letExpr[0] === "lambda")
-                                ? this.evalLambda(["lambda", letExpr[1], letExpr[2]], env)
-                                : this.evalExpr(letExpr, env);
+        const value: any = (Array.isArray(letExpr) && letExpr[0] === "lambda")
+            ? this.evalLambda(["lambda", letExpr[1], letExpr[2]], env)
+            : this.evalExpr(letExpr, env);
         return value;
     }
 
@@ -244,7 +245,7 @@ class Interpreter {
         const symbol: string = expr[1];
         this.throwOnExistingDef(symbol, env);
 
-        const body : any = ["block", ... expr.slice(3)];
+        const body: any = ["block", ... expr.slice(3)];
         const value: any = this.evalLambda(["lambda", expr[2], body], env);
 
         env.push([symbol, value]);
@@ -255,17 +256,17 @@ class Interpreter {
     // [if, test-expr, then-expr, else-expr]
     private evalIf(expr: any[], env: any[]): any {
         return this.isTruthy(this.evalExpr(expr[1], env))
-                           ? this.evalExpr(expr[2], env)
-                           : expr.length === 4
-                               ? this.evalExpr(expr[3], env)
-                               : null;
+            ? this.evalExpr(expr[2], env)
+            : expr.length === 4
+                ? this.evalExpr(expr[3], env)
+                : null;
     }
 
     // {cond (test-expr then-body ...)
     //       ...
     //       (else then-body ...) }
     private evalCond(expr: any, env: any[]): any {
-        const clauses: any[] =  expr.slice(1);
+        const clauses: any[] = expr.slice(1);
         env.push(["#scope#", null]);
 
         for (const clause of clauses) {
@@ -286,7 +287,7 @@ class Interpreter {
     //       (else          expr) }
     private evalCase(expr: any, env: any[]): any {
         const val: any = this.evalExpr(expr[1], env);
-        const clauses: any[] =  expr.slice(2);
+        const clauses: any[] = expr.slice(2);
         env.push(["#scope#", null]);
 
         for (const clause of clauses) {
@@ -331,7 +332,7 @@ class Interpreter {
                 }
             }
 
-           this.cleanEnv("#scope#", env);
+            this.cleanEnv("#scope#", env);
         }
 
         env.pop();
@@ -366,7 +367,7 @@ class Interpreter {
         const condBody: any = expr[expr.length - 1];
         const loopBody: any = expr.slice(1, expr.length - 1);
 
-        do  {
+        do {
             env.push(["#scope#", null]);
 
             for (const bodyExpr of loopBody) {
@@ -440,16 +441,18 @@ class Interpreter {
             callback(code);
         }
 
-        function libManager_import_ready(libCodeTree: any[]) :void {
+        function libManager_import_ready(libCodeTree: any[]): void {
             code.push(... libCodeTree);
             searchImports(currentCodeIndex + 1);
         }
     }
 
-    private resolveThroughLib(expr: any[], env: any[]): {resolved: boolean, val: any} {
+    private resolveThroughLib(expr: any[], env: any[]): { resolved: boolean, val: any } {
         for (const lib of this.libs) {
             const res: any = lib.libEvalExpr(expr, env);
-            if (res !== "##not-resolved##") return {resolved: true, val: res};
+            if (res !== "##not-resolved##") {
+                return {resolved: true, val: res};
+            }
         }
 
         return {resolved: false, val: null};

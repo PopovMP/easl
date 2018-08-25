@@ -57,7 +57,6 @@ class NumberLib implements ILib {
 
     private evalToString(expr: any[], env: any[]): string {
         const value: number = this.inter.evalExpr(expr[1], env);
-        const radix: number = expr[2] ? this.inter.evalExpr(expr[2], env) : 10;
-        return value.toString(radix);
+        return value.toString();
     }
 }

@@ -99,8 +99,8 @@ class CoreLib implements ILib {
     private evalEqual(expr: any[], env: any[]): any {
         if (expr.length === 3) {
             return this.inter.evalExpr(expr[1], env) === this.inter.evalExpr(expr[2], env);
-        } else if (expr.length > 3){
-            const first =  this.inter.evalExpr(expr[1], env);
+        } else if (expr.length > 3) {
+            const first = this.inter.evalExpr(expr[1], env);
             for (let i = 2; i < expr.length; i++) {
                 if (this.inter.evalExpr(expr[i], env) !== first) return false;
             }
@@ -119,7 +119,7 @@ class CoreLib implements ILib {
             const val: any = this.inter.evalExpr(expr[1], env);
             return this.inter.isTruthy(val) ? this.inter.evalExpr(expr[2], env) : val;
         } else {
-            const val: any =  this.inter.evalExpr(expr[1], env);
+            const val: any = this.inter.evalExpr(expr[1], env);
             return this.inter.isTruthy(val) ? this.evalAnd(expr.slice(1), env) : val;
         }
     }
@@ -133,7 +133,7 @@ class CoreLib implements ILib {
             const val: any = this.inter.evalExpr(expr[1], env);
             return this.inter.isTruthy(val) ? val : this.inter.evalExpr(expr[2], env);
         } else {
-            const val: any =  this.inter.evalExpr(expr[1], env);
+            const val: any = this.inter.evalExpr(expr[1], env);
             return this.inter.isTruthy(val) ? val : this.evalOr(expr.slice(1), env);
         }
     }
@@ -235,7 +235,8 @@ class CoreLib implements ILib {
 
     private evalParse(expr: any[], env: any[]): any[] {
         const codeText: string = this.inter.evalExpr(expr[1], env);
-        return Parser.parse(codeText);
+        const parser: Parser = new Parser();
+        return parser.parse(codeText);
     }
 
     private evalEval(expr: any[], env: any[]): any[] {

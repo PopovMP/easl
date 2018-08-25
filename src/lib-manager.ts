@@ -1,5 +1,9 @@
 "use strict";
 
+interface ILib {
+    libEvalExpr(expr: any[], env: any[]): any;
+}
+
 class LibManager {
 
     public static getBuiltinLibs(libList: string[], inter: Interpreter): ILib[] {
@@ -8,20 +12,13 @@ class LibManager {
 
     public static createLib(libName: string, inter: Interpreter): ILib {
         switch (libName) {
-            case "core-lib":
-                return new CoreLib(inter);
-            case "date-lib":
-                return new DateLib(inter);
-            case "list-lib":
-                return new ListLib(inter);
-            case "math-lib":
-                return new MathLib(inter);
-            case "number-lib":
-                return new NumberLib(inter);
-            case "string-lib":
-                return new StringLib(inter);
-            default:
-                throw Error("Unknown lib: " + libName);
+            case "core-lib"   : return new CoreLib(inter);
+            case "date-lib"   : return new DateLib(inter);
+            case "list-lib"   : return new ListLib(inter);
+            case "math-lib"   : return new MathLib(inter);
+            case "number-lib" : return new NumberLib(inter);
+            case "string-lib" : return new StringLib(inter);
+            default: throw Error("Unknown lib: " + libName);
         }
     }
 
@@ -45,7 +42,8 @@ class LibManager {
                 throw Error("Cannot load library content: " + libName);
             }
 
-            const libCode = Parser.parse(libText);
+            const parser: Parser = new Parser();
+            const libCode = parser.parse(libText);
 
             IoService.setItemToLocalStorage(libUrl, libCode);
 
