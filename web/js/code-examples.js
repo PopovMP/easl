@@ -90,6 +90,7 @@ const examplesList = [
 (print "(sum 1 2)     →" (sum 1 2))
 (print "(sum 1 2 3)   →" (sum 1 2 3))
 (print "(sum 1 2 3 4) →" (sum 1 2 3 4)) ; Magic !?!
+(print "(+ 1 2 3 4 5) →" (+ 1 2 3 4 5)) ; The EASL way :)
 `
     },
 
@@ -154,7 +155,7 @@ const examplesList = [
         name: "Factorial",
         code: `;; Factorial
 
-{function fac (n)
+{function fac n
     {if (= n 0)
         1
         (* (fac (- n 1)) n) }} 
@@ -167,18 +168,18 @@ const examplesList = [
         name: "Fibonacci - tail optimized",
         code: `;; Fibonacci - tail optimized
 
-{function fibo (n)
+{function fibo n
     {function loop (i prev cur)
         {if (= i n)
             cur
             (loop (+ i 1) cur (+ prev cur)) }}
+    {case n
+        {[1 2] 1}
+        {else (loop 2 1 1)} }}
 
-    {cond
-        ((= n 1) 1)
-        ((= n 2) 1)
-        (else (loop 2 1 1)) }}
-
-(fibo 10)
+;; Print
+{for (i 1) (< i 10) (+ i 1)
+    (print "fibo" i ":" (fibo i)) }
 `
     },
 
@@ -186,15 +187,15 @@ const examplesList = [
         name: "Mutual recursion",
         code: `;; Mutual recursion
 
-{function is-even? (n)
+{function even? n
     {or  (= n 0)
-         (is-odd? (- n 1)) }}
+         (odd? (- n 1)) }}
 
-{function is-odd? (n)
+{function odd? n
     {and (!= n 0)
-         (is-even? (- n 1)) }}
+         (even? (- n 1)) }}
 
-(is-odd? 3)
+(odd? 3)
 `
     },
 
@@ -222,8 +223,8 @@ const examplesList = [
         name: "Closure example",
         code: `;; Closure
 
-{function make-adder (a)
-    {lambda (b) (+ a b)}}
+{function make-adder a
+    {lambda b (+ a b)}}
 
 {let add2 (make-adder 2)}
 
