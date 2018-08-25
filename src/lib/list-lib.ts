@@ -118,8 +118,8 @@ class ListLib implements ILib {
     }
 
     private listJoin(expr: any[], env: any): string {
-        const sep: any   = expr[1];
-        const lst: any[] = this.inter.evalExpr(expr[2], env);
+        const sep: string = expr.length === 3 ? this.inter.evalExpr(expr[1], env) : ",";
+        const lst: any[] = this.inter.evalExpr(expr[expr.length - 1], env);
 
         return lst.join(sep);
     }

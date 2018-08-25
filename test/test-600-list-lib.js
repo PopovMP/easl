@@ -108,6 +108,18 @@ describe('list', function () {
         });
     });
 
+    describe('list.join', function () {
+        it('empty list:  (list.join []) → ""', function () {
+            assert.strictEqual(easl.evaluate(`   (list.join [])        `), "");
+        });
+        it('default delimiter:  (list.join [1 2 3]) → "1,2,3"', function () {
+            assert.strictEqual(easl.evaluate(`   (list.join [1 2 3])   `), "1,2,3");
+        });
+        it('custom delimiter:  (list.join "-" [1 2 3]) → "1-2-3"', function () {
+            assert.strictEqual(easl.evaluate(`   (list.join "-" [1 2 3])   `), "1-2-3");
+        });
+    });
+
     describe('list.last', function () {
         it('not a list:  (list.last 42) → null', function () {
             assert.strictEqual(easl.evaluate(`   (list.last 42)        `), null);
