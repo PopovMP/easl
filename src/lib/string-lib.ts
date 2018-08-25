@@ -24,20 +24,20 @@ class StringLib implements ILib {
     }
 
     private strHas(expr: any[], env: any): boolean {
-        const elem = this.inter.evalExpr(expr[1], env);
-        const str = this.inter.evalExpr(expr[2], env);
+        const elem: string = this.inter.evalExpr(expr[1], env);
+        const str : string = this.inter.evalExpr(expr[2], env);
         return str.includes(elem);
     }
 
-    private strSplit(expr: any[], env: any): string {
-        const sep = this.inter.evalExpr(expr[1], env);
-        const str = this.inter.evalExpr(expr[2], env);
+    private strSplit(expr: any[], env: any): string[] {
+        const sep: string = this.inter.evalExpr(expr[1], env);
+        const str: string = this.inter.evalExpr(expr[2], env);
         return str.split(sep);
     }
 
     private strConcat(expr: any[], env: any): string {
-        const str1 = this.inter.evalExpr(expr[1], env);
-        const str2 = this.inter.evalExpr(expr[2], env);
+        const str1: string = this.inter.evalExpr(expr[1], env);
+        const str2: string = this.inter.evalExpr(expr[2], env);
         return str1 + str2;
     }
 }

@@ -9,7 +9,7 @@ class NumberLib implements ILib {
 
     public libEvalExpr(expr: any[], env: any[]): any {
         switch (expr[0]) {
-            case "numb.finite?"      : return this.evalIsFine(expr, env);
+            case "numb.finite?"      : return this.evalIsFinite(expr, env);
             case "numb.integer?"     : return this.evalIsInteger(expr, env);
             case "numb.max-value"    : return Number.MAX_VALUE;
             case "numb.min-value"    : return Number.MIN_VALUE;
@@ -23,14 +23,14 @@ class NumberLib implements ILib {
         return "##not-resolved##";
     }
 
-    private evalIsFine(expr: any[], env: any[]): boolean {
+    private evalIsFinite(expr: any[], env: any[]): boolean {
         const value: number = this.inter.evalExpr(expr[1], env);
         return typeof value === "number" && isFinite(value);
     }
 
     private evalIsInteger(expr: any[], env: any[]): boolean {
         const value: number = this.inter.evalExpr(expr[1], env);
-        return typeof typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
+        return typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
     }
 
     private evalParseFloat(expr: any[], env: any[]): number {
