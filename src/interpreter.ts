@@ -73,7 +73,6 @@ class Interpreter {
         // Special forms
         switch (expr[0]) {
             case "let"      : return this.evalLet(expr, env);
-            case "set!"     : return this.evalSet(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
             case "function" : return this.evalFunction(expr, env);
             case "block"    : return this.evalBlock(expr, env);
@@ -83,6 +82,9 @@ class Interpreter {
             case "for"      : return this.evalFor(expr, env);
             case "while"    : return this.evalWhile(expr, env);
             case "do"       : return this.evalDo(expr, env);
+            case "set!"     : return this.evalSet(expr, env);
+            case "try"      : return this.evalTry(expr, env);
+            case "throw"    : return this.evalThrow(expr, env);
             case "debug"    : return this.evalDebug();
         }
 
@@ -383,6 +385,52 @@ class Interpreter {
         } while (this.evalExpr(condBody, env));
 
         return null;
+    }
+
+    private evalTry(expr: any[], env: any[]): any {
+        try {
+            env.push(["#scope#", null]);
+            const res = this.evalExprLst(expr.slice(2), env);
+            this.cleanEnv("#scope#", env);
+            return res;
+        } catch (e) {
+            this.cleanEnv("#scope#", env);
+            return this.evalCatch(expr[1], String(e), env);
+        }
+    }
+
+    private evalCatch(catchExpr: any, errorMessage: string, env: any[]): any {
+        const catchType: string = typeof catchExpr;
+        if (catchType === "number") {
+            return catchExpr;
+        }
+
+        if (catchType === "string") {
+            switch (catchExpr) {
+                case "null"  : return null;
+                case "true"  : return true;
+                case "false" : return false;
+            }
+
+            // Call function
+            return this.callProc([catchExpr, ["string", errorMessage]], env);
+        }
+
+        if (Array.isArray(catchExpr)) {
+            if (catchExpr[0] === "lambda") {
+                return this.callProc([catchExpr, ["string", errorMessage]], env);
+            }
+
+            if (catchExpr[0] === "string") {
+                return catchExpr[1];
+            }
+        }
+
+        return this.evalExpr(catchExpr, env);
+    }
+
+    private evalThrow(expr: any[], env: any[]): never {
+        throw this.evalExpr(expr[1], env);
     }
 
     private evalDebug(): null {

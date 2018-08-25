@@ -76,7 +76,6 @@ class Interpreter {
         }
         switch (expr[0]) {
             case "let": return this.evalLet(expr, env);
-            case "set!": return this.evalSet(expr, env);
             case "lambda": return this.evalLambda(expr, env);
             case "function": return this.evalFunction(expr, env);
             case "block": return this.evalBlock(expr, env);
@@ -86,6 +85,9 @@ class Interpreter {
             case "for": return this.evalFor(expr, env);
             case "while": return this.evalWhile(expr, env);
             case "do": return this.evalDo(expr, env);
+            case "set!": return this.evalSet(expr, env);
+            case "try": return this.evalTry(expr, env);
+            case "throw": return this.evalThrow(expr, env);
             case "debug": return this.evalDebug();
         }
         const res = this.resolveThroughLib(expr, env);
@@ -311,6 +313,44 @@ class Interpreter {
             this.cleanEnv("#scope#", env);
         } while (this.evalExpr(condBody, env));
         return null;
+    }
+    evalTry(expr, env) {
+        try {
+            env.push(["#scope#", null]);
+            const res = this.evalExprLst(expr.slice(2), env);
+            this.cleanEnv("#scope#", env);
+            return res;
+        }
+        catch (e) {
+            this.cleanEnv("#scope#", env);
+            return this.evalCatch(expr[1], String(e), env);
+        }
+    }
+    evalCatch(catchExpr, errorMessage, env) {
+        const catchType = typeof catchExpr;
+        if (catchType === "number") {
+            return catchExpr;
+        }
+        if (catchType === "string") {
+            switch (catchExpr) {
+                case "null": return null;
+                case "true": return true;
+                case "false": return false;
+            }
+            return this.callProc([catchExpr, ["string", errorMessage]], env);
+        }
+        if (Array.isArray(catchExpr)) {
+            if (catchExpr[0] === "lambda") {
+                return this.callProc([catchExpr, ["string", errorMessage]], env);
+            }
+            if (catchExpr[0] === "string") {
+                return catchExpr[1];
+            }
+        }
+        return this.evalExpr(catchExpr, env);
+    }
+    evalThrow(expr, env) {
+        throw this.evalExpr(expr[1], env);
     }
     evalDebug() {
         this.isDebug = true;
@@ -941,8 +981,8 @@ class ListLib {
         return Array.isArray(lst);
     }
     listJoin(expr, env) {
-        const sep = expr[1];
-        const lst = this.inter.evalExpr(expr[2], env);
+        const sep = expr.length === 3 ? this.inter.evalExpr(expr[1], env) : ",";
+        const lst = this.inter.evalExpr(expr[expr.length - 1], env);
         return lst.join(sep);
     }
     listLast(expr, env) {
@@ -1032,7 +1072,7 @@ class NumberLib {
     }
     libEvalExpr(expr, env) {
         switch (expr[0]) {
-            case "numb.finite?": return this.evalIsFine(expr, env);
+            case "numb.finite?": return this.evalIsFinite(expr, env);
             case "numb.integer?": return this.evalIsInteger(expr, env);
             case "numb.max-value": return Number.MAX_VALUE;
             case "numb.min-value": return Number.MIN_VALUE;
@@ -1044,21 +1084,27 @@ class NumberLib {
         }
         return "##not-resolved##";
     }
-    evalIsFine(expr, env) {
+    evalIsFinite(expr, env) {
         const value = this.inter.evalExpr(expr[1], env);
         return typeof value === "number" && isFinite(value);
     }
     evalIsInteger(expr, env) {
         const value = this.inter.evalExpr(expr[1], env);
-        return typeof typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
+        return typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
     }
     evalParseFloat(expr, env) {
         const value = this.inter.evalExpr(expr[1], env);
-        return parseFloat(value);
+        const res = parseFloat(value);
+        if (isNaN(res))
+            throw "Not a number: " + value;
+        return res;
     }
     evalParseInt(expr, env) {
         const value = this.inter.evalExpr(expr[1], env);
-        return parseInt(value);
+        const res = parseInt(value);
+        if (isNaN(res))
+            throw "Not a number: " + value;
+        return res;
     }
     evalToFixed(expr, env) {
         const value = this.inter.evalExpr(expr[1], env);

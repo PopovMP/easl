@@ -35,12 +35,16 @@ class NumberLib implements ILib {
 
     private evalParseFloat(expr: any[], env: any[]): number {
         const value: string = this.inter.evalExpr(expr[1], env);
-        return parseFloat(value);
+        const res: number = parseFloat(value);
+        if (isNaN(res)) throw "Not a number: " + value;
+        return res;
     }
 
     private evalParseInt(expr: any[], env: any[]): number {
         const value = this.inter.evalExpr(expr[1], env);
-        return parseInt(value);
+        const res: number = parseInt(value);
+        if (isNaN(res)) throw "Not a number: " + value;
+        return res;
     }
 
     private evalToFixed(expr: any[], env: any[]): string {

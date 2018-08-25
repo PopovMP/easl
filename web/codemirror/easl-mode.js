@@ -16,12 +16,12 @@
             return obj;
         }
 
-        const atoms = makeKeywords("true false null func-name func-params func-args");
+        const constants = makeKeywords("true false null func-name func-params func-args");
 
         const keywords = makeKeywords(
-            "block break case cond continue debug do else for function if import lambda let list set! string while");
+            "block break case cond continue debug do else for function if import lambda let list set! string throw try while");
 
-        const builtins = makeKeywords(
+        const builtinFunc = makeKeywords(
             // Core lib
             "+ - * / = > < != >= <= and or not type-of to-string to-number to-boolean print parse eval " +
 
@@ -33,7 +33,7 @@
             "math.pi math.abs math.ceil math.floor math.log math.max math.min math.pow math.random math.round math.sign math.sqrt math.trunc " +
 
             // number lib
-            "numb.epsilon numb.max-value numb.min-value numb.is-integer numb.parse-float numb.parse-integer numb.to-fixed numb.to-string " +
+            "numb.finite? numb.integer? numb.max-value numb.min-value numb.parse-float numb.parse-int numb.to-fixed numb.to-precision numb.to-string " +
 
             // string
             "str.length str.has str.split str.concat "
@@ -214,9 +214,9 @@
 
                             if (keywords && keywords.propertyIsEnumerable(stream.current())) {
                                 returnType = KEYWORD;
-                            } else if (builtins && builtins.propertyIsEnumerable(stream.current())) {
+                            } else if (builtinFunc && builtinFunc.propertyIsEnumerable(stream.current())) {
                                 returnType = BUILTIN;
-                            } else if (atoms && atoms.propertyIsEnumerable(stream.current())) {
+                            } else if (constants && constants.propertyIsEnumerable(stream.current())) {
                                 returnType = ATOM;
                             } else {
                                 returnType = VAR;
