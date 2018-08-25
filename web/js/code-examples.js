@@ -165,6 +165,46 @@ const examplesList = [
     },
 
     {
+        name: "FizzBuzz shortest solution",
+        code: `; Write a program that prints the numbers from 1 to 100.
+; But for multiples of three print "Fizz" instead of the number and
+; for the multiples of five print "Buzz".
+; For numbers which are multiples of both three and five print "FizzBuzz".
+
+{let output []}
+
+{for (i 1) (< i 101) (+ i 1)
+    (list.add! (or (+ {if (% i 3) "" "Fizz"}
+                      {if (% i 5) "" "Buzz"})
+                   i)
+               output) }
+output
+`
+    },
+
+    {
+        name: "FizzBuzz recursive style",
+        code: `;; FizzBuzz recursive style
+
+{function get-fizz-buzz n
+    {cond
+        ((not (% n 15)) "FizzBuzz")
+        ((not (% n  3)) "Fizz")
+        ((not (% n  5)) "Buzz")
+        (else n) }}
+
+{function FizzBuzz max
+    {function loop (n res)
+	    {if (<= n max)
+            (loop (+ n 1) (list.add (get-fizz-buzz n) res))
+            res }}
+    (loop 1 []) }
+
+(FizzBuzz 100)
+`
+    },
+
+    {
         name: "Fibonacci - tail optimized",
         code: `;; Fibonacci - tail optimized
 
@@ -188,20 +228,21 @@ const examplesList = [
         code: `;; Mutual recursion
 
 {function even? n
-    {or  (= n 0)
-         (odd? (- n 1)) }}
+    {or (= n 0)
+        (odd? (- n 1)) }}
 
 {function odd? n
     {and (!= n 0)
          (even? (- n 1)) }}
 
-(odd? 3)
+{let n (math.ceil (* (math.random) 100))}
+(print n "is" (if (odd? n) "odd" "even"))
 `
     },
 
     {
         name: "Find the maximum of a list",
-        code: `;; Find the maximum of a list
+        code: `;; Find the maximum of a list recursively
 
 {function list-max (lst)
     (loop lst (list.first lst))}
@@ -224,7 +265,7 @@ const examplesList = [
         code: `;; Closure
 
 {function make-adder a
-    {lambda b (+ a b)}}
+    {lambda b (+ a b) }}
 
 {let add2 (make-adder 2)}
 
