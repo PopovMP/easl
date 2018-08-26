@@ -19,7 +19,7 @@
         const constants = makeKeywords("true false null func-name func-params func-args");
 
         const keywords = makeKeywords(
-            "block break case cond continue debug do else for function if import lambda let list set! string throw try while");
+            "block break call case cond continue debug do else for function if import lambda let list set! string throw try while");
 
         const builtinFunc = makeKeywords(
             // Core lib

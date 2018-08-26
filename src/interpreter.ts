@@ -85,6 +85,7 @@ class Interpreter {
             case "for"      : return this.evalFor(expr, env);
             case "while"    : return this.evalWhile(expr, env);
             case "do"       : return this.evalDo(expr, env);
+            case "call"     : return this.evalCall(expr, env);
             case "set!"     : return this.evalSet(expr, env);
             case "try"      : return this.evalTry(expr, env);
             case "throw"    : return this.evalThrow(expr, env);
@@ -379,6 +380,22 @@ class Interpreter {
         } while (this.evalExpr(condBody, env));
 
         return null;
+    }
+
+    // [call, func-id, [arg1, arg2, ...]]
+    private evalCall(expr: any[], env: any[]): any {
+        const funcId: string = expr[1];
+        const callArgs: any[] = Array.isArray(expr[2]) && expr[2][0] === "list"
+            ? expr[2].slice(1)
+            : this.evalExpr(expr[2], env);
+
+        const proc: any[] = callArgs.length === 0
+            ? [funcId]
+            : callArgs.length === 1
+                ? [funcId, callArgs[0]]
+                : [funcId, ...callArgs];
+
+        return this.evalExpr(proc, env);
     }
 
     private evalTry(expr: any[], env: any[]): any {
