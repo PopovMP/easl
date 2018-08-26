@@ -67,6 +67,7 @@ class Interpreter {
         }
 
         if (this.isDebug) {
+            this.isDebug = false;
             this.dumpState(expr, env);
         }
 
@@ -137,32 +138,18 @@ class Interpreter {
     private callProc(expr: any[], env: any[]): any {
         const proc: string | any[] = expr[0];
         const isNamed: boolean = typeof proc === "string";
+        const funcName: string = isNamed ? <string>proc : "lambda";
         const closure: any[] = isNamed ? this.lookup(<string>proc, env) : this.evalExpr(proc, env);
 
-        if (!Array.isArray(closure)) {
-            throw Error(`Improper function: ${closure}`);
-        }
-
-        const funcName: string = isNamed ? <string>proc : "lambda";
-
-        const closureBody: any[] | string = closure[2].length === 1 && typeof closure[2][0] === "string"
-            ? closure[2][0]
-            : closure[2];
-
-        if (closureBody === "block") {
-            throw Error(`Improper function: ${funcName}`);
-        }
-
-        if (closureBody.length === 0 || (closureBody[0] === "block" && closureBody[1].length === 0)) {
-            throw Error(`Function with empty body: ${funcName}`);
-        }
+        if (!Array.isArray(closure)) {throw Error(`Improper function: ${closure}`);}
 
         const args: any[] = expr.length === 1 ? [] : expr.length === 2
             ? [this.evalExpr(expr[1], env)]
             : this.mapExprLst(expr.slice(1), env);
+
         const closureEnv: any[] = this.makeProcEnv(funcName, closure[1], args, closure[3]);
 
-        return this.evalExpr(closureBody, closureEnv);
+        return this.evalExpr(closure[2], closureEnv);
     }
 
     private makeProcEnv(funcName: string, params: string | string[], args: any[], env: any[]): any[] {
@@ -181,9 +168,7 @@ class Interpreter {
 
     // [lambda, [par1, par2, ...], expr]
     private evalLambda(expr: any[], env: any[]): any[] {
-        if (expr.length !== 3) {
-            throw Error(`Improper function`);
-        }
+        if (expr.length !== 3) throw Error("Improper function");
 
         return ["closure", expr[1], expr[2], env];
     }
@@ -191,8 +176,8 @@ class Interpreter {
     private evalLet(expr: any, env: any[]): any {
         const symbol: string = expr[1];
         this.throwOnExistingDef(symbol, env);
-        const value: any = this.evalLetValue(expr, env);
 
+        const value: any = this.evalLetValue(expr, env);
         env.push([symbol, value]);
 
         return null;
@@ -200,8 +185,8 @@ class Interpreter {
 
     private evalSet(expr: any, env: any[]): any {
         const symbol: string = expr[1];
-        const value: any = this.evalLetValue(expr, env);
 
+        const value: any = this.evalLetValue(expr, env);
         this.setInEnv(symbol, value, env);
 
         return null;
@@ -209,49 +194,49 @@ class Interpreter {
 
     // {block, expr1, expr2, ...}
     private evalBlock(expr: any[], env: any[]): any {
-        if (expr.length === 1) {
-            throw Error(`Empty body`);
-        }
-
+        if (expr.length === 1) throw Error(`Empty body`);
         env.push(["#scope#", null]);
 
-        const res = expr.length === 2
+        const res: any = expr.length === 2
             ? this.evalExpr(expr[1], env)
             : this.evalExprLst(expr.slice(1), env);
 
         this.cleanEnv("#scope#", env);
-
         return res;
     }
 
     private cleanEnv(tag: string, env: any[]): void {
-        let slice = [];
+        let cell: [string, any];
         do {
-            slice = env.pop();
-        } while (slice[0] !== tag);
+            cell = env.pop();
+        } while (cell[0] !== tag);
     }
 
     // [let, symbol, expr]
     // [let, symbol, [lambda, [par1, par2, ...], expr]]
     private evalLetValue(expr: any, env: any[]): any {
         const letExpr: any = expr[2];
-        const value: any = (Array.isArray(letExpr) && letExpr[0] === "lambda")
+
+        const res: any = (Array.isArray(letExpr) && letExpr[0] === "lambda")
             ? this.evalLambda(["lambda", letExpr[1], letExpr[2]], env)
             : this.evalExpr(letExpr, env);
-        return value;
+
+        return res;
     }
 
     // [function, symbol, [par1, par2, ...], expr]
     // [function, symbol, [par1, par2, ...], expr1, expr2, ...]
     private evalFunction(expr: any[], env: any[]): any {
         const symbol: string = expr[1];
+
+        if (expr.length < 4) throw Error(`Improper function: ${symbol}`);
+        if (Array.isArray(expr[3]) && expr[3].length == 0 ) throw Error(`Function with empty body: ${symbol}`);
         this.throwOnExistingDef(symbol, env);
 
-        const body: any = ["block", ... expr.slice(3)];
+        const body: any[] = expr.length === 4 ? expr[3] : ["block", ... expr.slice(3)];
         const value: any = this.evalLambda(["lambda", expr[2], body], env);
 
         env.push([symbol, value]);
-
         return null;
     }
 
@@ -273,7 +258,9 @@ class Interpreter {
 
         for (const clause of clauses) {
             if (clause[0] === "else" || this.evalExpr(clause[0], env)) {
-                const res: any = this.evalExprLst(clause.slice(1), env);
+                const res: any = clause.length === 2
+                    ? this.evalExpr(clause[1], env)
+                    : this.evalExprLst(clause.slice(1), env);
                 this.cleanEnv("#scope#", env);
                 return res;
             }
@@ -294,7 +281,9 @@ class Interpreter {
 
         for (const clause of clauses) {
             if (clause[0] === "else" || this.evalExpr(clause[0], env).indexOf(val) > -1) {
-                const res: any = this.evalExprLst(clause.slice(1), env);
+                const res: any = clause.length === 2
+                    ? this.evalExpr(clause[1], env)
+                    : this.evalExprLst(clause.slice(1), env);
                 this.cleanEnv("#scope#", env);
                 return res;
             }
@@ -462,8 +451,6 @@ class Interpreter {
         const message: string = `Expr: ${JSON.stringify(expr)}\nEnv : ${envDumpText}`;
 
         this.options.printer(message);
-
-        this.isDebug = false;
         return null;
     }
 

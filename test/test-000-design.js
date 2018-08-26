@@ -193,7 +193,7 @@ describe('EASL design', function () {
         it('function', function () {
             assert.strictEqual(easl.evaluate(` 
               {function sum (a b) (+ a b)}
-              (to-string sum)  `), "{lambda (a b) (+,a,b)}");
+              (to-string sum)  `), "{lambda (a b) (+ a b)}");
         });
         it('function two expressions', function () {
             assert.strictEqual(easl.evaluate(` 

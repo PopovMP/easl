@@ -79,11 +79,18 @@ describe('function', function () {
         });
     });
 
-    describe('nested functions', function () {
+    describe('function returns function', function () {
+        it('no args', function () {
+            assert.strictEqual(easl.evaluate(` 
+                {function foo () 5}
+                (function bar () (foo))
+                (bar)                            `), 5);
+        });
+
         it('make identity', function () {
             assert.strictEqual(easl.evaluate(` 
                 {function make-identity () {lambda a a}}
-                (let identity (make-identity))
+                {let identity (make-identity)}
                 (identity 5)
                                                  `), 5);
         });
@@ -93,17 +100,20 @@ describe('function', function () {
         it('no args', function () {
             assert.strictEqual(easl.evaluate(` 
                 {function foo () 5}
-                (function bar () (foo))
-                (bar)                            `), 5);
+                {function bar () foo}
+                ((bar))                            `), 5);
         });
-    });
-
-    describe('function calls function', function () {
         it('one arg', function () {
             assert.strictEqual(easl.evaluate(` 
                 {function foo a a}
-                (function bar a (foo a))
+                {function bar a (foo a)}
                 (bar 5)                           `), 5);
+        });
+        it('one arg - 2', function () {
+            assert.strictEqual(easl.evaluate(` 
+                {function foo a a}
+                {function bar () foo}
+                ((bar) 5)                          `), 5);
         });
     });
 
