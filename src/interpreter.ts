@@ -293,7 +293,7 @@ class Interpreter {
         env.push(["#scope#", null]);
 
         for (const clause of clauses) {
-            if (clause[0] === "else" || clause[0].indexOf(val) > -1) {
+            if (clause[0] === "else" || this.evalExpr(clause[0], env).indexOf(val) > -1) {
                 const res: any = this.evalExprLst(clause.slice(1), env);
                 this.cleanEnv("#scope#", env);
                 return res;

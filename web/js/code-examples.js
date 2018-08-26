@@ -147,7 +147,9 @@ const examplesList = [
                         i1
                         lst)) }
 
-(swap 0 3 lst)
+(print "Original:" lst)
+(print "Swapped :" (swap 0 3 lst))
+(print "Original:" lst)
 `
     },
 
@@ -304,11 +306,11 @@ output
         name: "Y combinator - factorial",
         code: `;; Y combinator - factorial
 
-(((lambda (!) (lambda (n) ((! !) n)))
-  (lambda (!) (lambda (n) (if (= n 0)
-                              1
-                              (* ((! !) (- n 1))
-                                 n))))) 5) 
+(({lambda ! {lambda n ((! !) n))}
+  {lambda ! {lambda n {if (= n 0)
+                          1
+                          (* ((! !) (- n 1))
+                             n) }}}) 5) 
 `
     },
 

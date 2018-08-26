@@ -58,4 +58,12 @@ describe('case', function () {
             {case 1
                 ([1] 1 2 3) }               `), 3);
     });
+
+    it('match var', function () {
+        assert.strictEqual(easl.evaluate(`
+            {let a 1}
+            {case 1
+                ([a] 3) }               `), 3);
+    });
+
 });
