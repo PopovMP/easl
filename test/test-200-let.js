@@ -37,7 +37,7 @@ describe('let', function () {
              {let first-name  "John "}
              {let second-name "Smith"} 
                
-             {let full-name (str.concat first-name second-name)}
+             {let full-name (+ first-name second-name)}
              
              full-name                                      `), "John Smith");
         });

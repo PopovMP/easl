@@ -10,9 +10,10 @@ class StringLib implements ILib {
     public libEvalExpr(expr: any[], env: any[]): any {
         switch (expr[0]) {
             case "str.length" : return this.strLength(expr, env);
-            case "str.has"    : return this.strHas(expr, env);
+            case "str.has?"   : return this.strHas(expr, env);
             case "str.split"  : return this.strSplit(expr, env);
-            case "str.concat" : return this.strConcat(expr, env);
+            case "str.to-lowercase" : return this.strToLowercase(expr, env);
+            case "str.to-uppercase" : return this.strToUppercase(expr, env);
         }
 
         return "##not-resolved##";
@@ -20,24 +21,36 @@ class StringLib implements ILib {
 
     private strLength(expr: any[], env: any): number {
         const str = this.inter.evalExpr(expr[1], env);
-        return typeof str === "string" ? str.length : -1;
+        if (typeof str !== "string") throw Error("Not a string: " + str);
+        return str.length;
     }
 
     private strHas(expr: any[], env: any): boolean {
-        const elem: string = this.inter.evalExpr(expr[1], env);
-        const str : string = this.inter.evalExpr(expr[2], env);
+        const str : string = this.inter.evalExpr(expr[1], env);
+        const elem: string = this.inter.evalExpr(expr[2], env);
+        if (typeof str  !== "string") throw Error("Not a string: " + str);
+        if (typeof elem !== "string") throw Error("Not a string: " + elem);
         return str.includes(elem);
     }
 
     private strSplit(expr: any[], env: any): string[] {
-        const sep: string = this.inter.evalExpr(expr[1], env);
-        const str: string = this.inter.evalExpr(expr[2], env);
+        const str: string = this.inter.evalExpr(expr[1], env);
+        if (typeof str  !== "string") throw Error("Not a string: " + str);
+        if (expr.length === 2) return str.split("");
+        const sep: string = this.inter.evalExpr(expr[2], env);
+        if (typeof sep  !== "string") throw Error("Not a string: " + sep);
         return str.split(sep);
     }
 
-    private strConcat(expr: any[], env: any): string {
-        const str1: string = this.inter.evalExpr(expr[1], env);
-        const str2: string = this.inter.evalExpr(expr[2], env);
-        return str1 + str2;
+    private strToLowercase(expr: any[], env: any): string {
+        const str = this.inter.evalExpr(expr[1], env);
+        if (typeof str !== "string") throw Error("Not a string: " + str);
+        return str.toLowerCase();
+    }
+
+    private strToUppercase(expr: any[], env: any): string {
+        const str = this.inter.evalExpr(expr[1], env);
+        if (typeof str !== "string") throw Error("Not a string: " + str);
+        return str.toUpperCase();
     }
 }

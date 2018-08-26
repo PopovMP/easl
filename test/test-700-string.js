@@ -17,27 +17,66 @@ describe('str library', function () {
         });
     });
 
-    describe('str.has', function () {
+    describe('str.has?', function () {
         it('non existing substring', function () {
-            assert.strictEqual(easl.evaluate(`(str.has "la" "hello")`), false);
+            assert.strictEqual(easl.evaluate(`(str.has? "hello" "la")`), false);
         });
 
         it('existing substring', function () {
-            assert.strictEqual(easl.evaluate(`(str.has "lo" "hello")`), true);
+            assert.strictEqual(easl.evaluate(`(str.has? "hello" "lo")`), true);
         });
     });
 
-    describe('str.concat', function () {
-        it('non existing substring', function () {
-            assert.strictEqual(easl.evaluate(`(str.concat "Hello " "world!")`), "Hello world!");
+
+    describe('str.split', function () {
+        it('not a string', function () {
+            assert.strictEqual(easl.evaluate(`(str.split 42)`), "Error: Not a string: 42");
+        });
+
+        it('no separator', function () {
+            assert.deepStrictEqual(easl.evaluate(`(str.split "hello") `), ['h', 'e', 'l', 'l', 'o']);
+        });
+
+        it('with separator', function () {
+            assert.deepStrictEqual(easl.evaluate(`(str.split "this-is-a-sentence" "-")`), ['this', 'is', 'a', 'sentence']);
         });
     });
 
-    describe('multiple operations', function () {
-        it('length of concat', function () {
+    describe('str.to-lowercase', function () {
+        it('not a string', function () {
             assert.strictEqual(easl.evaluate(`
-            
-            (str.length  (str.concat "Hello " "world!"))`), 12);
+                (str.to-lowercase  42)              `), "Error: Not a string: 42");
+        });
+        it('lowercase', function () {
+            assert.strictEqual(easl.evaluate(`
+                (str.to-lowercase  "hello")         `), "hello");
+        });
+        it('mixed case', function () {
+            assert.strictEqual(easl.evaluate(`
+                (str.to-lowercase  "Hello")         `), "hello");
+        });
+        it('uppercase', function () {
+            assert.strictEqual(easl.evaluate(`
+                (str.to-lowercase  "HELLO")         `), "hello");
+        });
+    });
+
+    describe('str.to-uppercase', function () {
+        it('not a string', function () {
+            assert.strictEqual(easl.evaluate(`
+                (str.to-uppercase  42)              `), "Error: Not a string: 42");
+        });
+        it('lowercase', function () {
+            assert.strictEqual(easl.evaluate(`
+                (str.to-uppercase  "hello")         `), "HELLO");
+        });
+        it('mixed case', function () {
+            assert.strictEqual(easl.evaluate(`
+                (str.to-uppercase  "Hello")         `), "HELLO");
+        });
+        it('uppercase', function () {
+            assert.strictEqual(easl.evaluate(`
+                (str.to-uppercase  "HELLO")         `), "HELLO");
         });
     });
 });

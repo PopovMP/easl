@@ -36,7 +36,7 @@
             "numb.finite? numb.integer? numb.max-value numb.min-value numb.parse-float numb.parse-int numb.to-fixed numb.to-precision numb.to-string " +
 
             // string
-            "str.length str.has str.split str.concat "
+            "str.length str.has? str.split str.to-lowercase str.to-uppercase "
         );
 
         const indentKeys = makeKeywords(

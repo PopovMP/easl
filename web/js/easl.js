@@ -240,7 +240,7 @@ class Interpreter {
         const clauses = expr.slice(2);
         env.push(["#scope#", null]);
         for (const clause of clauses) {
-            if (clause[0] === "else" || clause[0].indexOf(val) > -1) {
+            if (clause[0] === "else" || this.evalExpr(clause[0], env).indexOf(val) > -1) {
                 const res = this.evalExprLst(clause.slice(1), env);
                 this.cleanEnv("#scope#", env);
                 return res;
@@ -923,8 +923,8 @@ class ListLib {
         return "##not-resolved##";
     }
     listAdd(expr, env, pure = true) {
-        const elm = this.inter.evalExpr(expr[1], env);
-        const lst = this.inter.evalExpr(expr[2], env);
+        const lst = this.inter.evalExpr(expr[1], env);
+        const elm = this.inter.evalExpr(expr[2], env);
         if (Array.isArray(lst)) {
             const list = pure ? lst.slice() : lst;
             list.push(elm);
@@ -958,8 +958,8 @@ class ListLib {
             : toFlatten), []);
     }
     listGet(expr, env) {
-        const index = this.inter.evalExpr(expr[1], env);
-        const lst = this.inter.evalExpr(expr[2], env);
+        const lst = this.inter.evalExpr(expr[1], env);
+        const index = this.inter.evalExpr(expr[2], env);
         if (Array.isArray(lst) && index >= 0 && index < lst.length) {
             return lst[index];
         }
@@ -969,8 +969,8 @@ class ListLib {
         return this.listIndex(expr, env) > -1;
     }
     listIndex(expr, env) {
-        const elm = this.inter.evalExpr(expr[1], env);
-        const lst = this.inter.evalExpr(expr[2], env);
+        const lst = this.inter.evalExpr(expr[1], env);
+        const elm = this.inter.evalExpr(expr[2], env);
         if (Array.isArray(lst)) {
             return lst.indexOf(elm);
         }
@@ -981,8 +981,8 @@ class ListLib {
         return Array.isArray(lst);
     }
     listJoin(expr, env) {
-        const sep = expr.length === 3 ? this.inter.evalExpr(expr[1], env) : ",";
-        const lst = this.inter.evalExpr(expr[expr.length - 1], env);
+        const lst = this.inter.evalExpr(expr[1], env);
+        const sep = expr.length === 3 ? this.inter.evalExpr(expr[2], env) : ",";
         return lst.join(sep);
     }
     listLast(expr, env) {
@@ -998,8 +998,8 @@ class ListLib {
         return Array.isArray(lst) ? lst.length : -1;
     }
     listPush(expr, env, pure = true) {
-        const elm = this.inter.evalExpr(expr[1], env);
-        const lst = this.inter.evalExpr(expr[2], env);
+        const lst = this.inter.evalExpr(expr[1], env);
+        const elm = this.inter.evalExpr(expr[2], env);
         if (Array.isArray(lst)) {
             const list = pure ? lst.slice() : lst;
             list.unshift(elm);
@@ -1026,9 +1026,9 @@ class ListLib {
         return Array.isArray(lst) && lst.length > 1 ? lst.slice(1) : [];
     }
     listSet(expr, env, pure = true) {
-        const elm = this.inter.evalExpr(expr[1], env);
-        const index = this.inter.evalExpr(expr[2], env);
-        const lst = this.inter.evalExpr(expr[3], env);
+        const lst = this.inter.evalExpr(expr[1], env);
+        const elm = this.inter.evalExpr(expr[2], env);
+        const index = this.inter.evalExpr(expr[3], env);
         if (Array.isArray(lst) && index >= 0 && index < lst.length) {
             const list = pure ? lst.slice() : lst;
             list[index] = elm;
@@ -1037,10 +1037,10 @@ class ListLib {
         return lst;
     }
     listSlice(expr, env) {
-        const lst = this.inter.evalExpr(expr[expr.length - 1], env);
+        const lst = this.inter.evalExpr(expr[1], env);
         const args = expr.length - 2;
-        const begin = args > 0 ? this.inter.evalExpr(expr[1], env) : 0;
-        const end = args > 1 ? this.inter.evalExpr(expr[2], env) : lst.length;
+        const begin = args > 0 ? this.inter.evalExpr(expr[2], env) : 0;
+        const end = args > 1 ? this.inter.evalExpr(expr[3], env) : lst.length;
         return lst.slice(begin, end);
     }
 }
@@ -1128,29 +1128,49 @@ class StringLib {
     libEvalExpr(expr, env) {
         switch (expr[0]) {
             case "str.length": return this.strLength(expr, env);
-            case "str.has": return this.strHas(expr, env);
+            case "str.has?": return this.strHas(expr, env);
             case "str.split": return this.strSplit(expr, env);
-            case "str.concat": return this.strConcat(expr, env);
+            case "str.to-lowercase": return this.strToLowercase(expr, env);
+            case "str.to-uppercase": return this.strToUppercase(expr, env);
         }
         return "##not-resolved##";
     }
     strLength(expr, env) {
         const str = this.inter.evalExpr(expr[1], env);
-        return typeof str === "string" ? str.length : -1;
+        if (typeof str !== "string")
+            throw Error("Not a string: " + str);
+        return str.length;
     }
     strHas(expr, env) {
-        const elem = this.inter.evalExpr(expr[1], env);
-        const str = this.inter.evalExpr(expr[2], env);
+        const str = this.inter.evalExpr(expr[1], env);
+        const elem = this.inter.evalExpr(expr[2], env);
+        if (typeof str !== "string")
+            throw Error("Not a string: " + str);
+        if (typeof elem !== "string")
+            throw Error("Not a string: " + elem);
         return str.includes(elem);
     }
     strSplit(expr, env) {
-        const sep = this.inter.evalExpr(expr[1], env);
-        const str = this.inter.evalExpr(expr[2], env);
+        const str = this.inter.evalExpr(expr[1], env);
+        if (typeof str !== "string")
+            throw Error("Not a string: " + str);
+        if (expr.length === 2)
+            return str.split("");
+        const sep = this.inter.evalExpr(expr[2], env);
+        if (typeof sep !== "string")
+            throw Error("Not a string: " + sep);
         return str.split(sep);
     }
-    strConcat(expr, env) {
-        const str1 = this.inter.evalExpr(expr[1], env);
-        const str2 = this.inter.evalExpr(expr[2], env);
-        return str1 + str2;
+    strToLowercase(expr, env) {
+        const str = this.inter.evalExpr(expr[1], env);
+        if (typeof str !== "string")
+            throw Error("Not a string: " + str);
+        return str.toLowerCase();
+    }
+    strToUppercase(expr, env) {
+        const str = this.inter.evalExpr(expr[1], env);
+        if (typeof str !== "string")
+            throw Error("Not a string: " + str);
+        return str.toUpperCase();
     }
 }

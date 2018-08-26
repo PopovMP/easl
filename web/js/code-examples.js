@@ -12,19 +12,18 @@ const examplesList = [
 (print "All but first one       :" (list.rest   lst))
 (print "The last element        :" (list.last   lst))
 (print "All but the last one    :" (list.least  lst))
-(print "The third element       :" (list.get 2  lst))
-(print "From the 2nd to the 6th :" (list.slice 1 6 lst))
+(print "The third element       :" (list.get    lst 2))
+(print "From the 2nd to the 6th :" (list.slice  lst 1 6))
 ;; list.add returns a new list without mutating the original one
-(print "Add element purely      :" (list.add 77 lst))
-(print "Set 2nd element purely  :" (list.set 55 1 lst))
+(print "Add element purely      :" (list.add    lst 77))
+(print "Set 2nd element purely  :" (list.set    lst 55 1))
 (print "You see, no changes     :" lst)
 ;; list.add! adds an element to the original list. That's why it ends with ! 
-(print "Add element on place    :" (list.add! 42 lst))
+(print "Add element on place    :" (list.add! lst 42))
 ;; list.set! mutates the list. That's why it also ends with !
-(print "Set 2nd element on place:" (list.set! 55 1 lst))
-(print "Push one elem in front  :" (list.push! 99 lst))
-`
-    },
+(print "Set 2nd element on place:" (list.set! lst 55 1))
+(print "Push one elem in front  :" (list.push! lst 99))
+`   },
 
     {
         name: "Print numbers from 1 to 10",
@@ -40,8 +39,8 @@ const examplesList = [
     {set! n (+ n 1) }}        ; increase the counter and return back
 
 (print (+ "The loop is not executed for: " n))
-`
-    },
+`   },
+
     {
         name: "Random numbers in a list",
         code: `;; Random numbers in a list
@@ -51,11 +50,10 @@ const examplesList = [
 {for (i 0) (< i 10) (+ i 1)               ; cycle 10 times
     {let random   (* (math.random) 100)}  ; generate a random number between 0 and 100
     {let rounded  (math.round random)  }  ; round the number
-    (list.add! rounded lst) }             ; add the number to the end of the list
+    (list.add! lst rounded) }             ; add the number to the end of the list
     
 (print lst) ; print the list
-`
-    },
+`   },
 
     {
         name: "Odd or even with 'case'",
@@ -70,8 +68,7 @@ const examplesList = [
              ([1 3 5 7 9] "odd" ) }}
 
 (print n "is" type)
-`
-    },
+`   },
 
     {
         name: "Function with default parameters",
@@ -82,8 +79,8 @@ const examplesList = [
    {let b (or b 0)}
    {if (<= (list.length func-args) 2) 
        (+ a b)
-       (+ a b (sum (list.get 2 func-args)
-                   (list.get 3 func-args))) }}
+       (+ a b (sum (list.get func-args 2)
+                   (list.get func-args 3))) }}
 
 (print "(sum)         →" (sum))
 (print "(sum 1)       →" (sum 1))
@@ -91,8 +88,7 @@ const examplesList = [
 (print "(sum 1 2 3)   →" (sum 1 2 3))
 (print "(sum 1 2 3 4) →" (sum 1 2 3 4)) ; Magic !?!
 (print "(+ 1 2 3 4 5) →" (+ 1 2 3 4 5)) ; The EASL way :)
-`
-    },
+`   },
 
     {
         name: "Implementation of 'map'",
@@ -104,7 +100,7 @@ const examplesList = [
     {let res []}
 
     {while (< i len)
-         (list.add! (func (list.get i lst)) res)
+         (list.add! res (func (list.get lst i)))
          (set! i (+ i 1))}
 
     res}
@@ -112,8 +108,7 @@ const examplesList = [
 {let range (list.range 1 10)}              ;; Make a range form 1 to 10
 {let lst (map {lambda (e) (* e 2)} range)} ;; Double each element 
 (print lst)
-`
-    },
+`   },
 
     {
         name: "Implementation of 'for-each'",
@@ -124,11 +119,11 @@ const examplesList = [
     {let i   0}
 
     {while (< i len)
-         (func (list.get i lst))
-         (set! i (+ i 1))} }
+         (func (list.get lst i))
+         (set! i (+ i 1)) }}
 
-{let printer {lambda (e) (print e)} }
-{let range   (list.range 1 10) }
+{let printer {lambda e (print e)}}
+{let range   (list.range 1 10)}
 
 (for-each printer range)
 `
@@ -141,11 +136,11 @@ const examplesList = [
 {let lst [1 2 3 4]}
 
 {function swap (i1 i2 lst)
-    (list.set (list.get i1 lst)
-              i2
-              (list.set (list.get i2 lst)
-                        i1
-                        lst)) }
+    (list.set (list.set lst
+                        (list.get lst i2)
+                        i1)
+              (list.get lst i1)
+              i2) }
 
 (print "Original:" lst)
 (print "Swapped :" (swap 0 3 lst))
@@ -176,10 +171,10 @@ const examplesList = [
 {let output []}
 
 {for (i 1) (< i 101) (+ i 1)
-    (list.add! (or (+ {if (% i 3) "" "Fizz"}
+    (list.add! output
+               (or (+ {if (% i 3) "" "Fizz"}
                       {if (% i 5) "" "Buzz"})
-                   i)
-               output) }
+                   i)) }
 output
 `
     },
@@ -198,7 +193,7 @@ output
 {function FizzBuzz max
     {function loop (n res)
 	    {if (<= n max)
-            (loop (+ n 1) (list.add (get-fizz-buzz n) res))
+            (loop (+ n 1) (list.add res (get-fizz-buzz n)))
             res }}
     (loop 1 []) }
 
@@ -286,7 +281,7 @@ output
 {function make-sequence-rec (first length next)
     {function loop (i res)
         {if (< i length)
-            (loop (+ i 1) (list.add (next (list.last res)) res))
+            (loop (+ i 1) (list.add res (next (list.last res))))
             res }}
     (loop 1 [first]) }
 
@@ -294,7 +289,7 @@ output
 {function make-sequence-iter (first length next)
  	{let res [first]}
     {for (i 1) (< i length) (+ i 1)
-    	(list.add! (next (list.last res)) res) }
+    	(list.add! res (next (list.last res))) }
     res }
 
 (print "Recursive:" (make-sequence-rec  3 10 curr))
@@ -319,7 +314,7 @@ output
         code: `;; Bubble sort Scheme-like
 
 ;; Loads scheme library
-{import "https://raw.githubusercontent.com/PopovMP/easl/master/easl-libs/scheme-lib.easl"}
+{import "https://raw.githubusercontent.com/PopovMP/easl/master/easl-libs/scheme-lib.easl?v=2"}
 
 {function bubble-up (lst)
 {if (empty? (cdr lst))
