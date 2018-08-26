@@ -2,9 +2,15 @@
 
 class StringLib implements ILib {
     private readonly inter: Interpreter;
+    public readonly builtinFunc = ["str.length", "str.has?", "str.split", "str.to-lowercase", "str.to-uppercase"];
+    public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
+
+        for (const func of this.builtinFunc) {
+            this.builtinHash[func] = true;
+        }
     }
 
     public libEvalExpr(expr: any[], env: any[]): any {
@@ -16,7 +22,7 @@ class StringLib implements ILib {
             case "str.to-uppercase" : return this.strToUppercase(expr, env);
         }
 
-        return "##not-resolved##";
+        throw Error("Not found in 'string-lib': " + expr[0]);
     }
 
     private strLength(expr: any[], env: any): number {

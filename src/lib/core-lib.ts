@@ -2,9 +2,16 @@
 
 class CoreLib implements ILib {
     private readonly inter: Interpreter;
+    public readonly builtinFunc = ["!=","%","*","+","-","/","<","<=","=",">",">=","and","eval","not","or",
+        "parse","print","to-boolean","to-number","to-string","type-of"];
+    public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
+
+        for (const func of this.builtinFunc) {
+            this.builtinHash[func] = true;
+        }
     }
 
     public libEvalExpr(expr: any[], env: any[]): any {
@@ -32,7 +39,7 @@ class CoreLib implements ILib {
             case "print"      : return this.evalPrint(expr, env);
         }
 
-        return "##not-resolved##";
+        throw Error("Not found in 'core-lib': " + expr[0]);
     }
 
     private evalPlus(expr: any[], env: any[]): any {

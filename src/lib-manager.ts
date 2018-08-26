@@ -2,6 +2,9 @@
 
 interface ILib {
     libEvalExpr(expr: any[], env: any[]): any;
+
+    builtinFunc: string[];
+    builtinHash: any;
 }
 
 class LibManager {
@@ -19,6 +22,34 @@ class LibManager {
             case "number-lib" : return new NumberLib(inter);
             case "string-lib" : return new StringLib(inter);
             default: throw Error("Unknown lib: " + libName);
+        }
+    }
+
+    public static manageImports(codeTree: any[], callback: (codeTree: any[]) => void): void {
+        const code: any[] = [];
+        let currentCodeIndex: number = 0;
+
+        searchImports(currentCodeIndex);
+
+        function searchImports(index: number): void {
+            for (let i = index; i < codeTree.length; i++) {
+                const expr: any = codeTree[i];
+                if (Array.isArray(expr) && expr[0] === "import") {
+                    currentCodeIndex = i;
+                    const libUrl: string = expr[1][1];
+                    LibManager.importLibrary(libUrl, libManager_import_ready);
+                    return;
+                } else {
+                    code.push(expr);
+                }
+            }
+
+            callback(code);
+        }
+
+        function libManager_import_ready(libCodeTree: any[]): void {
+            code.push(...libCodeTree);
+            searchImports(currentCodeIndex + 1);
         }
     }
 

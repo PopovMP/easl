@@ -17,7 +17,7 @@ class Interpreter {
         this.libs.push(... LibManager.getBuiltinLibs(options.libs, this));
 
         if (typeof callback === "function") {
-            this.manageImports(codeTree, this.manageImport_ready.bind(this, callback));
+            LibManager.manageImports(codeTree, this.manageImport_ready.bind(this, callback));
         } else {
             return this.evalExprLst(codeTree, []);
         }
@@ -71,8 +71,10 @@ class Interpreter {
             this.dumpState(expr, env);
         }
 
+        const identifier: string = expr[0];
+
         // Special forms
-        switch (expr[0]) {
+        switch (identifier) {
             case "let"      : return this.evalLet(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
             case "function" : return this.evalFunction(expr, env);
@@ -89,8 +91,11 @@ class Interpreter {
             case "debug"    : return this.evalDebug();
         }
 
-        const res: { resolved: boolean, val: any } = this.resolveThroughLib(expr, env);
-        if (res.resolved) return res.val;
+        for (const lib of this.libs) {
+            if (lib.builtinHash[identifier]) {
+                return lib.libEvalExpr(expr, env);
+            }
+        }
 
         return this.callProc(expr, env);
     }
@@ -230,7 +235,7 @@ class Interpreter {
         const symbol: string = expr[1];
 
         if (expr.length < 4) throw Error(`Improper function: ${symbol}`);
-        if (Array.isArray(expr[3]) && expr[3].length == 0 ) throw Error(`Function with empty body: ${symbol}`);
+        if (Array.isArray(expr[3]) && expr[3].length === 0 ) throw Error(`Function with empty body: ${symbol}`);
         this.throwOnExistingDef(symbol, env);
 
         const body: any[] = expr.length === 4 ? expr[3] : ["block", ... expr.slice(3)];
@@ -452,44 +457,5 @@ class Interpreter {
 
         this.options.printer(message);
         return null;
-    }
-
-    private manageImports(codeTree: any[], callback: (codeTree: any[]) => void): void {
-        const code: any[] = [];
-        let currentCodeIndex: number = 0;
-
-        searchImports(currentCodeIndex);
-
-        function searchImports(index: number): void {
-            for (let i = index; i < codeTree.length; i++) {
-                const expr: any = codeTree[i];
-                if (Array.isArray(expr) && expr[0] === "import") {
-                    currentCodeIndex = i;
-                    const libUrl: string = expr[1][1];
-                    LibManager.importLibrary(libUrl, libManager_import_ready);
-                    return;
-                } else {
-                    code.push(expr);
-                }
-            }
-
-            callback(code);
-        }
-
-        function libManager_import_ready(libCodeTree: any[]): void {
-            code.push(... libCodeTree);
-            searchImports(currentCodeIndex + 1);
-        }
-    }
-
-    private resolveThroughLib(expr: any[], env: any[]): { resolved: boolean, val: any } {
-        for (const lib of this.libs) {
-            const res: any = lib.libEvalExpr(expr, env);
-            if (res !== "##not-resolved##") {
-                return {resolved: true, val: res};
-            }
-        }
-
-        return {resolved: false, val: null};
     }
 }

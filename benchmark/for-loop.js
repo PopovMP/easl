@@ -7,15 +7,15 @@ const code = `
 
 {let now (date.now)}
 
+{let range (list.range 0 1-000-000)}
+{let list-len (list.length range)}
 {let lst []}
 
-{for (i 0) (< i 1-000-000) (+ i 1)
-    {let random  (* (math.random) 100)}
-    {let rounded (math.round random)}
-    (list.add! rounded lst) }
+{for (i 0) (< i list-len) (+ i 1)
+    (list.add! lst (* (list.get range i) 2)) }
 
 (print (- (date.now) now))
-
+(print (list.last lst))
 `;
 
 easl.evaluate(code, {printer: eval_ready}, eval_ready);
@@ -26,5 +26,4 @@ function eval_ready(result) {
     }
 }
 
-// 2018.08.23 1380
-// 2018.08.24 1319
+// 2018.08.26 828

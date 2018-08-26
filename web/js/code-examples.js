@@ -217,8 +217,7 @@ output
 ;; Print
 {for (i 1) (< i 10) (+ i 1)
     (print "fibo" i ":" (fibo i)) }
-`
-    },
+`   },
 
     {
         name: "Mutual recursion",
@@ -233,29 +232,26 @@ output
          (even? (- n 1)) }}
 
 {let n (math.ceil (* (math.random) 100))}
+
 (print n "is" (if (odd? n) "odd" "even"))
-`
-    },
+`   },
 
     {
         name: "Find the maximum of a list",
         code: `;; Find the maximum of a list recursively
 
 {function list-max (lst)
+    {function loop (rest max)
+        {if (list.empty? rest)
+            max
+            (loop (list.rest rest)
+                (if (> (list.first rest)  max)
+                    (list.first rest)
+                    max)) }}
     (loop lst (list.first lst))}
-    
-{function loop (rest max)
-    {if (list.empty? rest)
-        max
-        (loop (list.rest rest)
-              (if (> (list.first rest)  max)
-                  (list.first rest)
-                  max)) }}
-
 
 (list-max [42 34 12 5 62 2])
-`
-    },
+`   },
 
     {
         name: "Closure example",
@@ -267,8 +263,7 @@ output
 {let add2 (make-adder 2)}
 
 (add2 3)
-`
-    },
+`   },
 
     {
         name: "Sequence generator",
@@ -294,8 +289,7 @@ output
 
 (print "Recursive:" (make-sequence-rec  3 10 curr))
 (print "Iteration:" (make-sequence-iter 3 10 curr))
-`
-    },
+`   },
 
     {
         name: "Y combinator - factorial",
@@ -306,8 +300,7 @@ output
                           1
                           (* ((! !) (- n 1))
                              n) }}}) 5) 
-`
-    },
+`   },
 
     {
         name: "Bubble sort Scheme-like",
@@ -334,25 +327,24 @@ output
     (bubble-sort-aux (length lst) lst) }
 
 (sort (list 6 5 10 9 8 7))
-`
-    },
+`   },
 
     {
         name: "EASL interprets EASL",
-        code: `;; EASL interprets EASL
+        code: `;; EASL source code in a string
+{let source-code "{let lst [1 2 3 4 5 6 7]} {let len (list.length lst)} (* 6 len)"}
 
-;; EASL source code in a string
-{let code-text "{let lst [1 2 3 4 5 6 7]} {let len (list.length lst)} (* 6 len)"}
+;; Code parsed to EASL IL code
+{let il-code (parse source-code)}
 
-;; Code parsed to EASL intermediate code
-{let code-tree (parse code-text)}
+;; Uncomment to see details
+;{debug} ;; 'debug' shows the next expression and the env dump
 
 ;; Evaluation of the code tree
-{let res (eval code-tree)}
+{let res (eval il-code)}
 
 (print "The answer is:" res)
-`
-    },
+`   },
 
     {
         name: "Message based OOP",
@@ -385,8 +377,7 @@ output
 ;; Change the first name of the clone
 {let jane-doe (john-doe-clone "first name" "Jane")}
 (print (jane-doe))
-`
-    },
+`   },
 
     {
         name: "Unit testing with 'assert-lib'",
@@ -410,6 +401,5 @@ output
     (assert.equal (sum 2 3) 5 "Call a function with two args.") }})
 
 (assert.equal 13 42 "The answer to Life, the Universe, and Everything!")
-`
-    },
+`   },
 ];

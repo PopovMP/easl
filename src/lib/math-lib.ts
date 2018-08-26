@@ -2,9 +2,16 @@
 
 class MathLib implements ILib {
     private readonly inter: Interpreter;
+    public readonly builtinFunc = ["math.pi","math.abs","math.ceil","math.floor","math.log","math.ln","math.max",
+        "math.min", "math.pow","math.random","math.round","math.sqrt"];
+    public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
+
+        for (const func of this.builtinFunc) {
+            this.builtinHash[func] = true;
+        }
     }
 
     public libEvalExpr(expr: any[], env: any[]): any {
@@ -23,6 +30,6 @@ class MathLib implements ILib {
             case "math.sqrt"   : return Math.sqrt(this.inter.evalExpr(expr[1], env));
         }
 
-        return "##not-resolved##";
+        throw Error("Not found in 'math-lib': " + expr[0]);
     }
 }

@@ -2,9 +2,17 @@
 
 class ListLib implements ILib {
     private readonly inter: Interpreter;
+    public readonly builtinFunc = ["list.add","list.add!" ,"list.concat","list.empty","list.empty?","list.first",
+        "list.flatten", "list.get","list.has?","list.index","list.join","list.last","list.least","list.length",
+        "list.list?","list.push", "list.push!","list.range","list.rest","list.set","list.set!","list.slice"];
+    public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
+
+        for (const func of this.builtinFunc) {
+            this.builtinHash[func] = true;
+        }
     }
 
     public libEvalExpr(expr: any[], env: any[]): any {
@@ -33,7 +41,7 @@ class ListLib implements ILib {
             case "list.slice"   : return this.listSlice(expr, env);
         }
 
-        return "##not-resolved##";
+        throw Error("Not found in 'list-lib': " + expr[0]);
     }
 
     private listAdd(expr: any[], env: any[], pure: boolean = true): any[] {

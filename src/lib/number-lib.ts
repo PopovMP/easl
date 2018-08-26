@@ -2,9 +2,16 @@
 
 class NumberLib implements ILib {
     private readonly inter: Interpreter;
+    public readonly builtinFunc = ["numb.finite?","numb.integer?","numb.max-value","numb.min-value","numb.parse-float",
+        "numb.parse-int","numb.to-fixed","numb.to-precision", "numb.to-string"];
+    public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
+
+        for (const func of this.builtinFunc) {
+            this.builtinHash[func] = true;
+        }
     }
 
     public libEvalExpr(expr: any[], env: any[]): any {
@@ -20,7 +27,7 @@ class NumberLib implements ILib {
             case "numb.to-string"    : return this.evalToString(expr, env);
         }
 
-        return "##not-resolved##";
+        throw Error("Not found in 'numb-lib': " + expr[0]);
     }
 
     private evalIsFinite(expr: any[], env: any[]): boolean {

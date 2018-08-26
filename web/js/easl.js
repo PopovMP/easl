@@ -31,7 +31,7 @@ class Interpreter {
         this.options = options;
         this.libs.push(...LibManager.getBuiltinLibs(options.libs, this));
         if (typeof callback === "function") {
-            this.manageImports(codeTree, this.manageImport_ready.bind(this, callback));
+            LibManager.manageImports(codeTree, this.manageImport_ready.bind(this, callback));
         }
         else {
             return this.evalExprLst(codeTree, []);
@@ -72,9 +72,11 @@ class Interpreter {
             case "string": return expr[1];
         }
         if (this.isDebug) {
+            this.isDebug = false;
             this.dumpState(expr, env);
         }
-        switch (expr[0]) {
+        const identifier = expr[0];
+        switch (identifier) {
             case "let": return this.evalLet(expr, env);
             case "lambda": return this.evalLambda(expr, env);
             case "function": return this.evalFunction(expr, env);
@@ -90,9 +92,11 @@ class Interpreter {
             case "throw": return this.evalThrow(expr, env);
             case "debug": return this.evalDebug();
         }
-        const res = this.resolveThroughLib(expr, env);
-        if (res.resolved)
-            return res.val;
+        for (const lib of this.libs) {
+            if (lib.builtinHash[identifier]) {
+                return lib.libEvalExpr(expr, env);
+            }
+        }
         return this.callProc(expr, env);
     }
     isTruthy(value) {
@@ -132,25 +136,16 @@ class Interpreter {
     callProc(expr, env) {
         const proc = expr[0];
         const isNamed = typeof proc === "string";
+        const funcName = isNamed ? proc : "lambda";
         const closure = isNamed ? this.lookup(proc, env) : this.evalExpr(proc, env);
         if (!Array.isArray(closure)) {
             throw Error(`Improper function: ${closure}`);
-        }
-        const funcName = isNamed ? proc : "lambda";
-        const closureBody = closure[2].length === 1 && typeof closure[2][0] === "string"
-            ? closure[2][0]
-            : closure[2];
-        if (closureBody === "block") {
-            throw Error(`Improper function: ${funcName}`);
-        }
-        if (closureBody.length === 0 || (closureBody[0] === "block" && closureBody[1].length === 0)) {
-            throw Error(`Function with empty body: ${funcName}`);
         }
         const args = expr.length === 1 ? [] : expr.length === 2
             ? [this.evalExpr(expr[1], env)]
             : this.mapExprLst(expr.slice(1), env);
         const closureEnv = this.makeProcEnv(funcName, closure[1], args, closure[3]);
-        return this.evalExpr(closureBody, closureEnv);
+        return this.evalExpr(closure[2], closureEnv);
     }
     makeProcEnv(funcName, params, args, env) {
         const closureEnv = env.concat([["func-name", funcName], ["func-params", params], ["func-args", args]]);
@@ -165,9 +160,8 @@ class Interpreter {
         return closureEnv;
     }
     evalLambda(expr, env) {
-        if (expr.length !== 3) {
-            throw Error(`Improper function`);
-        }
+        if (expr.length !== 3)
+            throw Error("Improper function");
         return ["closure", expr[1], expr[2], env];
     }
     evalLet(expr, env) {
@@ -184,9 +178,8 @@ class Interpreter {
         return null;
     }
     evalBlock(expr, env) {
-        if (expr.length === 1) {
+        if (expr.length === 1)
             throw Error(`Empty body`);
-        }
         env.push(["#scope#", null]);
         const res = expr.length === 2
             ? this.evalExpr(expr[1], env)
@@ -195,22 +188,26 @@ class Interpreter {
         return res;
     }
     cleanEnv(tag, env) {
-        let slice = [];
+        let cell;
         do {
-            slice = env.pop();
-        } while (slice[0] !== tag);
+            cell = env.pop();
+        } while (cell[0] !== tag);
     }
     evalLetValue(expr, env) {
         const letExpr = expr[2];
-        const value = (Array.isArray(letExpr) && letExpr[0] === "lambda")
+        const res = (Array.isArray(letExpr) && letExpr[0] === "lambda")
             ? this.evalLambda(["lambda", letExpr[1], letExpr[2]], env)
             : this.evalExpr(letExpr, env);
-        return value;
+        return res;
     }
     evalFunction(expr, env) {
         const symbol = expr[1];
+        if (expr.length < 4)
+            throw Error(`Improper function: ${symbol}`);
+        if (Array.isArray(expr[3]) && expr[3].length === 0)
+            throw Error(`Function with empty body: ${symbol}`);
         this.throwOnExistingDef(symbol, env);
-        const body = ["block", ...expr.slice(3)];
+        const body = expr.length === 4 ? expr[3] : ["block", ...expr.slice(3)];
         const value = this.evalLambda(["lambda", expr[2], body], env);
         env.push([symbol, value]);
         return null;
@@ -227,7 +224,9 @@ class Interpreter {
         env.push(["#scope#", null]);
         for (const clause of clauses) {
             if (clause[0] === "else" || this.evalExpr(clause[0], env)) {
-                const res = this.evalExprLst(clause.slice(1), env);
+                const res = clause.length === 2
+                    ? this.evalExpr(clause[1], env)
+                    : this.evalExprLst(clause.slice(1), env);
                 this.cleanEnv("#scope#", env);
                 return res;
             }
@@ -241,7 +240,9 @@ class Interpreter {
         env.push(["#scope#", null]);
         for (const clause of clauses) {
             if (clause[0] === "else" || this.evalExpr(clause[0], env).indexOf(val) > -1) {
-                const res = this.evalExprLst(clause.slice(1), env);
+                const res = clause.length === 2
+                    ? this.evalExpr(clause[1], env)
+                    : this.evalExprLst(clause.slice(1), env);
                 this.cleanEnv("#scope#", env);
                 return res;
             }
@@ -377,41 +378,7 @@ class Interpreter {
         const envDumpText = envDumpList.join("\n      ");
         const message = `Expr: ${JSON.stringify(expr)}\nEnv : ${envDumpText}`;
         this.options.printer(message);
-        this.isDebug = false;
         return null;
-    }
-    manageImports(codeTree, callback) {
-        const code = [];
-        let currentCodeIndex = 0;
-        searchImports(currentCodeIndex);
-        function searchImports(index) {
-            for (let i = index; i < codeTree.length; i++) {
-                const expr = codeTree[i];
-                if (Array.isArray(expr) && expr[0] === "import") {
-                    currentCodeIndex = i;
-                    const libUrl = expr[1][1];
-                    LibManager.importLibrary(libUrl, libManager_import_ready);
-                    return;
-                }
-                else {
-                    code.push(expr);
-                }
-            }
-            callback(code);
-        }
-        function libManager_import_ready(libCodeTree) {
-            code.push(...libCodeTree);
-            searchImports(currentCodeIndex + 1);
-        }
-    }
-    resolveThroughLib(expr, env) {
-        for (const lib of this.libs) {
-            const res = lib.libEvalExpr(expr, env);
-            if (res !== "##not-resolved##") {
-                return { resolved: true, val: res };
-            }
-        }
-        return { resolved: false, val: null };
     }
 }
 const XMLHttpRequestLib = (typeof XMLHttpRequest === "function")
@@ -472,6 +439,30 @@ class LibManager {
             case "number-lib": return new NumberLib(inter);
             case "string-lib": return new StringLib(inter);
             default: throw Error("Unknown lib: " + libName);
+        }
+    }
+    static manageImports(codeTree, callback) {
+        const code = [];
+        let currentCodeIndex = 0;
+        searchImports(currentCodeIndex);
+        function searchImports(index) {
+            for (let i = index; i < codeTree.length; i++) {
+                const expr = codeTree[i];
+                if (Array.isArray(expr) && expr[0] === "import") {
+                    currentCodeIndex = i;
+                    const libUrl = expr[1][1];
+                    LibManager.importLibrary(libUrl, libManager_import_ready);
+                    return;
+                }
+                else {
+                    code.push(expr);
+                }
+            }
+            callback(code);
+        }
+        function libManager_import_ready(libCodeTree) {
+            code.push(...libCodeTree);
+            searchImports(currentCodeIndex + 1);
         }
     }
     static importLibrary(libUrl, callback) {
@@ -641,7 +632,13 @@ if (typeof module === "object") {
 }
 class CoreLib {
     constructor(interpreter) {
+        this.builtinFunc = ["!=", "%", "*", "+", "-", "/", "<", "<=", "=", ">", ">=", "and", "eval", "not", "or",
+            "parse", "print", "to-boolean", "to-number", "to-string", "type-of"];
+        this.builtinHash = {};
         this.inter = interpreter;
+        for (const func of this.builtinFunc) {
+            this.builtinHash[func] = true;
+        }
     }
     libEvalExpr(expr, env) {
         switch (expr[0]) {
@@ -667,7 +664,7 @@ class CoreLib {
             case "eval": return this.evalEval(expr, env);
             case "print": return this.evalPrint(expr, env);
         }
-        return "##not-resolved##";
+        throw Error("Not found in 'core-lib': " + expr[0]);
     }
     evalPlus(expr, env) {
         if (expr.length === 1) {
@@ -881,19 +878,31 @@ class CoreLib {
 }
 class DateLib {
     constructor(interpreter) {
+        this.builtinFunc = ["date.now", "date.to-string"];
+        this.builtinHash = {};
         this.inter = interpreter;
+        for (const func of this.builtinFunc) {
+            this.builtinHash[func] = true;
+        }
     }
     libEvalExpr(expr, env) {
         switch (expr[0]) {
             case "date.now": return Date.now();
             case "date.to-string": return (new Date(this.inter.evalExpr(expr[1], env))).toString();
         }
-        return "##not-resolved##";
+        throw Error("Not found in 'date-lib': " + expr[0]);
     }
 }
 class ListLib {
     constructor(interpreter) {
+        this.builtinFunc = ["list.add", "list.add!", "list.concat", "list.empty", "list.empty?", "list.first",
+            "list.flatten", "list.get", "list.has?", "list.index", "list.join", "list.last", "list.least", "list.length",
+            "list.list?", "list.push", "list.push!", "list.range", "list.rest", "list.set", "list.set!", "list.slice"];
+        this.builtinHash = {};
         this.inter = interpreter;
+        for (const func of this.builtinFunc) {
+            this.builtinHash[func] = true;
+        }
     }
     libEvalExpr(expr, env) {
         switch (expr[0]) {
@@ -920,7 +929,7 @@ class ListLib {
             case "list.set!": return this.listSet(expr, env, false);
             case "list.slice": return this.listSlice(expr, env);
         }
-        return "##not-resolved##";
+        throw Error("Not found in 'list-lib': " + expr[0]);
     }
     listAdd(expr, env, pure = true) {
         const lst = this.inter.evalExpr(expr[1], env);
@@ -1046,7 +1055,13 @@ class ListLib {
 }
 class MathLib {
     constructor(interpreter) {
+        this.builtinFunc = ["math.pi", "math.abs", "math.ceil", "math.floor", "math.log", "math.ln", "math.max",
+            "math.min", "math.pow", "math.random", "math.round", "math.sqrt"];
+        this.builtinHash = {};
         this.inter = interpreter;
+        for (const func of this.builtinFunc) {
+            this.builtinHash[func] = true;
+        }
     }
     libEvalExpr(expr, env) {
         switch (expr[0]) {
@@ -1063,12 +1078,18 @@ class MathLib {
             case "math.round": return Math.round(this.inter.evalExpr(expr[1], env));
             case "math.sqrt": return Math.sqrt(this.inter.evalExpr(expr[1], env));
         }
-        return "##not-resolved##";
+        throw Error("Not found in 'math-lib': " + expr[0]);
     }
 }
 class NumberLib {
     constructor(interpreter) {
+        this.builtinFunc = ["numb.finite?", "numb.integer?", "numb.max-value", "numb.min-value", "numb.parse-float",
+            "numb.parse-int", "numb.to-fixed", "numb.to-precision", "numb.to-string"];
+        this.builtinHash = {};
         this.inter = interpreter;
+        for (const func of this.builtinFunc) {
+            this.builtinHash[func] = true;
+        }
     }
     libEvalExpr(expr, env) {
         switch (expr[0]) {
@@ -1082,7 +1103,7 @@ class NumberLib {
             case "numb.to-precision": return this.evalToPrecision(expr, env);
             case "numb.to-string": return this.evalToString(expr, env);
         }
-        return "##not-resolved##";
+        throw Error("Not found in 'numb-lib': " + expr[0]);
     }
     evalIsFinite(expr, env) {
         const value = this.inter.evalExpr(expr[1], env);
@@ -1123,7 +1144,12 @@ class NumberLib {
 }
 class StringLib {
     constructor(interpreter) {
+        this.builtinFunc = ["str.length", "str.has?", "str.split", "str.to-lowercase", "str.to-uppercase"];
+        this.builtinHash = {};
         this.inter = interpreter;
+        for (const func of this.builtinFunc) {
+            this.builtinHash[func] = true;
+        }
     }
     libEvalExpr(expr, env) {
         switch (expr[0]) {
@@ -1133,7 +1159,7 @@ class StringLib {
             case "str.to-lowercase": return this.strToLowercase(expr, env);
             case "str.to-uppercase": return this.strToUppercase(expr, env);
         }
-        return "##not-resolved##";
+        throw Error("Not found in 'string-lib': " + expr[0]);
     }
     strLength(expr, env) {
         const str = this.inter.evalExpr(expr[1], env);
