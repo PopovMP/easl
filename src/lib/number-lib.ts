@@ -27,7 +27,7 @@ class NumberLib implements ILib {
             case "numb.to-string"    : return this.evalToString(expr, env);
         }
 
-        throw Error("Not found in 'numb-lib': " + expr[0]);
+        throw "Error: Not found in 'numb-lib': " + expr[0];
     }
 
     private evalIsFinite(expr: any[], env: any[]): boolean {
@@ -43,14 +43,14 @@ class NumberLib implements ILib {
     private evalParseFloat(expr: any[], env: any[]): number {
         const value: string = this.inter.evalExpr(expr[1], env);
         const res: number = parseFloat(value);
-        if (isNaN(res)) throw "Not a number: " + value;
+        if (isNaN(res)) throw "Error: Not a number: " + value;
         return res;
     }
 
     private evalParseInt(expr: any[], env: any[]): number {
         const value = this.inter.evalExpr(expr[1], env);
         const res: number = parseInt(value);
-        if (isNaN(res)) throw "Not a number: " + value;
+        if (isNaN(res)) throw "Error: Not a number: " + value;
         return res;
     }
 

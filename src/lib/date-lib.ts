@@ -19,6 +19,6 @@ class DateLib implements ILib {
             case "date.to-string" : return (new Date(this.inter.evalExpr(expr[1], env))).toString();
         }
 
-        throw Error("Not found in 'date-lib': " + expr[0]);
+        throw "Error: Not found in 'date-lib': " + expr[0];
     }
 }

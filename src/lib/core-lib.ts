@@ -39,7 +39,7 @@ class CoreLib implements ILib {
             case "print"      : return this.evalPrint(expr, env);
         }
 
-        throw Error("Not found in 'core-lib': " + expr[0]);
+        throw "Error: Not found in 'core-lib': " + expr[0];
     }
 
     private evalPlus(expr: any[], env: any[]): any {

@@ -22,7 +22,7 @@ class StringLib implements ILib {
             case "str.to-uppercase" : return this.strToUppercase(expr, env);
         }
 
-        throw Error("Not found in 'string-lib': " + expr[0]);
+        throw "Error: Not found in 'string-lib': " + expr[0];
     }
 
     private strLength(expr: any[], env: any): number {

@@ -30,6 +30,6 @@ class MathLib implements ILib {
             case "math.sqrt"   : return Math.sqrt(this.inter.evalExpr(expr[1], env));
         }
 
-        throw Error("Not found in 'math-lib': " + expr[0]);
+        throw "Error: Not found in 'math-lib': " + expr[0];
     }
 }

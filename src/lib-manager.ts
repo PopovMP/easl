@@ -21,7 +21,7 @@ class LibManager {
             case "math-lib"   : return new MathLib(inter);
             case "number-lib" : return new NumberLib(inter);
             case "string-lib" : return new StringLib(inter);
-            default: throw Error("Unknown lib: " + libName);
+            default: throw "Error: Unknown lib: " + libName;
         }
     }
 
@@ -55,7 +55,7 @@ class LibManager {
 
     public static importLibrary(libUrl: string, callback: (lib: any[]) => void): void {
         if (typeof  libUrl !== "string" || libUrl.length === 0) {
-            throw Error("Empty library name");
+            throw "Error: Empty library name";
         }
 
         const storedLib: any[] = IoService.getItemFromLocalStorage(libUrl);
@@ -70,7 +70,7 @@ class LibManager {
 
         function ioService_get_ready(libText: string) {
             if (typeof  libUrl !== "string" || libUrl.length === 0) {
-                throw Error("Cannot load library content: " + libName);
+                throw "Error: Cannot load library content: " + libName;
             }
 
             const parser: Parser = new Parser();

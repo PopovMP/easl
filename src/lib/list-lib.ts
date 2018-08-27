@@ -41,7 +41,7 @@ class ListLib implements ILib {
             case "list.slice"   : return this.listSlice(expr, env);
         }
 
-        throw Error("Not found in 'list-lib': " + expr[0]);
+        throw "Error: Not found in 'list-lib': " + expr[0];
     }
 
     private listAdd(expr: any[], env: any[], pure: boolean = true): any[] {

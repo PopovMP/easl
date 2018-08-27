@@ -1,16 +1,30 @@
 {
   "name": "easl",
-  "version": "0.0.2",
-  "private": true,
-  "dependencies": {
-    "node-localstorage": "^1.3.1",
-    "xmlhttprequest": "^1.8.0"
+  "version": "0.1.0",
+  "main": "./bin/easl.js",
+  "description": "EASL is a functional language for integration in JavaScrip apps.",
+  "keywords": [
+    "programming language",
+    "language",
+    "javascript"
+  ],
+  "author": {
+    "name": "Miroslav Popov",
+    "url": "https://forexsb.com"
+  },
+  "homepage": "https://easl.forexsb.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PopovMP/easl"
   },
   "devDependencies": {
     "@types/node": "^10.9.1",
     "mocha": "^5.2.0",
+    "node-localstorage": "^1.3.1",
+    "xmlhttprequest": "^1.8.0",
     "typescript": "^3.0.1"
   },
+  "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "mocha"

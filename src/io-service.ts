@@ -23,7 +23,7 @@ class IoService {
         }
 
         function error(e: any) {
-            throw Error("Error while getting: " + url + ", " + e.message);
+            throw "Error: GET: " + url + ", " + e.message;
         }
     }
 
@@ -35,7 +35,7 @@ class IoService {
                 localStorageLib.setItem(key, JSON.stringify(item));
             }
         } catch (e) {
-            throw Error("Set item to local storage: " + key + ", " + e.message);
+            throw "Error: Set item to local storage: " + key + ", " + e.message;
         }
     }
 
@@ -44,7 +44,7 @@ class IoService {
             const value: any = localStorageLib.getItem(key);
             return value && JSON.parse(value);
         } catch (e) {
-            throw Error("Get item to local storage: " + key + ", " + e.message);
+            throw "Error: Get item to local storage: " + key + ", " + e.message;
         }
     }
 }
