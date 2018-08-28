@@ -79,12 +79,6 @@ describe('EASL design', function () {
     });
 
     describe('function definition', function () {
-        it('func definition returns null', function () {
-            assert.strictEqual(easl.evaluate(`  {function sum (a b) (+ a b)}      `), null);
-        });
-        it('lambda definition returns null', function () {
-            assert.strictEqual(easl.evaluate(`  {let sum {lambda (a b) (+ a b)}}  `), null);
-        });
         it('function with empty body', function () {
             assert.strictEqual(easl.evaluate(`  {function foo () ()} (foo)    `), "Error: Function with empty body: foo");
         });
@@ -97,6 +91,9 @@ describe('EASL design', function () {
         it('can define function once', function () {
             assert.strictEqual(easl.evaluate(`      {function foo () 1}
                                                     {function foo () 2}       `), "Error: Identifier already defined: foo");
+        });
+        it('func definition returns the function', function () {
+            assert.strictEqual(easl.evaluate(`  ({function sum (a b) (+ a b)}  2 3) `), 5);
         });
     });
 

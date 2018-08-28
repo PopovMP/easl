@@ -35,6 +35,12 @@ describe('set!', function () {
             (foo)                       `), 3);
     });
 
+    it('set! returns the value', function () {
+        assert.strictEqual(easl.evaluate(`
+            {let a 5}
+            {set! a 6}                 `), 6);
+    });
+
     it('set! unbound identifier', function () {
         assert.strictEqual(easl.evaluate(`
             {set! a 1}                 `), "Error: Unbound identifier: a");

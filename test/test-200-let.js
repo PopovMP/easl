@@ -8,6 +8,9 @@ const easl = new Easl();
 describe('let', function () {
 
     describe('let with numbers', function () {
+        it('{let a 2} → 2', function () {
+            assert.strictEqual(easl.evaluate(`    {let a 2}  `), 2);
+        });
         it('{let a 2} a → 2', function () {
             assert.strictEqual(easl.evaluate(`    {let a 2} a  `), 2);
         });
@@ -64,24 +67,28 @@ describe('let', function () {
     describe('let lambda', function () {
         it('no arguments', function () {
             assert.strictEqual(easl.evaluate(` 
-                    {let answer
-                        {lambda () 42}}
+                    {let answer {lambda () 42}}
                     (answer)                                `), 42);
         });
 
         it('one argument', function () {
             assert.strictEqual(easl.evaluate(` 
-                    {let double
-                        {lambda (a) (* 2 a)}}
+                    {let double {lambda (a) (* 2 a)}}
                     (double 2)                              `), 4);
         });
         it('two arguments', function () {
             assert.strictEqual(easl.evaluate(`    
-                    {let sum
-                        {lambda (a b) (+ a b)}}
+                    {let sum {lambda (a b) (+ a b)}}
                     (sum 2 3)                               `), 5);
         });
+        it('let returns the lambda', function () {
+            assert.strictEqual(easl.evaluate(`    
+                    ({let sum {lambda (a b) (+ a b)}} 2 3)  `), 5);
+        });
+        it('let sets the value even in an execution context', function () {
+            assert.strictEqual(easl.evaluate(`    
+                    ({let sum {lambda (a b) (+ a b)}} 2 3)
+                    (sum 4 5)                               `), 9);
+        });
     });
-
-
 });

@@ -183,17 +183,20 @@ class Interpreter {
     private evalLet(expr: any, env: any[]): any {
         const symbol: string = expr[1];
         this.throwOnExistingDef(symbol, env);
+        const value: any = this.evalLetValue(expr, env);
 
-        env.push([symbol, this.evalLetValue(expr, env)]);
+        env.push([symbol, value]);
 
-        return null;
+        return value;
     }
 
     // [set!, symbol, expr]
     private evalSet(expr: any, env: any[]): any {
-        this.setInEnv(expr[1], this.evalLetValue(expr, env), env);
+        const value: any = this.evalLetValue(expr, env);
 
-        return null;
+        this.setInEnv(expr[1], value, env);
+
+        return value;
     }
 
     // [let, symbol, expr]
@@ -241,7 +244,8 @@ class Interpreter {
         const value: any = this.evalLambda(["lambda", expr[2], body], env);
 
         env.push([symbol, value]);
-        return null;
+
+        return value;
     }
 
     // [if, test-expr, then-expr, else-expr]

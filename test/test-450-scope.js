@@ -96,8 +96,8 @@ describe('scope', function () {
             {let n 0}
             {do
                 {let a 1}
-                {set! n (+ n 1)
-                (< n 2) }}
+                {set! n (+ n 1)}
+                (< n 2) }
             a                 `), "Error: Unbound identifier: a");
     });
 
