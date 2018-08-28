@@ -213,6 +213,32 @@ describe('list', function () {
         });
     });
 
+    describe('list.reverse', function () {
+        it('reverses a list', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             (list.reverse [3 2 1]) `), [1, 2, 3]);
+        });
+        it('does not mutate the original list', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [3 2 1]}
+             (list.reverse lst)
+             lst                  `), [3, 2, 1]);
+        });
+    });
+
+    describe('list.reverse!', function () {
+        it('reverses a list', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             (list.reverse! [3 2 1]) `), [1, 2, 3]);
+        });
+        it('mutates the original list', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [3 2 1]}
+             (list.reverse! lst)
+             lst                  `), [1, 2, 3]);
+        });
+    });
+
     describe('list.rest', function () {
         it('not a list:  (list.rest 42) → null', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.rest 42)        `), []);
@@ -247,7 +273,6 @@ describe('list', function () {
         });
     });
 
-
     describe('list.slice', function () {
         it('called with no args, slices the whole list', function () {
             assert.deepStrictEqual(easl.evaluate(`  
@@ -263,6 +288,32 @@ describe('list', function () {
             assert.deepStrictEqual(easl.evaluate(`  
              {let lst [1 2 3 4 5]}
              (list.slice lst 1 3)      `), [2, 3]);
+        });
+    });
+
+    describe('list.sort', function () {
+        it('sorts a list', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             (list.sort [3 1 2]) `), [1, 2, 3]);
+        });
+        it('does not mutate the original list', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [3 2 1]}
+             (list.sort lst)
+             lst                  `), [3, 2, 1]);
+        });
+    });
+
+    describe('list.sort!', function () {
+        it('sorts a list', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             (list.sort! [3 1 2]) `), [1, 2, 3]);
+        });
+        it('mutates the original list', function () {
+            assert.deepStrictEqual(easl.evaluate(`  
+             {let lst [3 2 1]}
+             (list.sort! lst)
+             lst                  `), [1, 2, 3]);
         });
     });
 });

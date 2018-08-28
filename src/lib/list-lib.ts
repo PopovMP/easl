@@ -2,9 +2,10 @@
 
 class ListLib implements ILib {
     private readonly inter: Interpreter;
-    public readonly builtinFunc = ["list.add","list.add!" ,"list.concat","list.empty","list.empty?","list.first",
-        "list.flatten", "list.get","list.has?","list.index","list.join","list.last","list.least","list.length",
-        "list.list?","list.push", "list.push!","list.range","list.rest","list.set","list.set!","list.slice", "list.sort"];
+    public readonly builtinFunc = ["list.add", "list.add!", "list.concat", "list.empty", "list.empty?", "list.first",
+        "list.flatten", "list.get", "list.has?", "list.index", "list.join", "list.last", "list.least", "list.length",
+        "list.list?", "list.push", "list.push!", "list.range", "list.reverse", "list.reverse!", "list.rest", "list.set",
+        "list.set!", "list.slice", "list.sort", "list.sort!"];
     public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
@@ -35,11 +36,14 @@ class ListLib implements ILib {
             case "list.push"    : return this.listPush(expr, env);
             case "list.push!"   : return this.listPush(expr, env, false);
             case "list.range"   : return this.listRange(expr, env);
+            case "list.reverse" : return this.listReverse(expr, env);
+            case "list.reverse!": return this.listReverse(expr, env, false);
             case "list.rest"    : return this.listRest(expr, env);
             case "list.set"     : return this.listSet(expr, env);
             case "list.set!"    : return this.listSet(expr, env, false);
             case "list.slice"   : return this.listSlice(expr, env);
             case "list.sort"    : return this.listSort(expr, env);
+            case "list.sort!"   : return this.listSort(expr, env, false);
         }
 
         throw "Error: Not found in 'list-lib': " + expr[0];
@@ -47,7 +51,7 @@ class ListLib implements ILib {
 
     private listAdd(expr: any[], env: any[], pure: boolean = true): any[] {
         const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const elm: any   = this.inter.evalExpr(expr[2], env);
+        const elm: any = this.inter.evalExpr(expr[2], env);
 
         if (Array.isArray(lst)) {
             const list = pure ? lst.slice() : lst;
@@ -111,7 +115,7 @@ class ListLib implements ILib {
 
     private listIndex(expr: any[], env: any[]): number {
         const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const elm: any   = this.inter.evalExpr(expr[2], env);
+        const elm: any = this.inter.evalExpr(expr[2], env);
 
         if (Array.isArray(lst)) {
             return lst.indexOf(elm);
@@ -153,7 +157,7 @@ class ListLib implements ILib {
 
     private listPush(expr: any[], env: any[], pure: boolean = true): any[] {
         const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const elm: any   = this.inter.evalExpr(expr[2], env);
+        const elm: any = this.inter.evalExpr(expr[2], env);
 
         if (Array.isArray(lst)) {
             const list = pure ? lst.slice() : lst;
@@ -170,7 +174,7 @@ class ListLib implements ILib {
 
     private listRange(expr: any[], env: any[]): any[] {
         const start: number = this.inter.evalExpr(expr[1], env);
-        const end  : number = this.inter.evalExpr(expr[2], env);
+        const end: number = this.inter.evalExpr(expr[2], env);
 
         if (start >= end) return [];
 
@@ -189,9 +193,16 @@ class ListLib implements ILib {
         return Array.isArray(lst) && lst.length > 1 ? lst.slice(1) : [];
     }
 
+    private listReverse(expr: any[], env: any, pure: boolean = true): any[] {
+        const lst: any[] = this.inter.evalExpr(expr[1], env);
+        const list = pure ? lst.slice() : lst;
+
+        return list.reverse();
+    }
+
     private listSet(expr: any[], env: any, pure: boolean = true): any[] {
         const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const elm: any   = this.inter.evalExpr(expr[2], env);
+        const elm: any = this.inter.evalExpr(expr[2], env);
         const index: any = this.inter.evalExpr(expr[3], env);
 
         if (Array.isArray(lst) && index >= 0 && index < lst.length) {
@@ -204,16 +215,18 @@ class ListLib implements ILib {
     }
 
     private listSlice(expr: any[], env: any[]): any[] {
-        const lst   : any[]  = this.inter.evalExpr(expr[1], env);
-        const args  : number = expr.length - 2;
-        const begin : number = args > 0 ? this.inter.evalExpr(expr[2], env) : 0;
-        const end   : number = args > 1 ? this.inter.evalExpr(expr[3], env) : lst.length;
+        const lst: any[] = this.inter.evalExpr(expr[1], env);
+        const args: number = expr.length - 2;
+        const begin: number = args > 0 ? this.inter.evalExpr(expr[2], env) : 0;
+        const end: number = args > 1 ? this.inter.evalExpr(expr[3], env) : lst.length;
 
         return lst.slice(begin, end);
     }
 
-    private listSort(expr: any[], env: any[]): any[] {
+    private listSort(expr: any[], env: any[], pure: boolean = true): any[] {
         const lst: any[] = this.inter.evalExpr(expr[1], env);
-        return lst.sort();
+        const list = pure ? lst.slice() : lst;
+
+        return list.sort();
     }
 }
