@@ -4,7 +4,7 @@ class ListLib implements ILib {
     private readonly inter: Interpreter;
     public readonly builtinFunc = ["list.add","list.add!" ,"list.concat","list.empty","list.empty?","list.first",
         "list.flatten", "list.get","list.has?","list.index","list.join","list.last","list.least","list.length",
-        "list.list?","list.push", "list.push!","list.range","list.rest","list.set","list.set!","list.slice"];
+        "list.list?","list.push", "list.push!","list.range","list.rest","list.set","list.set!","list.slice", "list.sort"];
     public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
@@ -39,6 +39,7 @@ class ListLib implements ILib {
             case "list.set"     : return this.listSet(expr, env);
             case "list.set!"    : return this.listSet(expr, env, false);
             case "list.slice"   : return this.listSlice(expr, env);
+            case "list.sort"    : return this.listSort(expr, env);
         }
 
         throw "Error: Not found in 'list-lib': " + expr[0];
@@ -209,5 +210,10 @@ class ListLib implements ILib {
         const end   : number = args > 1 ? this.inter.evalExpr(expr[3], env) : lst.length;
 
         return lst.slice(begin, end);
+    }
+
+    private listSort(expr: any[], env: any[]): any[] {
+        const lst: any[] = this.inter.evalExpr(expr[1], env);
+        return lst.sort();
     }
 }
