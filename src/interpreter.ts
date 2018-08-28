@@ -87,6 +87,7 @@ class Interpreter {
             case "do"       : return this.evalDo(expr, env);
             case "call"     : return this.evalCall(expr, env);
             case "set!"     : return this.evalSet(expr, env);
+            case "inc!"     : return this.evalIncrement(expr, env);
             case "try"      : return this.evalTry(expr, env);
             case "throw"    : return this.evalThrow(expr, env);
             case "debug"    : return this.evalDebug();
@@ -180,7 +181,7 @@ class Interpreter {
     }
 
     // [let, symbol, expr]
-    private evalLet(expr: any, env: any[]): any {
+    private evalLet(expr: any[], env: any[]): any {
         const symbol: string = expr[1];
         this.throwOnExistingDef(symbol, env);
         const value: any = this.evalLetValue(expr, env);
@@ -191,8 +192,18 @@ class Interpreter {
     }
 
     // [set!, symbol, expr]
-    private evalSet(expr: any, env: any[]): any {
+    private evalSet(expr: any[], env: any[]): any {
         const value: any = this.evalLetValue(expr, env);
+
+        this.setInEnv(expr[1], value, env);
+
+        return value;
+    }
+
+    // [inc!, symbol, inc]
+    private evalIncrement(expr: any[], env: any[]): any {
+        const inc: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
+        const value: number = this.evalExpr(expr[1], env) + inc;
 
         this.setInEnv(expr[1], value, env);
 
@@ -201,7 +212,7 @@ class Interpreter {
 
     // [let, symbol, expr]
     // [let, symbol, [lambda, [par1, par2, ...], expr]]
-    private evalLetValue(expr: any, env: any[]): any {
+    private evalLetValue(expr: any[], env: any[]): any {
         const letExpr: any = expr[2];
 
         const res: any = (Array.isArray(letExpr) && letExpr[0] === "lambda")
