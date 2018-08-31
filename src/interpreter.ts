@@ -118,6 +118,12 @@ class Interpreter {
             }
         }
 
+        for (const lib of this.libs) {
+            if (lib.builtinHash[symbol]) {
+                return symbol;
+            }
+        }
+
         throw `Error: Unbound identifier: ${symbol}`;
     }
 
@@ -146,7 +152,13 @@ class Interpreter {
         const proc: string | any[] = expr[0];
         const isNamed: boolean = typeof proc === "string";
         const funcName: string = isNamed ? <string>proc : "lambda";
-        const closure: any[] = isNamed ? this.lookup(<string>proc, env) : this.evalExpr(proc, env);
+        const closure: any[] | string = isNamed ? this.lookup(<string>proc, env) : this.evalExpr(proc, env);
+
+        if (typeof closure === "string") {
+            const newExpr = expr.slice();
+            newExpr[0] = closure;
+            return this.evalExpr(newExpr, env);
+        }
 
         if (!Array.isArray(closure)) {throw `Error: Improper function: ${closure}`;}
 

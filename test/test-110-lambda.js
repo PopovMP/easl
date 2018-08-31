@@ -74,4 +74,7 @@ describe('lambda', function () {
         assert.strictEqual(easl.evaluate("{lambda n (+ 2 n) (* 2 n)}"), "Error: Improper function");
     });
 
+    it('lambda returns a builtin function', function () {
+        assert.strictEqual(easl.evaluate("(({lambda () +}) 2 3}"), 5);
+    });
 });

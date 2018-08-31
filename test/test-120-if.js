@@ -37,4 +37,12 @@ describe('if', function () {
     it('when faulty "if" evaluates only the "else clause"', function () {
         assert.strictEqual(easl.evaluate("(if false a 1)"), 1);
     });
+
+    it ("truthy condition returns builtin function", function () {
+        assert.strictEqual(easl.evaluate("((if true + -) 4 3)"), 7);
+    });
+
+    it ("faulty condition returns builtin function", function () {
+        assert.strictEqual(easl.evaluate("((if false + -) 4 3)"), 1);
+    });
 });

@@ -213,4 +213,9 @@ describe('function', function () {
         });
     });
 
+    it('function returns a builtin function', function () {
+        assert.strictEqual(easl.evaluate(` 
+                {function opp () +}
+                ((opp) 2 3)                         `), 5);
+    });
 });
