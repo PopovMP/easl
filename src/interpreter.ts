@@ -3,6 +3,7 @@
 class Interpreter {
     private isDebug: boolean;
     private readonly libs: ILib[];
+    public readonly infixOperators = ["!=","%","*","+","-","/","<","<=","=",">",">=","and","or"];
 
     public options: Options;
 
@@ -71,10 +72,8 @@ class Interpreter {
             this.dumpState(expr, env);
         }
 
-        const identifier: string = expr[0];
-
         // Special forms
-        switch (identifier) {
+        switch (expr[0]) {
             case "let"      : return this.evalLet(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
             case "function" : return this.evalFunction(expr, env);
@@ -92,6 +91,14 @@ class Interpreter {
             case "throw"    : return this.evalThrow(expr, env);
             case "debug"    : return this.evalDebug();
         }
+
+        if (expr.length === 3 && this.infixOperators.indexOf(expr[1]) > -1) {
+            const operator = expr[1];
+            expr[1] = Array.isArray(expr[0]) ? expr[0].slice() : expr[0];
+            expr[0] = operator;
+        }
+
+        const identifier: string = expr[0];
 
         for (const lib of this.libs) {
             if (lib.builtinHash[identifier]) {
