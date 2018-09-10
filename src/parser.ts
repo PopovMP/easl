@@ -9,7 +9,8 @@ class Parser {
     private commentStartChars: string[] = [";"];
 
     public parse(codeText: string): any[] {
-        const codeTree = this.tokenize(codeText);
+        const fixedText = codeText.replace(/λ/g,"lambda");
+        const codeTree = this.tokenize(fixedText);
         const ilTree = this.nest(codeTree);
         return ilTree;
     }
