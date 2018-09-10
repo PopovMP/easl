@@ -270,10 +270,15 @@ class Interpreter {
         if (Array.isArray(expr[3]) && expr[3].length === 0 ) throw `Error: Function with empty body: ${symbol}`;
         this.throwOnExistingDef(symbol, env);
 
+        const params: any[] = expr[2];
         const body: any[] = expr.length === 4 ? expr[3] : ["block", ... expr.slice(3)];
-        const value: any = this.evalLambda(["lambda", expr[2], body], env);
+        const value: any = this.evalLambda(["lambda", params, body], env);
 
         env.push([symbol, value]);
+
+        if (Array.isArray(params) && params.length === 2) {
+            this.infixOperators.push(symbol);
+        }
 
         return value;
     }

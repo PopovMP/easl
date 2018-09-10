@@ -53,4 +53,11 @@ describe('infix operators', function () {
             {let type (type-of random)}
                                         `), "number");
     });
+    it('custom infix operator', function () {
+        assert.strictEqual(easl.evaluate(`
+            {function ** (m n) (math.pow m n)}
+            (2 ** 3)
+                                        `), 8);
+    });
+
 });
