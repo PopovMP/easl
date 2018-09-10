@@ -82,6 +82,7 @@ class Interpreter {
             case "cond"     : return this.evalCond(expr, env);
             case "case"     : return this.evalCase(expr, env);
             case "for"      : return this.evalFor(expr, env);
+            case "for-of"   : return this.evalForOf(expr, env);
             case "while"    : return this.evalWhile(expr, env);
             case "do"       : return this.evalDo(expr, env);
             case "call"     : return this.evalCall(expr, env);
@@ -364,6 +365,34 @@ class Interpreter {
         }
 
         env.pop();
+        return null;
+    }
+
+    // [for-of, [symbol, range], exp1 exp2 ...]
+    private evalForOf(expr: any[], env: any[]): null {
+        const symbol: string  = expr[1][0];
+        const range: any[]    = this.evalExpr(expr[1][1], env);
+        const loopBody: any[] = expr.slice(2);
+
+        if (!Array.isArray(range))  throw `Error: No range provided in 'for-of'`;
+        if (range.length === 0) return null;
+
+        for (const elem of range) {
+            env.push(["#scope#", null]);
+            env.push([symbol, this.evalExpr(elem, env)]);
+
+            for (const bodyExpr of loopBody) {
+                const res: any = this.evalExpr(bodyExpr, env);
+                if (res === "continue") break;
+                if (res === "break") {
+                    this.cleanEnv("#scope#", env);
+                    return null;
+                }
+            }
+
+            this.cleanEnv("#scope#", env);
+        }
+
         return null;
     }
 
