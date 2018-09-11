@@ -85,6 +85,7 @@ class Interpreter {
             case "for-of"   : return this.evalForOf(expr, env);
             case "while"    : return this.evalWhile(expr, env);
             case "do"       : return this.evalDo(expr, env);
+            case "repeat"   : return this.evalRepeat(expr, env);
             case "call"     : return this.evalCall(expr, env);
             case "set!"     : return this.evalSet(expr, env);
             case "inc!"     : return this.evalIncrement(expr, env);
@@ -438,6 +439,31 @@ class Interpreter {
 
             this.cleanEnv("#scope#", env);
         } while (this.evalExpr(testExpr, env));
+
+        return null;
+    }
+
+    // [repeat, count expr1, expr2, ...]
+    private evalRepeat(expr: any[], env: any[]): null {
+        const count: any = this.evalExpr(expr[1], env);
+        if (typeof count !== "number")  throw `Error: Wrong count in 'repeat'`;
+
+        const loopBody: any = expr.slice(2);
+
+        for (let i: number = 0; i < count; i++){
+            env.push(["#scope#", null]);
+
+            for (const bodyExpr of loopBody) {
+                const res: any = this.evalExpr(bodyExpr, env);
+                if (res === "continue") break;
+                if (res === "break") {
+                    this.cleanEnv("#scope#", env);
+                    return null;
+                }
+            }
+
+            this.cleanEnv("#scope#", env);
+        }
 
         return null;
     }
