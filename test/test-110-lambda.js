@@ -58,6 +58,10 @@ describe('lambda', function () {
         assert.deepStrictEqual(easl.evaluate("({lambda (a b) func-args} 1 2 3 4)"), [1, 2, 3, 4]);
     });
 
+    it('lambda with than one expr ', function () {
+        assert.strictEqual(easl.evaluate("({lambda n {let a 5} (n + a)} 3)"), 8);
+    });
+
     it('Improper function', function () {
         assert.strictEqual(easl.evaluate("( {lambda () (5)} )"), "Error: Improper function: 5");
     });
@@ -68,10 +72,6 @@ describe('lambda', function () {
 
     it('No body', function () {
         assert.strictEqual(easl.evaluate("{lambda (a b)}"), "Error: Improper function");
-    });
-
-    it('More than one expr ', function () {
-        assert.strictEqual(easl.evaluate("{lambda n (+ 2 n) (* 2 n)}"), "Error: Improper function");
     });
 
     it('lambda returns a builtin function', function () {

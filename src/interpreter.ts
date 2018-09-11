@@ -195,9 +195,10 @@ class Interpreter {
 
     // [lambda, [par1, par2, ...], expr]
     private evalLambda(expr: any[], env: any[]): any[] {
-        if (expr.length !== 3) throw "Error: Improper function";
+        if (expr.length < 3) throw "Error: Improper function";
+        const body: any[] = expr.length === 3 ? expr[2] : ["block", ... expr.slice(2)];
 
-        return ["closure", expr[1], expr[2], env];
+        return ["closure", expr[1], body, env];
     }
 
     // [let, symbol, expr]
@@ -262,7 +263,6 @@ class Interpreter {
         } while (cell[0] !== tag);
     }
 
-    // [function, symbol, [par1, par2, ...], expr]
     // [function, symbol, [par1, par2, ...], expr1, expr2, ...]
     private evalFunction(expr: any[], env: any[]): any {
         const symbol: string = expr[1];
