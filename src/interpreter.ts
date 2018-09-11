@@ -82,7 +82,6 @@ class Interpreter {
             case "cond"     : return this.evalCond(expr, env);
             case "case"     : return this.evalCase(expr, env);
             case "for"      : return this.evalFor(expr, env);
-            case "for-of"   : return this.evalForOf(expr, env);
             case "while"    : return this.evalWhile(expr, env);
             case "do"       : return this.evalDo(expr, env);
             case "repeat"   : return this.evalRepeat(expr, env);
@@ -339,38 +338,8 @@ class Interpreter {
         return null;
     }
 
-    // [for, [symbol, expr], test-expr, inc-expr, exp1 exp2 ...]
+    // [for, [symbol, range], exp1 exp2 ...]
     private evalFor(expr: any[], env: any[]): null {
-        const symbol: string  = expr[1][0];
-        const testExpr: any[] = expr[2];
-        const incExpr : any[] = expr[3];
-        const loopBody: any[] = expr.slice(4);
-
-        env.push([symbol, this.evalExpr(expr[1][1], env)]);
-
-        while (this.evalExpr(testExpr, env)) {
-            env.push(["#scope#", null]);
-
-            for (const bodyExpr of loopBody) {
-                const res: any = this.evalExpr(bodyExpr, env);
-                if (res === "continue") break;
-                if (res === "break") {
-                    this.cleanEnv("#scope#", env);
-                    env.pop();
-                    return null;
-                }
-            }
-
-            this.setInEnv(symbol, this.evalExpr(incExpr, env), env);
-            this.cleanEnv("#scope#", env);
-        }
-
-        env.pop();
-        return null;
-    }
-
-    // [for-of, [symbol, range], exp1 exp2 ...]
-    private evalForOf(expr: any[], env: any[]): null {
         const symbol: string  = expr[1][0];
         const range: any[]    = this.evalExpr(expr[1][1], env);
         const loopBody: any[] = expr.slice(2);

@@ -6,51 +6,59 @@ const Easl = require("../bin/easl.js").Easl;
 const easl = new Easl();
 
 describe('for loop', function () {
-    it('for loop 1', function () {
-        assert.strictEqual(easl.evaluate(`  
-              {let m 0}
-              {for (i m) (< i 3) (+ i 1)
-                  {set! m i} }
-               m                                        `), 2);
+    it('loop', function () {
+        assert.strictEqual(easl.evaluate(` 
+                {let n 0 }
+                {for {e [1 2 3 4 5]}
+                    {set! n (n + e)} }
+                n                                      `), 15);
     });
 
-    it('for loop 2', function () {
+    it('break', function () {
         assert.strictEqual(easl.evaluate(`
-                {let m 0}
-                {for (i 10) (<= i (* 1 20)) (+ i 5)
-                    {set! m i} }
-                m                                      `), 20);
+                {let n 0}
+                {for {e [1 2 3 4 5]}
+                    {if (e > 2) break}
+                    {set! n (n + e)} }
+                n                                      `), 3);
     });
 
-    it('for loop break', function () {
+    it('continue', function () {
         assert.strictEqual(easl.evaluate(`
-                {let m 0}
-                {for (i 0) (< i 3) (+ i 1)
-                    {if (= i 1) break}
-                    {set! m (+ m 1)} }
-                m                                      `), 1);
+                {let n 0}
+                {for {e [1 2 3 4 5]}
+                    {if ((e % 2) = 1) continue}
+                    {set! n (n + e)} }
+                n                                      `), 6);
     });
 
-    it('for loop continue', function () {
-        assert.strictEqual(easl.evaluate(`
-                {let m 0}
-                {for (i 0) (< i 10) (+ i 1)
-                    {if (= (% i 2) 1) continue}
-                    {set! m (+ m 1)} }
-                m                                      `), 5);
+    it('the range can be an expression', function () {
+        assert.strictEqual(easl.evaluate(` 
+                {let n 0 }
+                {for {e (list.range 1 5)}
+                    {set! n (n + e)} }
+                n                                      `), 15);
     });
 
-    it('the counter is not exposed after the loop', function () {
-        assert.strictEqual(easl.evaluate(`
-                {for (i 0) (< i 1) (+ i 1) }
-                i                                      `), "Error: Unbound identifier: i");
+    it('the range elements can be an expression', function () {
+        assert.strictEqual(easl.evaluate(` 
+                {let n 0 }
+                {for {e [(1 + 2) (2 + 3)]}
+                    {set! n (n + e)} }
+                n                                      `), 8);
     });
 
-    it("the counter doesn't override a variable" , function () {
-        assert.strictEqual(easl.evaluate(`
-                {let i 42}
-                {for (i 0) (< i 1) (+ i 1) }
-                i                                      `), 42);
+    it('the element symbol is not available after the loop', function () {
+        assert.strictEqual(easl.evaluate(` 
+                {for {e [1]}
+                    (2 * e) }
+                e                                      `), "Error: Unbound identifier: e");
     });
 
+    it('the loop body is a scope', function () {
+        assert.strictEqual(easl.evaluate(` 
+                {for {e [1]}
+                    {let a e} }
+                a                                      `), "Error: Unbound identifier: a");
+    });
 });
