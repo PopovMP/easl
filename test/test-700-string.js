@@ -34,11 +34,13 @@ describe('str library', function () {
         });
 
         it('no separator', function () {
-            assert.deepStrictEqual(easl.evaluate(`(str.split "hello") `), ['h', 'e', 'l', 'l', 'o']);
+            assert.deepStrictEqual(easl.evaluate(`(str.split "ABC") `),
+                [ ["string", "A"], ["string", "B"], ["string", "C"] ]);
         });
 
         it('with separator', function () {
-            assert.deepStrictEqual(easl.evaluate(`(str.split "this-is-a-sentence" "-")`), ['this', 'is', 'a', 'sentence']);
+            assert.deepStrictEqual(easl.evaluate(`(str.split "A-B-C" "-")`),
+                [ ["string", "A"], ["string", "B"], ["string", "C"] ]);
         });
     });
 

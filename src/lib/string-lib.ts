@@ -39,13 +39,13 @@ class StringLib implements ILib {
         return str.includes(elem);
     }
 
-    private strSplit(expr: any[], env: any): string[] {
+    private strSplit(expr: any[], env: any): any[] {
         const str: string = this.inter.evalExpr(expr[1], env);
-        if (typeof str  !== "string") throw Error("Not a string: " + str);
-        if (expr.length === 2) return str.split("");
+        if (typeof str !== "string") throw Error("Not a string: " + str);
+        if (expr.length === 2) return str.split("").map(e => ["string", e]);
         const sep: string = this.inter.evalExpr(expr[2], env);
-        if (typeof sep  !== "string") throw Error("Not a string: " + sep);
-        return str.split(sep);
+        if (typeof sep !== "string") throw Error("Not a string: " + sep);
+        return str.split(sep).map(e => ["string", e]);
     }
 
     private strToLowercase(expr: any[], env: any): string {
