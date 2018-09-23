@@ -155,7 +155,7 @@ class Interpreter {
     }
 
     // [func-id, arg1, arg2, ...]
-    // [[lambda, [par1, par2, ...], expr], arg1, arg2, ...]
+    // [[lambda, [par1, par2, ...], expr1, expr2, ...], arg1, arg2, ...]
     private callProc(expr: any[], env: any[]): any {
         const proc: string | any[] = expr[0];
         const isNamed: boolean = typeof proc === "string";
@@ -193,7 +193,7 @@ class Interpreter {
         return closureEnv;
     }
 
-    // [lambda, [par1, par2, ...], expr]
+    // [lambda, [par1, par2, ...], expr1, expr2, ...]
     private evalLambda(expr: any[], env: any[]): any[] {
         if (expr.length < 3) throw "Error: Improper function";
         const body: any[] = expr.length === 3 ? expr[2] : ["block", ... expr.slice(2)];
@@ -232,12 +232,12 @@ class Interpreter {
     }
 
     // [let, symbol, expr]
-    // [let, symbol, [lambda, [par1, par2, ...], expr]]
+    // [let, symbol, [lambda, [par1, par2, ...], expr1, expr2, ...]]
     private evalLetValue(expr: any[], env: any[]): any {
         const letExpr: any = expr[2];
 
         const res: any = (Array.isArray(letExpr) && letExpr[0] === "lambda")
-            ? this.evalLambda(["lambda", letExpr[1], letExpr[2]], env)
+            ? this.evalLambda(letExpr, env)
             : this.evalExpr(letExpr, env);
 
         return res;

@@ -22,8 +22,8 @@ describe('lambda', function () {
         assert.strictEqual(easl.evaluate("({lambda a a} 5)"), 5);
     });
 
-    it('({lambda entity entity} 5) → 5', function () {
-        assert.strictEqual(easl.evaluate("({lambda entity entity} 5)"), 5);
+    it('({lambda x x} 5) → 5', function () {
+        assert.strictEqual(easl.evaluate("({lambda x x} 5)"), 5);
     });
 
     it('({lambda a (* 2 a)} 5) → 10', function () {
@@ -58,8 +58,12 @@ describe('lambda', function () {
         assert.deepStrictEqual(easl.evaluate("({lambda (a b) func-args} 1 2 3 4)"), [1, 2, 3, 4]);
     });
 
-    it('lambda with than one expr ', function () {
+    it('lambda with more than one expr ', function () {
         assert.strictEqual(easl.evaluate("({lambda n {let a 5} (n + a)} 3)"), 8);
+    });
+
+    it('lambda with no args and more than one expr ', function () {
+        assert.strictEqual(easl.evaluate("({lambda () {let a 5} (a + a)})"), 10);
     });
 
     it('Improper function', function () {

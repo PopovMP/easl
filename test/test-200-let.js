@@ -90,5 +90,10 @@ describe('let', function () {
                     ({let sum {lambda (a b) (+ a b)}} 2 3)
                     (sum 4 5)                               `), 9);
         });
+        it('let with lambda with multiple expressions', function () {
+            assert.strictEqual(easl.evaluate(`    
+                    {let get-list {lambda () {let a 1} {set! a 2} a}}
+                    (get-list)                               `), 2);
+        });
     });
 });
