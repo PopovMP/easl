@@ -51,7 +51,7 @@ class ListLib implements ILib {
 
     private listAdd(expr: any[], env: any[], pure: boolean = true): any[] {
         const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const elm: any = this.inter.evalExpr(expr[2], env);
+        const elm: any   = this.inter.evalExpr(expr[2], env);
 
         if (Array.isArray(lst)) {
             const list = pure ? lst.slice() : lst;
@@ -74,13 +74,13 @@ class ListLib implements ILib {
     }
 
     private listEmpty(expr: any[], env: any[]): boolean {
-        const lst = this.inter.evalExpr(expr[1], env);
+        const lst: any[] = this.inter.evalExpr(expr[1], env);
 
         return Array.isArray(lst) ? lst.length === 0 : true
     }
 
     private listFirst(expr: any[], env: any[]): any {
-        const lst = this.inter.evalExpr(expr[1], env);
+        const lst: any[] = this.inter.evalExpr(expr[1], env);
 
         return Array.isArray(lst) && lst.length > 0 ? lst[0] : null;
     }
@@ -115,7 +115,7 @@ class ListLib implements ILib {
 
     private listIndex(expr: any[], env: any[]): number {
         const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const elm: any = this.inter.evalExpr(expr[2], env);
+        const elm: any   = this.inter.evalExpr(expr[2], env);
 
         if (Array.isArray(lst)) {
             return lst.indexOf(elm);
@@ -131,33 +131,33 @@ class ListLib implements ILib {
     }
 
     private listJoin(expr: any[], env: any): string {
-        const lst: any[] = this.inter.evalExpr(expr[1], env);
+        const lst: any[]  = this.inter.evalExpr(expr[1], env);
         const sep: string = expr.length === 3 ? this.inter.evalExpr(expr[2], env) : ",";
 
         return lst.join(sep);
     }
 
     private listLast(expr: any[], env: any[]): any {
-        const lst = this.inter.evalExpr(expr[1], env);
+        const lst: any[] = this.inter.evalExpr(expr[1], env);
 
         return Array.isArray(lst) && lst.length > 0 ? lst[lst.length - 1] : null;
     }
 
     private listLeast(expr: any[], env: any[]): any[] {
-        const lst = this.inter.evalExpr(expr[1], env);
+        const lst: any[] = this.inter.evalExpr(expr[1], env);
 
         return Array.isArray(lst) && lst.length > 1 ? lst.slice(0, lst.length - 1) : [];
     }
 
     private listLength(expr: any[], env: any[]): number {
-        const lst = this.inter.evalExpr(expr[1], env);
+        const lst: any[] = this.inter.evalExpr(expr[1], env);
 
         return Array.isArray(lst) ? lst.length : -1;
     }
 
     private listPush(expr: any[], env: any[], pure: boolean = true): any[] {
         const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const elm: any = this.inter.evalExpr(expr[2], env);
+        const elm: any   = this.inter.evalExpr(expr[2], env);
 
         if (Array.isArray(lst)) {
             const list = pure ? lst.slice() : lst;
@@ -174,7 +174,7 @@ class ListLib implements ILib {
 
     private listRange(expr: any[], env: any[]): any[] {
         const start: number = this.inter.evalExpr(expr[1], env);
-        const end: number = this.inter.evalExpr(expr[2], env);
+        const end: number   = this.inter.evalExpr(expr[2], env);
 
         if (start >= end) return [];
 
@@ -188,22 +188,22 @@ class ListLib implements ILib {
     }
 
     private listRest(expr: any[], env: any[]): any[] {
-        const lst = this.inter.evalExpr(expr[1], env);
+        const lst: any[] = this.inter.evalExpr(expr[1], env);
 
         return Array.isArray(lst) && lst.length > 1 ? lst.slice(1) : [];
     }
 
     private listReverse(expr: any[], env: any, pure: boolean = true): any[] {
-        const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const list = pure ? lst.slice() : lst;
+        const lst: any[]  = this.inter.evalExpr(expr[1], env);
+        const list: any[] = pure ? lst.slice() : lst;
 
         return list.reverse();
     }
 
     private listSet(expr: any[], env: any, pure: boolean = true): any[] {
-        const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const index: any = this.inter.evalExpr(expr[2], env);
-        const elm: any = this.inter.evalExpr(expr[3], env);
+        const lst: any[]    = this.inter.evalExpr(expr[1], env);
+        const index: number = this.inter.evalExpr(expr[2], env);
+        const elm: any      = this.inter.evalExpr(expr[3], env);
 
         if (Array.isArray(lst) && index >= 0 && index < lst.length) {
             const list = pure ? lst.slice() : lst;
@@ -215,17 +215,17 @@ class ListLib implements ILib {
     }
 
     private listSlice(expr: any[], env: any[]): any[] {
-        const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const args: number = expr.length - 2;
+        const lst: any[]    = this.inter.evalExpr(expr[1], env);
+        const args: number  = expr.length - 2;
         const begin: number = args > 0 ? this.inter.evalExpr(expr[2], env) : 0;
-        const end: number = args > 1 ? this.inter.evalExpr(expr[3], env) : lst.length;
+        const end: number   = args > 1 ? this.inter.evalExpr(expr[3], env) : lst.length;
 
         return lst.slice(begin, end);
     }
 
     private listSort(expr: any[], env: any[], pure: boolean = true): any[] {
-        const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const list = pure ? lst.slice() : lst;
+        const lst: any[]  = this.inter.evalExpr(expr[1], env);
+        const list: any[] = pure ? lst.slice() : lst;
 
         return list.sort();
     }

@@ -9,19 +9,19 @@ describe('list', function () {
 
     describe('list.add', function () {
         it('not a list:  (list.add 1 2) → [1, 2]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add 1 2)        `), [1, 2]);
+            assert.deepStrictEqual(easl.evaluate(`   (list.add 1 2)          `), [1, 2]);
         });
         it('empty list:  (list.add [] 2) → [2]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add [] 2)        `), [2]);
+            assert.deepStrictEqual(easl.evaluate(`   (list.add [] 2)         `), [2]);
         });
         it('null:  (list.add null 2) → [2]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add null 2)        `), [2]);
+            assert.deepStrictEqual(easl.evaluate(`   (list.add null 2)       `), [2]);
         });
         it('non empty list:  (list.add [1 2] 3) → [1, 2, 3]', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.add [1 2] 3)      `), [1, 2, 3]);
         });
         it('two list:  (list.add [1 2] [3 4]) → [1, 2, [3, 4]]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add [1 2] [3 4])      `), [1, 2, [3, 4]]);
+            assert.deepStrictEqual(easl.evaluate(`   (list.add [1 2] [3 4])  `), [1, 2, [3, 4]]);
         });
         it('it is pure', function () {
             assert.deepStrictEqual(easl.evaluate(`  
@@ -92,16 +92,16 @@ describe('list', function () {
 
     describe('list.index', function () {
         it('not a list: (list.index 1 2) → -1', function () {
-            assert.strictEqual(easl.evaluate(`   (list.index 1 2)        `), -1);
+            assert.strictEqual(easl.evaluate(`   (list.index 1 2)          `), -1);
         });
         it('empty list: (list.index [] 1) → -1', function () {
-            assert.strictEqual(easl.evaluate(`   (list.index [] 1)        `), -1);
+            assert.strictEqual(easl.evaluate(`   (list.index [] 1)         `), -1);
         });
         it('null:  (list.index null 1) → -1', function () {
-            assert.strictEqual(easl.evaluate(`   (list.index null 1)        `), -1);
+            assert.strictEqual(easl.evaluate(`   (list.index null 1)       `), -1);
         });
         it('existing element:  (list.index [1 2 3] 2) → 1', function () {
-            assert.strictEqual(easl.evaluate(`   (list.index [1 2 3] 2)      `), 1);
+            assert.strictEqual(easl.evaluate(`   (list.index [1 2 3] 2)    `), 1);
         });
         it('non existing element:  (list.index [1 2] 3) → -1', function () {
             assert.strictEqual(easl.evaluate(`   (list.index [1 2] 3)      `), -1);
@@ -110,13 +110,13 @@ describe('list', function () {
 
     describe('list.join', function () {
         it('empty list:  (list.join []) → ""', function () {
-            assert.strictEqual(easl.evaluate(`   (list.join [])        `), "");
+            assert.strictEqual(easl.evaluate(`   (list.join [])             `), "");
         });
         it('default delimiter:  (list.join [1 2 3]) → "1,2,3"', function () {
-            assert.strictEqual(easl.evaluate(`   (list.join [1 2 3])   `), "1,2,3");
+            assert.strictEqual(easl.evaluate(`   (list.join [1 2 3])        `), "1,2,3");
         });
         it('custom delimiter:  (list.join [1 2 3] "-") → "1-2-3"', function () {
-            assert.strictEqual(easl.evaluate(`   (list.join [1 2 3] "-")   `), "1-2-3");
+            assert.strictEqual(easl.evaluate(`   (list.join [1 2 3] "-")    `), "1-2-3");
         });
     });
 

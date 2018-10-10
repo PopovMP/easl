@@ -2,9 +2,9 @@
 
 class Easl {
     public evaluate(codeText: string, optionsParam?: Options, callback?: Function) {
-        const options = optionsParam ? Options.parse(optionsParam) : new Options();
-        const parser = new Parser();
-        const interpreter = new Interpreter();
+        const options: Options         = optionsParam ? Options.parse(optionsParam) : new Options();
+        const parser: Parser           = new Parser();
+        const interpreter: Interpreter = new Interpreter();
 
         try {
             const ilCode = parser.parse(codeText);
