@@ -218,8 +218,7 @@ List functions:
 
 `list.get` - gets an element at an index: `(list.get 1 [1 2 3]) → 2`. The index is within the range of the list.
 
-`list.set` - sets an element at an index: `(list.set 4 0 [1 2 3]) → [4 2 3]`. The index is within the range of the list.
-`list.set` does not modify the list. It returns a new list instead.
+`list.set` - sets an element at an index: `(list.set [1 2 3] 0 4) → [4 2 3]`. `(list.set lst index elem)` does not modify the list. It returns a new list instead.
 
 `list.swap` - swaps two elements of a list: `(list.swap 0 1 [1 2 3]) → [ 2, 1, 3 ]`
 

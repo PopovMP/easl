@@ -253,12 +253,12 @@ describe('list', function () {
 
     describe('list.set', function () {
         it('set element:  (list.set [1 2 3] 5 1) → [1 5 3]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.set [1 2 3] 5 1)     `), [ 1, 5, 3 ]);
+            assert.deepStrictEqual(easl.evaluate(`   (list.set [1 2 3] 1 5)     `), [ 1, 5, 3 ]);
         });
         it('it is pur', function () {
             assert.deepStrictEqual(easl.evaluate(`  
              {let lst [1 2 3]}
-             (list.set lst 5 1)
+             (list.set lst 1 5)
              lst                  `), [1, 2, 3]);
         });
 
@@ -268,7 +268,7 @@ describe('list', function () {
         it('it mutates', function () {
             assert.deepStrictEqual(easl.evaluate(`  
              {let lst [1 2 3]}
-             (list.set! lst 5 1)
+             (list.set! lst 1 5)
              lst                  `), [1, 5, 3]);
         });
     });

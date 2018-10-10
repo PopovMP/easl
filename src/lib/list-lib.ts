@@ -202,8 +202,8 @@ class ListLib implements ILib {
 
     private listSet(expr: any[], env: any, pure: boolean = true): any[] {
         const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const elm: any = this.inter.evalExpr(expr[2], env);
-        const index: any = this.inter.evalExpr(expr[3], env);
+        const index: any = this.inter.evalExpr(expr[2], env);
+        const elm: any = this.inter.evalExpr(expr[3], env);
 
         if (Array.isArray(lst) && index >= 0 && index < lst.length) {
             const list = pure ? lst.slice() : lst;
