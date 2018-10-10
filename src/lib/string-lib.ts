@@ -36,7 +36,7 @@ class StringLib implements ILib {
         const elem: string = this.inter.evalExpr(expr[2], env);
         if (typeof str  !== "string") throw Error("Not a string: " + str);
         if (typeof elem !== "string") throw Error("Not a string: " + elem);
-        return str.includes(elem);
+        return str.indexOf(elem) > -1;
     }
 
     private strSplit(expr: any[], env: any): any[] {

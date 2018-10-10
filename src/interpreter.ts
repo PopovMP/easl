@@ -511,11 +511,11 @@ class Interpreter {
 
     private dumpState(expr: any[], env: any[]): null {
         const getCircularReplacer = () => {
-            const seen = new WeakSet();
+            const seen: object[] = [];
             return (key: string, value: any) => {
                 if (typeof value === "object" && value !== null) {
-                    if (seen.has(value)) return;
-                    seen.add(value);
+                    if (seen.indexOf(value) > -1) return;
+                    seen.push(value);
                 }
                 return value;
             };
