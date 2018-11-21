@@ -78,46 +78,6 @@ describe('EASL design', function () {
         });
     });
 
-    describe('function definition', function () {
-        it('function with empty body', function () {
-            assert.strictEqual(easl.evaluate(`  {function foo () ()} (foo)    `), "Error: Function with empty body: foo");
-        });
-        it('function without params 1', function () {
-            assert.strictEqual(easl.evaluate(`  {function foo 5} (foo)        `), "Error: Improper function: foo");
-        });
-        it('function without params 2', function () {
-            assert.strictEqual(easl.evaluate(`  {function foo (+ 2 3)} (foo)  `), "Error: Improper function: foo");
-        });
-        it('can define function once', function () {
-            assert.strictEqual(easl.evaluate(`      {function foo () 1}
-                                                    {function foo () 2}       `), "Error: Identifier already defined: foo");
-        });
-        it('func definition returns the function', function () {
-            assert.strictEqual(easl.evaluate(`  ({function sum (a b) (+ a b)}  2 3) `), 5);
-        });
-    });
-
-    describe('function call', function () {
-        it('builtin function', function () {
-            assert.strictEqual(easl.evaluate(`  (math.pi)                      `), 3.141592653589793);
-        });
-        it('user function', function () {
-            assert.strictEqual(easl.evaluate(`  {function double (n) (* 2 n)} (double 5)      `), 10);
-        });
-        it('lambda', function () {
-            assert.strictEqual(easl.evaluate(`  {let double {lambda (n) (* 2 n)}} (double 5)  `), 10);
-        });
-        it('lambda definition and execution', function () {
-            assert.strictEqual(easl.evaluate(`  ({lambda (n) (* 2 n)} 5)       `), 10);
-        });
-        it('not a function', function () {
-            assert.strictEqual(easl.evaluate(`  (42)     `), "Error: Improper function: 42");
-        });
-        it('unknown function', function () {
-            assert.strictEqual(easl.evaluate(` (foo 42)  `), "Error: Unbound identifier: foo");
-        });
-    });
-
     describe('type-of', function () {
         it('type-of number', function () {
             assert.strictEqual(easl.evaluate(`  (type-of 42)       `), "number");

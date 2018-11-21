@@ -7,6 +7,60 @@ const easl = new Easl();
 
 describe('function', function () {
 
+    describe('function definition', function () {
+        it('function with empty body', function () {
+            assert.strictEqual(easl.evaluate(`
+              {function foo ()}
+              (foo)                             `), "Error: Improper function: foo");
+        });
+        it('function without params 1', function () {
+            assert.strictEqual(easl.evaluate(`
+              {function foo 5}
+              (foo)                             `), "Error: Improper function: foo");
+        });
+        it('function without params 2', function () {
+            assert.strictEqual(easl.evaluate(`
+              {function foo (+ 2 3)}
+              (foo)                             `), "Error: Improper function: foo");
+        });
+        it('can define function once', function () {
+            assert.strictEqual(easl.evaluate(`
+              {function foo () 1}
+              {function foo () 2}               `), "Error: Identifier already defined: foo");
+        });
+        it('func definition returns the function', function () {
+            assert.strictEqual(easl.evaluate(`
+              ({function sum (a b) (+ a b)}  2 3) `), 5);
+        });
+    });
+
+    describe('function call', function () {
+        it('builtin function', function () {
+            assert.strictEqual(easl.evaluate(`  (math.pi)                      `), 3.141592653589793);
+        });
+        it('user function', function () {
+            assert.strictEqual(easl.evaluate(`
+              {function double (n)
+                (* 2 n) }
+              (double 5)                                        `), 10);
+        });
+        it('lambda', function () {
+            assert.strictEqual(easl.evaluate(`
+              {let double {lambda (n) (* 2 n)}}
+              (double 5)                                        `), 10);
+        });
+        it('lambda definition and execution', function () {
+            assert.strictEqual(easl.evaluate(`  
+            ({lambda (n) (* 2 n)} 5)                            `), 10);
+        });
+        it('not a function', function () {
+            assert.strictEqual(easl.evaluate(`  (42)     `), "Error: Improper function: 42");
+        });
+        it('unknown function', function () {
+            assert.strictEqual(easl.evaluate(` (foo 42)  `), "Error: Unbound identifier: foo");
+        });
+    });
+
     describe('basic application', function () {
         it('no args, returns constant', function () {
             assert.strictEqual(easl.evaluate(` 
@@ -61,13 +115,13 @@ describe('function', function () {
         it('function defines "func-params"', function () {
             assert.deepStrictEqual(easl.evaluate(`
                 {function fun (a b) func-params}
-                (fun 1 2 3 4)                        `), [ 'a', 'b' ]);
+                (fun 1 2 3 4)                        `), ['a', 'b']);
         });
 
         it('function defines "func-args"', function () {
             assert.deepStrictEqual(easl.evaluate(`
                 {function fun (a b) func-args}
-                (fun 1 2 3 4)                        `), [ 1, 2, 3, 4 ]);
+                (fun 1 2 3 4)                        `), [1, 2, 3, 4]);
         });
 
         it('multiple expressions in body, evaluates all, returns the last value', function () {

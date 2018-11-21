@@ -179,26 +179,14 @@ class Interpreter {
         return this.evalExpr(closure[2], closureEnv);
     }
 
-    private makeProcEnv(funcName: string, params: string | string[], args: any[], env: any[]): any[] {
+    private makeProcEnv(funcName: string, params: string[], args: any[], env: any[]): any[] {
         const closureEnv = env.concat([["func-name", funcName], ["func-params", params], ["func-args", args]]);
 
-        if (typeof params === "string") {
-            closureEnv.push([params, args.length > 0 ? args[0] : null]);
-        } else {
-            for (let i = 0; i < params.length; i++) {
-                closureEnv.push([params[i], i < args.length ? args[i] : null]);
-            }
+        for (let i = 0; i < params.length; i++) {
+            closureEnv.push([params[i], i < args.length ? args[i] : null]);
         }
 
         return closureEnv;
-    }
-
-    // [lambda, [par1, par2, ...], expr1, expr2, ...]
-    private evalLambda(expr: any[], env: any[]): any[] {
-        if (expr.length < 3) throw "Error: Improper function";
-        const body: any[] = expr.length === 3 ? expr[2] : ["block", ... expr.slice(2)];
-
-        return ["closure", expr[1], body, env];
     }
 
     // [let, symbol, expr]
@@ -268,20 +256,29 @@ class Interpreter {
         const symbol: string = expr[1];
 
         if (expr.length < 4) throw `Error: Improper function: ${symbol}`;
-        if (Array.isArray(expr[3]) && expr[3].length === 0 ) throw `Error: Function with empty body: ${symbol}`;
         this.throwOnExistingDef(symbol, env);
 
-        const params: any[] = expr[2];
-        const body: any[] = expr.length === 4 ? expr[3] : ["block", ... expr.slice(3)];
-        const value: any = this.evalLambda(["lambda", params, body], env);
+        const params: any[] = Array.isArray(expr[2]) ? expr[2] : [expr[2]];
+        const body: any[]   = expr.length === 4 ? expr[3] : ["block", ... expr.slice(3)];
+        const value: any    = this.evalLambda(["lambda", params, body], env);
 
         env.push([symbol, value]);
 
-        if (Array.isArray(params) && params.length === 2) {
+        if (params.length === 2) {
             this.infixOperators.push(symbol);
         }
 
         return value;
+    }
+
+    // [lambda, [par1, par2, ...], expr1, expr2, ...]
+    private evalLambda(expr: any[], env: any[]): any[] {
+        if (expr.length < 3) throw "Error: Improper function";
+
+        const params: any[] = Array.isArray(expr[1]) ? expr[1] : [expr[1]];
+        const body: any[]   = expr.length === 3 ? expr[2] : ["block", ... expr.slice(2)];
+
+        return ["closure", params, body, env];
     }
 
     // [if, test-expr, then-expr, else-expr]
