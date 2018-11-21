@@ -335,13 +335,13 @@ class Interpreter {
         return null;
     }
 
-    // [for, [symbol, range], exp1 exp2 ...]
+    // [for, symbol, range, exp1 exp2 ...]
     private evalFor(expr: any[], env: any[]): null {
-        const symbol: string  = expr[1][0];
-        const range: any[]    = this.evalExpr(expr[1][1], env);
-        const loopBody: any[] = expr.slice(2);
+        const symbol: string  = expr[1];
+        const range: any[]    = this.evalExpr(expr[2], env);
+        const loopBody: any[] = expr.slice(3);
 
-        if (!Array.isArray(range))  throw `Error: No range provided in 'for-of'`;
+        if (!Array.isArray(range))  throw `Error: No range provided in 'for'`;
         if (range.length === 0) return null;
 
         for (const elem of range) {
