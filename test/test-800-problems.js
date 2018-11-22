@@ -23,16 +23,12 @@ describe('problems', function () {
 
     it('Swap elements of a list', function () {
         assert.deepStrictEqual(easl.evaluate(`   
-            {let lst [1 2 3 4]}
-
             {function swap (lst i1 i2)
-                (list.set (list.set lst
-                                    i1
-                                    (list.get lst i2))
-                          i2
-                          (list.get lst i1)) }
+                {let temp (list.get lst i1)}
+                (list.set lst i1 (list.get lst i2))
+                (list.set lst i2 temp) }
 
-            (swap lst 0 3)
+            (swap [1 2 3 4] 0 3)
                                                              `), [4, 2, 3, 1]);
     });
 

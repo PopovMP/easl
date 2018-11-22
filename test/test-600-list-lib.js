@@ -23,25 +23,10 @@ describe('list', function () {
         it('two list:  (list.add [1 2] [3 4]) → [1, 2, [3, 4]]', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.add [1 2] [3 4])  `), [1, 2, [3, 4]]);
         });
-        it('it is pure', function () {
+        it('it mutates the list', function () {
             assert.deepStrictEqual(easl.evaluate(`  
              {let lst [1 2]}
-             (list.add lst 3)
-             lst                  `), [1, 2]);
-        });
-    });
-
-    describe('list.add!', function () {
-        it('it adds', function () {
-            assert.deepStrictEqual(easl.evaluate(`  
-             {let lst [1 2]}
-             (list.add! lst 3)    `), [1, 2, 3]);
-        });
-        it('it mutates', function () {
-            assert.deepStrictEqual(easl.evaluate(`  
-             {let lst [1 2]}
-             (list.add! lst 3)
-             lst                  `), [1, 2, 3]);
+             (list.add lst 3)    `), [1, 2, 3]);
         });
     });
 
@@ -184,19 +169,10 @@ describe('list', function () {
         it('two list:  (list.push [3 4] [1 2]) → [[1, 2], 3, 4]', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.push [3 4] [1 2])    `), [[1, 2], 3, 4]);
         });
-        it('it is pure', function () {
+        it('it mutates the list', function () {
             assert.deepStrictEqual(easl.evaluate(`  
              {let lst [2 3]}
              (list.push lst 1)
-             lst                  `), [2, 3]);
-        });
-    });
-
-    describe('list.push!', function () {
-        it('it mutates', function () {
-            assert.deepStrictEqual(easl.evaluate(`  
-             {let lst [2 3]}
-             (list.push! lst 1)
              lst                  `), [1, 2, 3]);
         });
     });
@@ -224,23 +200,10 @@ describe('list', function () {
             assert.deepStrictEqual(easl.evaluate(`  
              (list.reverse [3 2 1]) `), [1, 2, 3]);
         });
-        it('does not mutate the original list', function () {
-            assert.deepStrictEqual(easl.evaluate(`  
-             {let lst [3 2 1]}
-             (list.reverse lst)
-             lst                  `), [3, 2, 1]);
-        });
-    });
-
-    describe('list.reverse!', function () {
-        it('reverses a list', function () {
-            assert.deepStrictEqual(easl.evaluate(`  
-             (list.reverse! [3 2 1]) `), [1, 2, 3]);
-        });
         it('mutates the original list', function () {
             assert.deepStrictEqual(easl.evaluate(`  
              {let lst [3 2 1]}
-             (list.reverse! lst)
+             (list.reverse lst)
              lst                  `), [1, 2, 3]);
         });
     });
@@ -261,20 +224,10 @@ describe('list', function () {
         it('set element:  (list.set [1 2 3] 5 1) → [1 5 3]', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.set [1 2 3] 1 5)     `), [ 1, 5, 3 ]);
         });
-        it('it is pur', function () {
-            assert.deepStrictEqual(easl.evaluate(`  
-             {let lst [1 2 3]}
-             (list.set lst 1 5)
-             lst                  `), [1, 2, 3]);
-        });
-
-    });
-
-    describe('list.set!', function () {
         it('it mutates', function () {
             assert.deepStrictEqual(easl.evaluate(`  
              {let lst [1 2 3]}
-             (list.set! lst 1 5)
+             (list.set lst 1 5)
              lst                  `), [1, 5, 3]);
         });
     });
@@ -302,23 +255,10 @@ describe('list', function () {
             assert.deepStrictEqual(easl.evaluate(`  
              (list.sort [3 1 2]) `), [1, 2, 3]);
         });
-        it('does not mutate the original list', function () {
-            assert.deepStrictEqual(easl.evaluate(`  
-             {let lst [3 2 1]}
-             (list.sort lst)
-             lst                  `), [3, 2, 1]);
-        });
-    });
-
-    describe('list.sort!', function () {
-        it('sorts a list', function () {
-            assert.deepStrictEqual(easl.evaluate(`  
-             (list.sort! [3 1 2]) `), [1, 2, 3]);
-        });
         it('mutates the original list', function () {
             assert.deepStrictEqual(easl.evaluate(`  
              {let lst [3 2 1]}
-             (list.sort! lst)
+             (list.sort lst)
              lst                  `), [1, 2, 3]);
         });
     });
