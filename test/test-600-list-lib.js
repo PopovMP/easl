@@ -202,14 +202,20 @@ describe('list', function () {
     });
 
     describe('list.range', function () {
-        it('from = to → []', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.range 5 5)        `), []);
-        });
-        it('from > to → []', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.range 10 5)        `), []);
+        it('(list.range 3 1) → [3 2 1]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.range 3 1)   `), [3, 2, 1]);
         });
         it('(list.range 1 3) → [1 2 3]', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.range 1 3)   `), [1, 2, 3]);
+        });
+        it('(list.range 3 3) → [3]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.range 3 3)   `), [3]);
+        });
+        it('(list.range 0 4 2) → [0 2 4]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.range 0 4 2) `), [0, 2, 4]);
+        });
+        it('(list.range 4 0 -2) → [4 2 0]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.range 4 0 -2)`), [4, 2, 0]);
         });
     });
 
