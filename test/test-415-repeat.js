@@ -10,7 +10,7 @@ describe('repeat loop', function () {
         assert.strictEqual(easl.evaluate(` 
                 {let n 0 }
                 {repeat 5
-                    {inc! n} }
+                    {inc n} }
                 n                                      `), 5);
     });
 
@@ -19,7 +19,7 @@ describe('repeat loop', function () {
                 {let n 0}
                 {repeat 5
                     {if (n > 2) break}
-                    {inc! n} }
+                    {inc n} }
                 n                                      `), 3);
     });
 
@@ -27,7 +27,7 @@ describe('repeat loop', function () {
         assert.strictEqual(easl.evaluate(` 
                 {let n 0 }
                 {repeat (list.length (list.range 1 5))
-                    {inc! n} }
+                    {inc n} }
                 n                                      `), 5);
     });
 

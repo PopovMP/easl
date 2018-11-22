@@ -10,7 +10,7 @@ describe('for loop', function () {
         assert.strictEqual(easl.evaluate(` 
                 {let n 0 }
                 {for e [1 2 3 4 5]
-                    {set! n (n + e)} }
+                    {set n (n + e)} }
                 n                                      `), 15);
     });
 
@@ -19,7 +19,7 @@ describe('for loop', function () {
                 {let n 0}
                 {for e [1 2 3 4 5]
                     {if (e > 2) break}
-                    {set! n (n + e)} }
+                    {set n (n + e)} }
                 n                                      `), 3);
     });
 
@@ -28,7 +28,7 @@ describe('for loop', function () {
                 {let n 0}
                 {for e [1 2 3 4 5]
                     {if ((e % 2) = 1) continue}
-                    {set! n (n + e)} }
+                    {set n (n + e)} }
                 n                                      `), 6);
     });
 
@@ -36,7 +36,7 @@ describe('for loop', function () {
         assert.strictEqual(easl.evaluate(` 
                 {let n 0 }
                 {for e (list.range 1 5)
-                    {set! n (n + e)} }
+                    {set n (n + e)} }
                 n                                      `), 15);
     });
 
@@ -44,7 +44,7 @@ describe('for loop', function () {
         assert.strictEqual(easl.evaluate(` 
                 {let n 0 }
                 {for e [(1 + 2) (2 + 3)]
-                    {set! n (n + e)} }
+                    {set n (n + e)} }
                 n                                      `), 8);
     });
 

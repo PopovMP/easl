@@ -25,7 +25,7 @@ describe('infix operators', function () {
         assert.strictEqual(easl.evaluate(`
             {let n 1}
             {while (n < 5)
-                   (inc! n) }
+                   (inc n) }
             n                                               `), 5);
     });
     it('variable', function () {

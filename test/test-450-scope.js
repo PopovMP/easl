@@ -94,7 +94,7 @@ describe('scope', function () {
             {let n 0}
             {while (< n 2)
                 {let a 1}
-                {set! n (+ n 1)} }
+                {set n (+ n 1)} }
             a                 `), "Error: Unbound identifier: a");
     });
 
@@ -103,7 +103,7 @@ describe('scope', function () {
             {let n 0}
             {do
                 {let a 1}
-                {set! n (+ n 1)}
+                {set n (+ n 1)}
                 (< n 2) }
             a                 `), "Error: Unbound identifier: a");
     });

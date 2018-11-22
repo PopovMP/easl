@@ -10,7 +10,7 @@ describe('do loop', function () {
         assert.strictEqual(easl.evaluate(` 
                 {let n 1 }
                 {do
-                    {set! n (+ n 1)}
+                    {set n (+ n 1)}
                     (< n 3) }
                 n                                       `), 3);
     });
@@ -20,9 +20,9 @@ describe('do loop', function () {
                 {let n 0}
                 {let i 0}
                 {do
-                    {set! i (+ i 1)}
+                    {set i (+ i 1)}
                     {if (> i 2) break}
-                    {set! n (+ n 1)}
+                    {set n (+ n 1)}
                     (< i 100) }
                 n                                      `), 2);
     });
@@ -32,9 +32,9 @@ describe('do loop', function () {
                 {let n 0}
                 {let i 0}
                 {do
-                    {set! i (+ i 1)}
+                    {set i (+ i 1)}
                     {if (= (% i 2) 1) continue}
-                    {set! n (+ n 1)}
+                    {set n (+ n 1)}
                     (< i 10) }
                 n                                      `), 5);
     });

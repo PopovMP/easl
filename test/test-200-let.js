@@ -92,7 +92,7 @@ describe('let', function () {
         });
         it('let with lambda with multiple expressions', function () {
             assert.strictEqual(easl.evaluate(`    
-                    {let get-list {lambda () {let a 1} {set! a 2} a}}
+                    {let get-list {lambda () {let a 1} {set a 2} a}}
                     (get-list)                               `), 2);
         });
     });

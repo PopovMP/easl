@@ -62,6 +62,7 @@ class Interpreter {
             case "string"   : return this.lookup(expr, env);
         }
 
+        // Constructors
         switch (expr[0]) {
             case "list"     : return this.mapExprLst(expr.slice(1), env);
             case "string"   : return expr[1];
@@ -74,23 +75,23 @@ class Interpreter {
 
         // Special forms
         switch (expr[0]) {
-            case "let"      : return this.evalLet(expr, env);
-            case "lambda"   : return this.evalLambda(expr, env);
-            case "function" : return this.evalFunction(expr, env);
             case "block"    : return this.evalBlock(expr, env);
-            case "if"       : return this.evalIf(expr, env);
-            case "cond"     : return this.evalCond(expr, env);
-            case "case"     : return this.evalCase(expr, env);
-            case "for"      : return this.evalFor(expr, env);
-            case "while"    : return this.evalWhile(expr, env);
-            case "do"       : return this.evalDo(expr, env);
-            case "repeat"   : return this.evalRepeat(expr, env);
             case "call"     : return this.evalCall(expr, env);
-            case "set!"     : return this.evalSet(expr, env);
-            case "inc!"     : return this.evalIncrement(expr, env);
-            case "try"      : return this.evalTry(expr, env);
-            case "throw"    : return this.evalThrow(expr, env);
+            case "case"     : return this.evalCase(expr, env);
+            case "cond"     : return this.evalCond(expr, env);
             case "debug"    : return this.evalDebug();
+            case "do"       : return this.evalDo(expr, env);
+            case "for"      : return this.evalFor(expr, env);
+            case "function" : return this.evalFunction(expr, env);
+            case "if"       : return this.evalIf(expr, env);
+            case "inc"      : return this.evalIncrement(expr, env);
+            case "lambda"   : return this.evalLambda(expr, env);
+            case "let"      : return this.evalLet(expr, env);
+            case "repeat"   : return this.evalRepeat(expr, env);
+            case "set"      : return this.evalSet(expr, env);
+            case "throw"    : return this.evalThrow(expr, env);
+            case "try"      : return this.evalTry(expr, env);
+            case "while"    : return this.evalWhile(expr, env);
         }
 
         if (expr.length === 3 && this.infixOperators.indexOf(expr[1]) > -1) {
@@ -200,7 +201,7 @@ class Interpreter {
         return value;
     }
 
-    // [set!, symbol, expr]
+    // [set, symbol, expr]
     private evalSet(expr: any[], env: any[]): any {
         const value: any = this.evalLetValue(expr, env);
 
@@ -209,7 +210,7 @@ class Interpreter {
         return value;
     }
 
-    // [inc!, symbol, inc]
+    // [inc, symbol, inc]
     private evalIncrement(expr: any[], env: any[]): any {
         const inc: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
         const value: number = this.evalExpr(expr[1], env) + inc;
