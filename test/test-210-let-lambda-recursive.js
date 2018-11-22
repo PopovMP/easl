@@ -11,10 +11,10 @@ describe('let lambda - recursive', function () {
         assert.strictEqual(easl.evaluate(`   
 
             {let count {lambda (lst cnt)
-                           {if (list.empty? lst)
+                           {if ((list.length lst) = 0)
                                cnt
                                (count (list.rest lst)
-                                      (+ cnt 1))}}}
+                                      (cnt + 1) )}}}
             
             (count [1 2 3 4 5] 0)
                                                   

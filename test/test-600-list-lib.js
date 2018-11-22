@@ -36,27 +36,6 @@ describe('list', function () {
         });
     });
 
-    describe('list.empty', function () {
-        it('(list.empty) → []', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.empty)       `), []);
-        });
-    });
-
-    describe('list.empty?', function () {
-        it('(list.empty? (list.empty)) → true', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.empty? (list.empty))     `), true);
-        });
-        it('(list.empty? [1 2 3]) → false', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.empty? [1 2 3])          `), false);
-        });
-        it('(list.empty? "bla") → false', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.empty? "bla")            `), true);
-        });
-        it('(list.empty? 42) → false', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.empty? 42)               `), true);
-        });
-    });
-
     describe('list.first', function () {
         it('not a list: (list.first 42) → null', function () {
             assert.strictEqual(easl.evaluate(`   (list.first 42)        `), null);
@@ -138,18 +117,6 @@ describe('list', function () {
         });
         it('non empty list:  (list.length [1 2 3]) → 3', function () {
             assert.strictEqual(easl.evaluate(`   (list.length [1 2 3])   `), 3);
-        });
-    });
-
-    describe('list.list?', function () {
-        it('not a list:  (list.list? 42) → false', function () {
-            assert.strictEqual(easl.evaluate(`   (list.list? 42)        `), false);
-        });
-        it('empty list:  (list.list? []) → true', function () {
-            assert.strictEqual(easl.evaluate(`   (list.list? [])        `), true);
-        });
-        it('non empty list:  (list.list? [1 2 3]) → true', function () {
-            assert.strictEqual(easl.evaluate(`   (list.list? [1 2 3])   `), true);
         });
     });
 

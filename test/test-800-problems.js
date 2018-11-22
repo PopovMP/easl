@@ -38,12 +38,12 @@ describe('problems', function () {
                 (loop lst (list.first lst))}
                 
             {function loop (rest max)
-                {if (list.empty? rest)
+                {if ((list.length rest) = 0)
                     max
                     (loop (list.rest rest)
-                          (if (> (list.first rest)  max)
+                          {if ((list.first rest) > max)
                               (list.first rest)
-                              max)) }}
+                              max })}}
             
             (list-max [42 34 12 5 62 2])
                                                              `), 62);
