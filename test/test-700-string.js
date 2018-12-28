@@ -17,13 +17,31 @@ describe('str library', function () {
         });
     });
 
-    describe('str.has?', function () {
+    describe('str.has', function () {
         it('non existing substring', function () {
-            assert.strictEqual(easl.evaluate(`(str.has? "hello" "la")`), false);
+            assert.strictEqual(easl.evaluate(`(str.has "hello" "la")`), false);
         });
 
         it('existing substring', function () {
-            assert.strictEqual(easl.evaluate(`(str.has? "hello" "lo")`), true);
+            assert.strictEqual(easl.evaluate(`(str.has "hello" "lo")`), true);
+        });
+    });
+
+    describe('str.ends-with', function () {
+        it('ending with', function () {
+            assert.strictEqual(easl.evaluate(`(str.ends-with "hello" "lo")`), true);
+        });
+        it('not ending with', function () {
+            assert.strictEqual(easl.evaluate(`(str.ends-with "hello" "ll")`), false);
+        });
+    });
+
+    describe('str.starts-with', function () {
+        it('starting with', function () {
+            assert.strictEqual(easl.evaluate(`(str.starts-with "hello" "hel")`), true);
+        });
+        it('not starting with', function () {
+            assert.strictEqual(easl.evaluate(`(str.starts-with "hello" "ell")`), false);
         });
     });
 

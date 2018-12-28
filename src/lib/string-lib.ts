@@ -2,7 +2,8 @@
 
 class StringLib implements ILib {
     private readonly inter: Interpreter;
-    public readonly builtinFunc = ["str.length", "str.has?", "str.split", "str.to-lowercase", "str.to-uppercase"];
+    public readonly builtinFunc = ["str.ends-with", "str.has", "str.length", "str.split", "str.starts-with",
+        "str.to-lowercase", "str.to-uppercase"];
     public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
@@ -15,9 +16,11 @@ class StringLib implements ILib {
 
     public libEvalExpr(expr: any[], env: any[]): any {
         switch (expr[0]) {
-            case "str.length" : return this.strLength(expr, env);
-            case "str.has?"   : return this.strHas(expr, env);
-            case "str.split"  : return this.strSplit(expr, env);
+            case "str.ends-with"    : return this.strEndsWith(expr, env);
+            case "str.has"          : return this.strHas(expr, env);
+            case "str.length"       : return this.strLength(expr, env);
+            case "str.split"        : return this.strSplit(expr, env);
+            case "str.starts-with"  : return this.strStartsWith(expr, env);
             case "str.to-lowercase" : return this.strToLowercase(expr, env);
             case "str.to-uppercase" : return this.strToUppercase(expr, env);
         }
@@ -32,11 +35,11 @@ class StringLib implements ILib {
     }
 
     private strHas(expr: any[], env: any): boolean {
-        const str : string = this.inter.evalExpr(expr[1], env);
-        const elem: string = this.inter.evalExpr(expr[2], env);
-        if (typeof str  !== "string") throw Error("Not a string: " + str);
-        if (typeof elem !== "string") throw Error("Not a string: " + elem);
-        return str.indexOf(elem) > -1;
+        const haystack : string = this.inter.evalExpr(expr[1], env);
+        const needle: string = this.inter.evalExpr(expr[2], env);
+        if (typeof haystack  !== "string") throw Error("Not a string: " + haystack);
+        if (typeof needle !== "string") throw Error("Not a string: " + needle);
+        return haystack.indexOf(needle) > -1;
     }
 
     private strSplit(expr: any[], env: any): any[] {
@@ -46,6 +49,22 @@ class StringLib implements ILib {
         const sep: string = this.inter.evalExpr(expr[2], env);
         if (typeof sep !== "string") throw Error("Not a string: " + sep);
         return str.split(sep).map(e => ["string", e]);
+    }
+
+    private strStartsWith(expr: any[], env: any): boolean {
+        const haystack: string = this.inter.evalExpr(expr[1], env);
+        const needle: string = this.inter.evalExpr(expr[2], env);
+        if (typeof haystack !== "string") throw Error("Not a string: " + haystack);
+        if (typeof needle !== "string") throw Error("Not a string: " + needle);
+        return haystack.lastIndexOf(needle, 0) === 0;
+    }
+
+    private strEndsWith(expr: any[], env: any): boolean {
+        const haystack: string = this.inter.evalExpr(expr[1], env);
+        const needle: string = this.inter.evalExpr(expr[2], env);
+        if (typeof haystack !== "string") throw Error("Not a string: " + haystack);
+        if (typeof needle !== "string") throw Error("Not a string: " + needle);
+        return haystack.lastIndexOf(needle) === haystack.length - needle.length;
     }
 
     private strToLowercase(expr: any[], env: any): string {
