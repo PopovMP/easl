@@ -19,7 +19,7 @@ describe('Eval basics', function () {
         it('boolean: false → false', function () {
             assert.strictEqual(easl.evaluate("false"), false);
         });
-        it('string:\'"John"\' → "John"', function () {
+        it('string: "John" → "John"', function () {
             assert.strictEqual(easl.evaluate('"John"'), "John");
         });
     });
@@ -72,6 +72,18 @@ describe('Eval basics', function () {
         });
         it('non empty list: [1 (- 5 3) 3] → [1 2 3]', function () {
             assert.deepStrictEqual(easl.evaluate("[1 (- 5 3) 3]"), [1, 2, 3]);
+        });
+    });
+
+    describe('String constructor', function () {
+        it('empty string: (string) → ""', function () {
+            assert.strictEqual(easl.evaluate("(string)"), "");
+        });
+        it('one string: (string Hello) → "Hello"', function () {
+            assert.strictEqual(easl.evaluate("(string Hello)"), "Hello");
+        });
+        it('multiple strings: (string Hello World!) → "Hello World!"', function () {
+            assert.strictEqual(easl.evaluate("(string Hello World!)"), "Hello World!");
         });
     });
 

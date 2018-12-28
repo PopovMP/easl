@@ -65,7 +65,7 @@ class Interpreter {
         // Constructors
         switch (expr[0]) {
             case "list"     : return this.mapExprLst(expr.slice(1), env);
-            case "string"   : return expr[1];
+            case "string"   : return this.evalStringConstructor(expr);
         }
 
         if (this.isDebug) {
@@ -188,6 +188,17 @@ class Interpreter {
         }
 
         return closureEnv;
+    }
+
+    // [string str1, str2, ...]
+    private evalStringConstructor(expr: string[]): string {
+        if (expr.length === 1) {
+            return "";
+        } else if (expr.length === 2) {
+            return expr[1].toString();
+        } else {
+            return expr.slice(1).join(" ");
+        }
     }
 
     // [let, symbol, expr]
