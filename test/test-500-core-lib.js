@@ -8,10 +8,10 @@ const easl = new Easl();
 describe('core-lib', function () {
     describe('+', function () {
         it('no args', function () {
-            assert.strictEqual(easl.evaluate(` (+) `), 0);
+            assert.strictEqual(easl.evaluate(` (+) `), "Error: Wrong number of arguments: +");
         });
         it('one arg', function () {
-            assert.strictEqual(easl.evaluate(` (+ 5) `), 5);
+            assert.strictEqual(easl.evaluate(` (+ 5) `), "Error: Wrong number of arguments: +");
         });
         it('two args', function () {
             assert.strictEqual(easl.evaluate(` (+ 2 3) `), 5);
@@ -35,16 +35,16 @@ describe('core-lib', function () {
             assert.strictEqual(easl.evaluate(` (- 8 3) `), 5);
         });
         it('three args', function () {
-            assert.strictEqual(easl.evaluate(` (- 8 3 2 1) `), 2);
+            assert.strictEqual(easl.evaluate(` (- 8 3 2) `), "Error: Wrong number of arguments: -");
         });
     });
 
     describe('*', function () {
         it('no args', function () {
-            assert.strictEqual(easl.evaluate(` (*) `), 1);
+            assert.strictEqual(easl.evaluate(` (*)     `), "Error: Wrong number of arguments: *");
         });
         it('one arg', function () {
-            assert.strictEqual(easl.evaluate(` (* 5) `), 5);
+            assert.strictEqual(easl.evaluate(` (* 5)   `), "Error: Wrong number of arguments: *");
         });
         it('two args', function () {
             assert.strictEqual(easl.evaluate(` (* 2 3) `), 6);
@@ -54,22 +54,18 @@ describe('core-lib', function () {
         });
     });
 
-
     describe('/', function () {
         it('no args', function () {
-            assert.strictEqual(easl.evaluate(` (/) `), "Error: Wrong number of arguments: /");
+            assert.strictEqual(easl.evaluate(` (/)     `), "Error: Wrong number of arguments: /");
         });
         it('one arg', function () {
-            assert.strictEqual(easl.evaluate(` (/ 5) `), 1 / 5);
-        });
-        it('two args', function () {
-            assert.strictEqual(easl.evaluate(` (/ 9 3) `), 3);
-        });
-        it('three args', function () {
-            assert.strictEqual(easl.evaluate(` (/ 24 2 3 2) `), 2);
+            assert.strictEqual(easl.evaluate(` (/ 5)   `), "Error: Wrong number of arguments: /");
         });
         it('divide by zero', function () {
-            assert.strictEqual(easl.evaluate(` (/ 10 0) `), "Error: Division by zero");
+            assert.strictEqual(easl.evaluate(` (/ 5 0) `), "Error: Division by zero");
+        });
+        it('correct division', function () {
+            assert.strictEqual(easl.evaluate(` (/ 9 3) `), 3);
         });
     });
 

@@ -2,8 +2,8 @@
 
 class CoreLib implements ILib {
     private readonly inter: Interpreter;
-    public readonly builtinFunc = ["!=","%","*","+","-","/","<","<=","=",">",">=","and","eval","not","or",
-        "parse","print","to-boolean","to-number","to-string","type-of"];
+    public readonly builtinFunc = ["!=", "%", "*", "+", "-", "/", "<", "<=", "=", ">", ">=", "and", "eval", "not", "or",
+        "parse", "print", "to-boolean", "to-number", "to-string", "type-of"];
     public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
@@ -43,106 +43,117 @@ class CoreLib implements ILib {
     }
 
     private evalPlus(expr: any[], env: any[]): any {
-        if (expr.length === 1) {
-            return 0;
-        } else if (expr.length === 2) {
-            return this.inter.evalExpr(expr[1], env);
-        } else if (expr.length === 3) {
-            return this.inter.evalExpr(expr[1], env) + this.inter.evalExpr(expr[2], env);
-        } else {
-            return this.inter.evalExpr(expr[1], env) + this.evalPlus(expr.slice(1), env);
+        if (expr.length < 3) {
+            throw Error("Wrong number of arguments: " + "+");
         }
+
+        if (expr.length === 3) {
+            return this.inter.evalExpr(expr[1], env) + this.inter.evalExpr(expr[2], env);
+        }
+
+        return this.inter.evalExpr(expr[1], env) + this.evalPlus(expr.slice(1), env);
     }
 
     private evalSubtract(expr: any[], env: any[]): any {
-        if (expr.length === 1) {
-            throw Error("Wrong number of arguments: " + "-");
-        } else if (expr.length === 2) {
+        if (expr.length === 2) {
             return -this.inter.evalExpr(expr[1], env);
-        } else if (expr.length === 3) {
-            return this.inter.evalExpr(expr[1], env) - this.inter.evalExpr(expr[2], env);
-        } else {
-            return this.inter.evalExpr(expr[1], env) - this.evalPlus(expr.slice(1), env);
         }
+
+        if (expr.length === 3) {
+            return this.inter.evalExpr(expr[1], env) - this.inter.evalExpr(expr[2], env);
+        }
+
+        throw Error("Wrong number of arguments: " + "-");
     }
 
     private evalMultiply(expr: any[], env: any[]): any {
-        if (expr.length === 1) {
-            return 1;
-        } else if (expr.length === 2) {
-            return this.inter.evalExpr(expr[1], env);
-        } else if (expr.length === 3) {
-            return this.inter.evalExpr(expr[1], env) * this.inter.evalExpr(expr[2], env);
-        } else {
-            return this.inter.evalExpr(expr[1], env) * this.evalMultiply(expr.slice(1), env);
+        if (expr.length < 3) {
+            throw Error("Wrong number of arguments: " + "*");
         }
+
+        if (expr.length === 3) {
+            return this.inter.evalExpr(expr[1], env) * this.inter.evalExpr(expr[2], env);
+        }
+
+        return this.inter.evalExpr(expr[1], env) * this.evalMultiply(expr.slice(1), env);
     }
 
     private evalDivide(expr: any[], env: any[]): any {
-        if (expr.length === 1) {
+        if (expr.length !== 3) {
             throw Error("Wrong number of arguments: " + "/");
-        } else if (expr.length === 2) {
-            return 1 / this.inter.evalExpr(expr[1], env);
-        } else if (expr.length === 3) {
-            if (this.inter.evalExpr(expr[2], env) === 0) {
-                throw Error("Division by zero");
-            }
-            return this.inter.evalExpr(expr[1], env) / this.inter.evalExpr(expr[2], env);
-        } else {
-            return this.inter.evalExpr(expr[1], env) / this.evalMultiply(expr.slice(1), env);
         }
+
+        const divisor = this.inter.evalExpr(expr[2], env);
+
+        if (divisor === 0) {
+            throw Error("Division by zero");
+        }
+
+        return this.inter.evalExpr(expr[1], env) / divisor;
     }
 
     private evalModulo(expr: any[], env: any[]): any {
-        if (expr.length === 3) {
-            const n: number = this.inter.evalExpr(expr[1], env);
-            const m: number = this.inter.evalExpr(expr[2], env);
-            return n % m;
-        } else {
+        if (expr.length !== 3) {
             throw Error("Wrong number of arguments: " + "%");
         }
+
+        return this.inter.evalExpr(expr[1], env) % this.inter.evalExpr(expr[2], env);
     }
 
     private evalEqual(expr: any[], env: any[]): any {
         if (expr.length === 3) {
             return this.inter.evalExpr(expr[1], env) === this.inter.evalExpr(expr[2], env);
-        } else if (expr.length > 3) {
-            const first = this.inter.evalExpr(expr[1], env);
-            for (let i = 2; i < expr.length; i++) {
-                if (this.inter.evalExpr(expr[i], env) !== first) return false;
-            }
-            return true
-        } else {
-            throw Error("Wrong number of arguments: " + "=");
         }
+
+        if (expr.length > 3) {
+            const first = this.inter.evalExpr(expr[1], env);
+
+            for (let i = 2; i < expr.length; i++) {
+                if (this.inter.evalExpr(expr[i], env) !== first) {
+                    return false;
+                }
+            }
+
+            return true
+        }
+
+        throw Error("Wrong number of arguments: " + "=");
     }
 
     private evalAnd(expr: any[], env: any[]): boolean {
         if (expr.length === 1) {
             return true;
-        } else if (expr.length === 2) {
+        }
+
+        if (expr.length === 2) {
             return this.inter.evalExpr(expr[1], env);
-        } else if (expr.length === 3) {
+        }
+
+        if (expr.length === 3) {
             const val: any = this.inter.evalExpr(expr[1], env);
             return this.inter.isTruthy(val) ? this.inter.evalExpr(expr[2], env) : val;
-        } else {
-            const val: any = this.inter.evalExpr(expr[1], env);
-            return this.inter.isTruthy(val) ? this.evalAnd(expr.slice(1), env) : val;
         }
+
+        const val: any = this.inter.evalExpr(expr[1], env);
+        return this.inter.isTruthy(val) ? this.evalAnd(expr.slice(1), env) : val;
     }
 
     private evalOr(expr: any[], env: any[]): any {
         if (expr.length === 1) {
             return false;
-        } else if (expr.length === 2) {
+        }
+
+        if (expr.length === 2) {
             return this.inter.evalExpr(expr[1], env);
-        } else if (expr.length === 3) {
+        }
+
+        if (expr.length === 3) {
             const val: any = this.inter.evalExpr(expr[1], env);
             return this.inter.isTruthy(val) ? val : this.inter.evalExpr(expr[2], env);
-        } else {
-            const val: any = this.inter.evalExpr(expr[1], env);
-            return this.inter.isTruthy(val) ? val : this.evalOr(expr.slice(1), env);
         }
+
+        const val: any = this.inter.evalExpr(expr[1], env);
+        return this.inter.isTruthy(val) ? val : this.evalOr(expr.slice(1), env);
     }
 
     private evalNot(a: any): boolean {
@@ -166,7 +177,9 @@ class CoreLib implements ILib {
             }
         }
 
-        if (entity === "null") return "null";
+        if (entity === "null") {
+            return "null";
+        }
 
         const value = this.inter.evalExpr(entity, env);
 
@@ -183,12 +196,14 @@ class CoreLib implements ILib {
 
     private evalToBoolean(expr: any[], env: any[]): boolean {
         const entity = this.inter.evalExpr(expr[1], env);
+
         return !this.evalNot(entity);
     }
 
     private evalToNumber(expr: any[], env: any[]): number | null {
         const entity = this.inter.evalExpr(expr[1], env);
         const number = Number(entity);
+
         return number !== number ? null : number;
     }
 
@@ -222,38 +237,42 @@ class CoreLib implements ILib {
             if (Array.isArray(entity)) {
                 if (entity[0] === "closure") {
                     return "{lambda (" + entity[1].join(" ") + ") (" + bodyToString(entity[2]) + ")}";
-                } else {
-                    return entity.join(" ");
                 }
+
+                return entity.join(" ");
             }
 
             return JSON.stringify(entity);
         }
 
-        let text = "";
         if (expr.length === 2) {
-            text = getText(this.inter.evalExpr(expr[1], env));
-        } else if (expr.length > 2) {
-            text = getText(this.inter.mapExprLst(expr.slice(1), env));
+            return getText(this.inter.evalExpr(expr[1], env));
         }
 
-        return text;
+        if (expr.length > 2) {
+            return getText(this.inter.mapExprLst(expr.slice(1), env));
+        }
+
+        return "";
     }
 
     private evalParse(expr: any[], env: any[]): any[] {
         const codeText: string = this.inter.evalExpr(expr[1], env);
         const parser: Parser = new Parser();
+
         return parser.parse(codeText);
     }
 
     private evalEval(expr: any[], env: any[]): any[] {
         const codeTree: any[] = this.inter.evalExpr(expr[1], env);
+
         return this.inter.evalCodeTree(codeTree, this.inter.options);
     }
 
     private evalPrint(expr: any[], env: any[]): any {
         const text = this.evalToString(expr, env);
         this.inter.options.printer(text);
+
         return null;
     }
 }
