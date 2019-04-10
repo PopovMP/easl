@@ -43,15 +43,43 @@ class CoreLib implements ILib {
     }
 
     private evalPlus(expr: any[], env: any[]): any {
-        if (expr.length < 3) {
-            throw Error("Wrong number of arguments: " + "+");
+        if (expr.length === 1) {
+            return 0;
+        }
+
+        const a: any = this.inter.evalExpr(expr[1], env);
+
+        if (expr.length === 2) {
+            if (typeof a === "string" || typeof a === "number") {
+                return a;
+            }
+
+            throw Error("Wrong parameter type: " + "+");
         }
 
         if (expr.length === 3) {
-            return this.inter.evalExpr(expr[1], env) + this.inter.evalExpr(expr[2], env);
+            const b: any = this.inter.evalExpr(expr[2], env);
+
+            if (typeof a === "string") {
+                if (typeof b === "string") {
+                    return a + b;
+                }
+
+                if (typeof b === "number") {
+                    return a + b.toString();
+                }
+
+                throw Error("Wrong parameter types: " + "+");
+            }
+
+            if (typeof a === "number" && typeof b === "number") {
+                return a + b;
+            }
+
+            throw Error("Wrong parameter types: " + "+");
         }
 
-        return this.inter.evalExpr(expr[1], env) + this.evalPlus(expr.slice(1), env);
+        return a + this.evalPlus(expr.slice(1), env);
     }
 
     private evalSubtract(expr: any[], env: any[]): any {
@@ -67,15 +95,30 @@ class CoreLib implements ILib {
     }
 
     private evalMultiply(expr: any[], env: any[]): any {
-        if (expr.length < 3) {
-            throw Error("Wrong number of arguments: " + "*");
+        if (expr.length === 1) {
+            return 0;
+        }
+
+        const a: any = this.inter.evalExpr(expr[1], env);
+        if (typeof a !== "number") {
+            throw Error("Wrong parameter type: " + "*");
+        }
+
+        if (expr.length === 2) {
+            return a;
         }
 
         if (expr.length === 3) {
-            return this.inter.evalExpr(expr[1], env) * this.inter.evalExpr(expr[2], env);
+            const b: any = this.inter.evalExpr(expr[2], env);
+
+            if (typeof b !== "number") {
+                throw Error("Wrong parameter type: " + "*");
+            }
+
+            return a * b;
         }
 
-        return this.inter.evalExpr(expr[1], env) * this.evalMultiply(expr.slice(1), env);
+        return a * this.evalMultiply(expr.slice(1), env);
     }
 
     private evalDivide(expr: any[], env: any[]): any {

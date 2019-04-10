@@ -24,39 +24,6 @@ describe('Eval basics', function () {
         });
     });
 
-    describe('Faulty values', function () {
-        it('false: (if false 1 2) → 2', function () {
-            assert.strictEqual(easl.evaluate("(if false 1 2)"), 2);
-        });
-        it('null: (if null 1 2) → 2', function () {
-            assert.strictEqual(easl.evaluate("(if null 1 2)"), 2);
-        });
-        it('empty list: (if [] 1 2) → 2', function () {
-            assert.strictEqual(easl.evaluate("(if [] 1 2)"), 2);
-        });
-        it('empty string', function () {
-            assert.strictEqual(easl.evaluate('(if "" 1 2)'), 2);
-        });
-        it('zero: (if 0 1 2) → 2', function () {
-            assert.strictEqual(easl.evaluate("(if 0 1 2)"), 2);
-        });
-    });
-
-    describe('Truthy values', function () {
-        it('true: (if true 1 2) → 1', function () {
-            assert.strictEqual(easl.evaluate("(if true 1 2)"), 1);
-        });
-        it('non empty list: (if [1] 1 2) → 1', function () {
-            assert.strictEqual(easl.evaluate("(if [1] 1 2)"), 1);
-        });
-        it('empty string', function () {
-            assert.strictEqual(easl.evaluate('(if "hello" 1 2)'), 1);
-        });
-        it('number: (if 42 1 2) → 1', function () {
-            assert.strictEqual(easl.evaluate("(if 42 1 2)"), 1);
-        });
-    });
-
     describe('List declaration', function () {
         it('empty list: [] → []', function () {
             assert.deepStrictEqual(easl.evaluate("[]"), []);
@@ -110,11 +77,10 @@ describe('Eval basics', function () {
 
     describe('Eval multiple expressions', function () {
         it('1 2 → 2', function () {
-            assert.deepStrictEqual(easl.evaluate("1 2"), 2);
+            assert.strictEqual(easl.evaluate("1 2"), 2);
         });
         it('3 (+ 1 1) → 2', function () {
-            assert.deepStrictEqual(easl.evaluate("3 (+ 1 1)"), 2);
+            assert.strictEqual(easl.evaluate("3 (+ 1 1)"), 2);
         });
     });
-
 });

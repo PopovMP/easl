@@ -74,7 +74,7 @@ describe('call', function () {
     it('call builtin function with defined empty list', function () {
         assert.strictEqual(easl.evaluate(`
             {let lst []}
-            {call * lst}                            `), "Error: Wrong number of arguments: *");
+            {call * lst}                            `), 0);
     });
 
     it('call builtin function with defined non empty list', function () {
