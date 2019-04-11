@@ -49,7 +49,7 @@ describe('case', function () {
             {let n "hello"}
             {let type {case n
                          ([0 2 4 6 8] "even")
-                         ([1 3 5 7 9]  "odd")  }}
+                         ([1 3 5 7 9]  "odd") }}
             type                            `), null);
     });
 
@@ -65,5 +65,4 @@ describe('case', function () {
             {case 1
                 ([a] 3) }               `), 3);
     });
-
 });
