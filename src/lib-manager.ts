@@ -17,6 +17,7 @@ class LibManager {
         switch (libName) {
             case "core-lib"   : return new CoreLib(inter);
             case "date-lib"   : return new DateLib(inter);
+            case "ext-lib"    : return new ExtLib(inter);
             case "list-lib"   : return new ListLib(inter);
             case "math-lib"   : return new MathLib(inter);
             case "number-lib" : return new NumberLib(inter);
