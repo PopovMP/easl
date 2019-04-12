@@ -66,6 +66,11 @@ describe('call', function () {
             {call + [2 3 4 5 6]}                    `), 20);
     });
 
+    it('call builtin function with strings', function () {
+        assert.strictEqual(easl.evaluate(`
+            {call + ["a" "b" "c"]}                  `), "abc");
+    });
+
     it('call builtin function with an array', function () {
         assert.strictEqual(easl.evaluate(`
             {call list.length [[2 3 4 5 6]]}        `), 5);

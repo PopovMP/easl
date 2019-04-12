@@ -106,6 +106,11 @@ describe('Parser', function () {
             assert.deepStrictEqual(parser.parse(codeText),
                 [['let', 'name', ['string', 'John']]]);
         });
+        it('parse bool', function () {
+            const codeText = '(let var true)';
+            assert.deepStrictEqual(parser.parse(codeText),
+                [['let', 'var', 'true']]);
+        });
 
         it('parse 4', function () {
             const codeText = `

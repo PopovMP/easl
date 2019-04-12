@@ -166,4 +166,53 @@ describe('ext library', function () {
             assert.strictEqual(easl.evaluate(`  (ext.typeof [1])  `, options), "object");
         });
     });
+
+    describe('Working with lists', function () {
+        it('num element', function () {
+            const options = {extContext: this, extFunctions: {"ext.getList": () => [1]}};
+
+            assert.strictEqual(easl.evaluate(`  (type-of (list.get (ext.getList) 0))  `, options), "number");
+        });
+
+        it('string element', function () {
+            const options = {extContext: this, extFunctions: {"ext.getList": () => ["a", "b"]}};
+
+            assert.strictEqual(easl.evaluate(`  (type-of (list.get (ext.getList) 1))  `, options), "string");
+        });
+
+        it('null element', function () {
+            const options = {extContext: this, extFunctions: {"ext.getList": () => [null]}};
+
+            assert.strictEqual(easl.evaluate(`  (type-of (list.get (ext.getList) 0))  `, options), "null");
+        });
+
+        it('boolean element', function () {
+            const options = {extContext: this, extFunctions: {"ext.getList": () => [true]}};
+
+            assert.strictEqual(easl.evaluate(`  (type-of (list.get (ext.getList) 0))  `, options), "boolean");
+        });
+
+        it('list length', function () {
+            const options = {extContext: this, extFunctions: {"ext.getList": () => [1, 2, 3]}};
+
+            assert.strictEqual(easl.evaluate(`  (list.length (ext.getList))  `, options), 3);
+        });
+
+        it('list sum', function () {
+            const options = {extContext: this, extFunctions: {"ext.getList": () => [1, 2, 3]}};
+
+            assert.strictEqual(easl.evaluate(`  (call + (ext.getList))       `, options), 6);
+        });
+
+        it('list concat', function () {
+            const options = {extContext: this, extFunctions: {"ext.getList": () => ["a", "b", "c"]}};
+
+            assert.strictEqual(easl.evaluate(`
+                    {let lst (ext.getList)}
+                    (+ (list.get lst 0)
+                       (list.get lst 1)
+                       (list.get lst 2) )
+                                                    `, options), "abc");
+        });
+    });
 });
