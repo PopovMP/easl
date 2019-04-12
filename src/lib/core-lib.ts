@@ -232,6 +232,12 @@ class CoreLib implements ILib {
                 case "function" :
                 case "closure"  : return "function";
             }
+
+            return "list";
+        }
+
+        if (value === null) {
+            return "null";
         }
 
         return typeof value;
