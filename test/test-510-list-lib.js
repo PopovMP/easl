@@ -9,19 +9,28 @@ describe('list', function () {
 
     describe('list.add', function () {
         it('not a list:  (list.add 1 2) → [1, 2]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add 1 2)          `), [1, 2]);
+            assert.deepStrictEqual(easl.evaluate(`   (list.add 1 2)            `), [1, 2]);
+        });
+        it('not a list:  (list.add "1" "2") → ["1", "2"]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.add "1" "2")        `), ["1", "2"]);
         });
         it('empty list:  (list.add [] 2) → [2]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add [] 2)         `), [2]);
+            assert.deepStrictEqual(easl.evaluate(`   (list.add [] 2)           `), [2]);
         });
-        it('null:  (list.add null 2) → [2]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add null 2)       `), [2]);
+        it('empty list:  (list.add [] "2") → ["2"]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.add [] "2")         `), ["2"]);
+        });
+        it('null:  (list.add null "2") → ["2"]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.add null "2")       `), ["2"]);
         });
         it('non empty list:  (list.add [1 2] 3) → [1, 2, 3]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add [1 2] 3)      `), [1, 2, 3]);
+            assert.deepStrictEqual(easl.evaluate(`   (list.add [1 2] 3)         `), [1, 2, 3]);
         });
-        it('two list:  (list.add [1 2] [3 4]) → [1, 2, [3, 4]]', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add [1 2] [3 4])  `), [1, 2, [3, 4]]);
+        it('non empty list:  (list.add ["1" "2"] "3") → ["1", "2", "3"]', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.add ["1" "2"] "3")   `), ["1", "2", "3"]);
+        });
+        it('two list:  (list.add ["1" "2"] ["3" "4"]) → ["1", "2", ["3", "4"]]', function () {
+            assert.deepStrictEqual(easl.evaluate(`(list.add ["1" "2"] ["3" "4"])`), ["1", "2", ["3", "4"]]);
         });
         it('it mutates the list', function () {
             assert.deepStrictEqual(easl.evaluate(`  
@@ -31,8 +40,11 @@ describe('list', function () {
     });
 
     describe('list.concat', function () {
-        it('set element:  (list.concat [1 2] [3 4]) → [1 2 3 4]', function () {
+        it('concat two list of nums', function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.concat [1 2] [3 4])     `), [ 1, 2, 3, 4 ]);
+        });
+        it('concat two list of strings', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.concat ["1" "2"] ["3" "4"])     `), ["1", "2", "3", "4"]);
         });
     });
 
@@ -43,14 +55,44 @@ describe('list', function () {
         it('empty list: (list.first []) → null', function () {
             assert.strictEqual(easl.evaluate(`   (list.first [])        `), null);
         });
-        it('non empty list: (list.first [1 2 3]) → 1', function () {
+        it('non empty list of nums', function () {
             assert.strictEqual(easl.evaluate(`   (list.first [1 2 3])   `), 1);
+        });
+        it('non empty list of strings', function () {
+            assert.strictEqual(easl.evaluate(`   (list.first ["1" "2" "3"])   `), "1");
         });
     });
 
     describe('list.flatten', function () {
-        it('flattens', function () {
+        it('flattens list of nums', function () {
             assert.deepStrictEqual(easl.evaluate(` (list.flatten [[1 2] [3 4]])  `), [1, 2, 3, 4]);
+        });
+        it('flattens list of strings', function () {
+            assert.deepStrictEqual(easl.evaluate(` (list.flatten [["1" "2"] ["3" "4"]])  `), ["1", "2", "3", "4"]);
+        });
+    });
+
+    describe('list.get', function () {
+        it('empty list', function () {
+            assert.deepStrictEqual(easl.evaluate(` (list.get [] 0)  `), null);
+        });
+        it('not list', function () {
+            assert.deepStrictEqual(easl.evaluate(` (list.get 42 0)  `), null);
+        });
+        it('first element of num list', function () {
+            assert.deepStrictEqual(easl.evaluate(` (list.get [1] 0)  `), 1);
+        });
+        it('last element of num list', function () {
+            assert.deepStrictEqual(easl.evaluate(` (list.get [1 2 3] 2)  `), 3);
+        });
+        it('first element of string list', function () {
+            assert.deepStrictEqual(easl.evaluate(` (list.get ["1"] 0)  `), "1");
+        });
+        it('last element of string list', function () {
+            assert.deepStrictEqual(easl.evaluate(` (list.get ["1" "2" "3"] 2)  `), "3");
+        });
+        it('out of range', function () {
+            assert.deepStrictEqual(easl.evaluate(` (list.get [1 2 3] 42)  `), null);
         });
     });
 
@@ -96,15 +138,21 @@ describe('list', function () {
         });
     });
 
-    describe('list.least', function () {
-        it('not a list:  (list.least 42) → null', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.least 42)        `), []);
+    describe('list.less', function () {
+        it('not a list:  (list.less 42) → []', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.less 42)        `), []);
         });
-        it('empty list:  (list.least []) → null', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.least [])        `), []);
+        it('empty list:  (list.less []) → []', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.less [])        `), []);
         });
-        it('non empty list:  (list.least [1 2 3]) → 3', function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.least [1 2 3])   `), [1, 2]);
+        it('list of one element:  (list.less [1]) → []', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.less [1])        `), []);
+        });
+        it('list of nums', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.less [1 2 3])   `), [1, 2]);
+        });
+        it('list of strings', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.less ["1" "2" "3"])   `), ["1", "2"]);
         });
     });
 

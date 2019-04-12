@@ -1,6 +1,9 @@
 "use strict";
 
 class Easl {
+    constructor() {
+    }
+
     public evaluate(codeText: string, optionsParam?: Options, callback?: Function) {
         const options: Options         = optionsParam ? Options.parse(optionsParam) : new Options();
         const parser: Parser           = new Parser();

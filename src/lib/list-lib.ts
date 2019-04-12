@@ -3,7 +3,7 @@
 class ListLib implements ILib {
     private readonly inter: Interpreter;
     public readonly builtinFunc = ["list.add", "list.concat", "list.first", "list.flatten", "list.get",
-        "list.has", "list.index", "list.join", "list.last", "list.least", "list.length", "list.push",
+        "list.has", "list.index", "list.join", "list.last", "list.less", "list.length", "list.push",
         "list.range", "list.reverse", "list.rest", "list.set", "list.slice", "list.sort"];
     public readonly builtinHash: any = {};
 
@@ -26,8 +26,8 @@ class ListLib implements ILib {
             case "list.index"   : return this.listIndex(expr, env);
             case "list.join"    : return this.listJoin(expr, env);
             case "list.last"    : return this.listLast(expr, env);
-            case "list.least"   : return this.listLeast(expr, env);
             case "list.length"  : return this.listLength(expr, env);
+            case "list.less"    : return this.listLess(expr, env);
             case "list.push"    : return this.listPush(expr, env);
             case "list.range"   : return this.listRange(expr, env);
             case "list.reverse" : return this.listReverse(expr, env);
@@ -121,7 +121,7 @@ class ListLib implements ILib {
         return Array.isArray(lst) && lst.length > 0 ? lst[lst.length - 1] : null;
     }
 
-    private listLeast(expr: any[], env: any[]): any[] {
+    private listLess(expr: any[], env: any[]): any[] {
         const lst: any[] = this.inter.evalExpr(expr[1], env);
 
         return Array.isArray(lst) && lst.length > 1 ? lst.slice(0, lst.length - 1) : [];
