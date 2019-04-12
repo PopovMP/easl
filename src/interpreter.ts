@@ -453,6 +453,19 @@ class Interpreter {
             ? expr[2].slice(1)
             : this.evalExpr(expr[2], env);
 
+        for (let i: number = 0; i < callArgs.length; i++) {
+            const elm: any = callArgs[i];
+            if (typeof elm === "string" &&["true", "false", "null"].indexOf(elm) === -1) {
+                callArgs[i] = ["string", elm];
+            } else if (elm === true) {
+                callArgs[i] = "true";
+            } else if (elm === false) {
+                callArgs[i] = "false";
+            } else if (elm === null) {
+                callArgs[i] = "null";
+            }
+        }
+
         const proc: any[] = callArgs.length === 0
             ? [symbol]
             : callArgs.length === 1

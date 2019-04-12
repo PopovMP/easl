@@ -207,12 +207,23 @@ describe('ext library', function () {
         it('list concat', function () {
             const options = {extContext: this, extFunctions: {"ext.getList": () => ["a", "b", "c"]}};
 
-            assert.strictEqual(easl.evaluate(`
-                    {let lst (ext.getList)}
-                    (+ (list.get lst 0)
-                       (list.get lst 1)
-                       (list.get lst 2) )
-                                                    `, options), "abc");
+            assert.strictEqual(easl.evaluate(`  (call + (ext.getList))       `, options), "abc");
+        });
+
+        it('num list by ref', function () {
+            const lst = [1, 2, 3];
+            const options = {extContext: this, extFunctions: {"ext.getList": () => lst}};
+            easl.evaluate(`  (list.set (ext.getList) 0 42)    `, options);
+
+            assert.deepStrictEqual(lst, [42, 2, 3]);
+        });
+
+        it('string list by ref', function () {
+            const lst = ["a", "b"];
+            const options = {extContext: this, extFunctions: {"ext.getList": () => lst}};
+            easl.evaluate(`  (list.set (ext.getList) 1 "x")    `, options);
+
+            assert.deepStrictEqual(lst, ["a", "x"]);
         });
     });
 });
