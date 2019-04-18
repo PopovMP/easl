@@ -35,11 +35,12 @@ class Parser {
                 const charList: string[] = [];
                 for (i++; i < code.length; i++) {
                     const c = code[i];
-                    if (c === '"' && i < code.length - 1 && code[i + 1] === '"') {
-                        charList.push('"');
-                        i++;
-                        continue;
-                    } else if (c === '"') {
+                    if (c === '"') {
+                        if (i < code.length - 1 && code[i + 1] === '"') {
+                            charList.push('"');
+                            i++;
+                            continue;
+                        }
                         break;
                     }
                     charList.push(c);
