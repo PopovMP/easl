@@ -109,6 +109,10 @@ class CoreLib implements ILib {
         }
 
         if (expr.length === 3) {
+            if (a === 0) {
+                return 0;
+            }
+
             const b: any = this.inter.evalExpr(expr[2], env);
 
             if (typeof b !== "number") {
