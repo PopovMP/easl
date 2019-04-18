@@ -84,6 +84,7 @@ class Interpreter {
             case "for"      : return this.evalFor(expr, env);
             case "function" : return this.evalFunction(expr, env);
             case "if"       : return this.evalIf(expr, env);
+            case "unless"   : return this.evalUnless(expr, env);
             case "inc"      : return this.evalIncrement(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
             case "let"      : return this.evalLet(expr, env);
@@ -296,6 +297,15 @@ class Interpreter {
     // [if, test-expr, then-expr, else-expr]
     private evalIf(expr: any[], env: any[]): any {
         return this.isTruthy(this.evalExpr(expr[1], env))
+            ? this.evalExpr(expr[2], env)
+            : expr.length === 4
+                ? this.evalExpr(expr[3], env)
+                : null;
+    }
+
+    // [unless, test-expr, when-not-expr, else-expr]
+    private evalUnless(expr: any[], env: any[]): any {
+        return this.isFaulty(this.evalExpr(expr[1], env))
             ? this.evalExpr(expr[2], env)
             : expr.length === 4
                 ? this.evalExpr(expr[3], env)
