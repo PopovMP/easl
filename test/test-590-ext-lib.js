@@ -121,7 +121,8 @@ describe('ext library', function () {
     });
 
     describe('Ext functions arg types', function () {
-        const options = {extContext: this, extFunctions: {"ext.typeof": (a) => typeof a}};
+        const options = {extContext: this, extFunctions: {"ext.typeof": a => typeof a}};
+
         it('number 0', function () {
             assert.strictEqual(easl.evaluate(`  (ext.typeof 0)  `, options), "number");
         });
@@ -228,7 +229,7 @@ describe('ext library', function () {
 
         it('give list as external function param', function () {
             let list = [];
-            const options = {extContext: this, extFunctions: {"ext.setList": (lst) => {list = lst}}};
+            const options = {extContext: this, extFunctions: {"ext.setList": lst => {list = lst;}}};
             easl.evaluate(`  (ext.setList [1 "a" true false null []])    `, options);
 
             assert.deepStrictEqual(list, [1, "a", true, false, null, []]);
@@ -236,11 +237,51 @@ describe('ext library', function () {
 
         it('give list as external function param from var', function () {
             let list = [];
-            const options = {extContext: this, extFunctions: {"ext.setList": (lst) => {list = lst}}};
+            const options = {extContext: this, extFunctions: {"ext.setList": lst => {list = lst;}}};
             easl.evaluate(` {let lst [1 "a" true false null []]}
                             (ext.setList lst)                           `, options);
 
             assert.deepStrictEqual(list, [1, "a", true, false, null, []]);
         });
+
+
+        it('get / set string list', function () {
+            const list1 = ["a", "b"];
+            let list2 = [];
+
+            const options = {
+                extContext: this, extFunctions: {
+                    "ext.getList": () => list1,
+                    "ext.setList": lst => {list2 = lst;}
+                }
+            };
+
+            easl.evaluate(`  {let list1 (ext.getList)}
+                             {let list2 list1}
+                             (ext.setList list2)`, options);
+
+            assert.deepStrictEqual(list1, list2);
+        });
+
+        it('get / set string list by ref', function () {
+            const list1 = ["a", "b"];
+            let list2 = [];
+
+            const options = {
+                extContext: this,
+                extFunctions: {
+                    "ext.getList": () => list1,
+                    "ext.setList": lst => {list2 = lst;}
+                }
+            };
+
+            easl.evaluate(`  {let list1 (ext.getList)}
+                             {let list2 list1}
+                             (ext.setList list2)`, options);
+
+            list2[1] = "x";
+            assert.deepStrictEqual(list1, list2);
+        });
+
     });
 });
