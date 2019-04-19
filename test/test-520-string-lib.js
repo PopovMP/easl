@@ -7,23 +7,45 @@ const easl = new Easl();
 
 describe('str library', function () {
 
-    describe('str.length', function () {
-        it('empty string', function () {
-            assert.strictEqual(easl.evaluate(`(str.length "")`), 0);
+    describe('str.char-at', function () {
+        it('empty string → null', function () {
+            assert.strictEqual(easl.evaluate(`(str.char-at "" 0)`), null);
         });
-
-        it('non empty string', function () {
-            assert.strictEqual(easl.evaluate(`(str.length "hello")`), 5);
+        it('index out of range → null', function () {
+            assert.strictEqual(easl.evaluate(`(str.char-at "ab" 5)`), null);
+        });
+        it('index in range → char', function () {
+            assert.strictEqual(easl.evaluate(`(str.char-at "ab" 1)`), "b");
         });
     });
 
-    describe('str.has', function () {
-        it('non existing substring', function () {
-            assert.strictEqual(easl.evaluate(`(str.has "hello" "la")`), false);
+    describe('str.char-code-at', function () {
+        it('empty string → exception', function () {
+            assert.strictEqual(easl.evaluate(`(str.char-code-at "" 0)`), "Error: Not a character: null");
         });
+        it('index out of range → exception', function () {
+            assert.strictEqual(easl.evaluate(`(str.char-code-at "ab" 5)`), "Error: Not a character: null");
+        });
+        it('match a char → number', function () {
+            assert.strictEqual(easl.evaluate(`(str.char-code-at "xa" 1)`), 97);
+        });
+        it('match a number → number', function () {
+            assert.strictEqual(easl.evaluate(`(str.char-code-at "0" 0)`), 48);
+        });
+    });
 
-        it('existing substring', function () {
-            assert.strictEqual(easl.evaluate(`(str.has "hello" "lo")`), true);
+    describe('str.concat', function () {
+        it('one strings', function () {
+            assert.strictEqual(easl.evaluate(`(str.concat "a")`), "a");
+        });
+        it('two chars', function () {
+            assert.strictEqual(easl.evaluate(`(str.concat "a" "b")`), "ab");
+        });
+        it('three chars', function () {
+            assert.strictEqual(easl.evaluate(`(str.concat "a" "b" "c")`), "abc");
+        });
+        it('eval expressions', function () {
+            assert.strictEqual(easl.evaluate(`(str.concat ({lambda () "a"}) ("b" + "c"))`), "abc");
         });
     });
 
@@ -33,6 +55,50 @@ describe('str library', function () {
         });
         it('not ending with', function () {
             assert.strictEqual(easl.evaluate(`(str.ends-with "hello" "ll")`), false);
+        });
+    });
+
+    describe('str.from-char-code', function () {
+        it('correct code', function () {
+            assert.strictEqual(easl.evaluate(`(str.from-char-code 97)`), "a");
+        });
+    });
+
+    describe('str.includes', function () {
+        it('non existing substring', function () {
+            assert.strictEqual(easl.evaluate(`(str.includes "hello" "la")`), false);
+        });
+
+        it('existing substring', function () {
+            assert.strictEqual(easl.evaluate(`(str.includes "hello" "lo")`), true);
+        });
+    });
+
+    describe('str.index-of', function () {
+        it('existing string', function () {
+            assert.strictEqual(easl.evaluate(`(str.index-of "hello" "ll")`), 2);
+        });
+
+        it('non existing substring', function () {
+            assert.strictEqual(easl.evaluate(`(str.index-of "hello" "kk")`), -1);
+        });
+
+        it('existing string with start index', function () {
+            assert.strictEqual(easl.evaluate(`(str.index-of "hello" "ll" 1)`), 2);
+        });
+
+        it('existing string with start index out of range', function () {
+            assert.strictEqual(easl.evaluate(`(str.index-of "hello" "ll" 4)`), -1);
+        });
+    });
+
+    describe('str.length', function () {
+        it('empty string', function () {
+            assert.strictEqual(easl.evaluate(`(str.length "")`), 0);
+        });
+
+        it('non empty string', function () {
+            assert.strictEqual(easl.evaluate(`(str.length "hello")`), 5);
         });
     });
 
@@ -52,13 +118,13 @@ describe('str library', function () {
         });
 
         it('no separator', function () {
-            assert.deepStrictEqual(easl.evaluate(`(str.split "ABC") `),
-                [ ["string", "A"], ["string", "B"], ["string", "C"] ]);
+            assert.deepStrictEqual(easl.evaluate(`
+                {let lst (str.split "ABC")}
+                lst                                 `), ["A", "B", "C"]);
         });
 
         it('with separator', function () {
-            assert.deepStrictEqual(easl.evaluate(`(str.split "A-B-C" "-")`),
-                [ ["string", "A"], ["string", "B"], ["string", "C"] ]);
+            assert.deepStrictEqual(easl.evaluate(`(str.split "A-B-C" "-")`), ["A", "B", "C"]);
         });
     });
 
