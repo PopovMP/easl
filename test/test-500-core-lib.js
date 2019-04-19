@@ -251,6 +251,12 @@ describe('core-lib', function () {
         it('string', function () {
             assert.strictEqual(easl.evaluate(`   (to-number "42")      `), 42);
         });
+        it('element of string list', function () {
+            assert.strictEqual(easl.evaluate(`
+               {let lst ["42"]}
+               {let elm (list.get lst 0)}
+               (to-number elm)                                          `), 42);
+        });
         it('true', function () {
             assert.strictEqual(easl.evaluate(`   (to-number true)      `), 1);
         });

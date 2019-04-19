@@ -31,14 +31,17 @@ describe('Eval basics', function () {
         it('empty list: (list) → []', function () {
             assert.deepStrictEqual(easl.evaluate("(list)"), []);
         });
-        it('non empty list: (list 1 2 3) → [1 2 3]', function () {
+        it('non empty num list', function () {
             assert.deepStrictEqual(easl.evaluate("(list 1 2 3)"), [1, 2, 3]);
+        });
+        it('non empty string list', function () {
+            assert.deepStrictEqual(easl.evaluate(` (list "1" "2" "3") `), ["1", "2", "3"]);
         });
         it('non empty list: [1 2 3] → [1 2 3]', function () {
             assert.deepStrictEqual(easl.evaluate("[1 2 3]"), [1, 2, 3]);
         });
-        it('non empty list: [1 (- 5 3) 3] → [1 2 3]', function () {
-            assert.deepStrictEqual(easl.evaluate("[1 (- 5 3) 3]"), [1, 2, 3]);
+        it('non empty list with num expr', function () {
+            assert.deepStrictEqual(easl.evaluate(`["a" (+ "a" "b") "b"]`), ["a", "ab", "b"]);
         });
     });
 

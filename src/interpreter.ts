@@ -86,6 +86,7 @@ class Interpreter {
             case "if"       : return this.evalIf(expr, env);
             case "unless"   : return this.evalUnless(expr, env);
             case "inc"      : return this.evalIncrement(expr, env);
+            case "dec"      : return this.evalDecrement(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
             case "let"      : return this.evalLet(expr, env);
             case "repeat"   : return this.evalRepeat(expr, env);
@@ -232,6 +233,16 @@ class Interpreter {
         return value;
     }
 
+    // [dec, symbol, inc]
+    private evalDecrement(expr: any[], env: any[]): any {
+        const inc: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
+        const value: number = this.evalExpr(expr[1], env) - inc;
+
+        this.setInEnv(expr[1], value, env);
+
+        return value;
+    }
+
     // [let, symbol, expr]
     // [let, symbol, [lambda, [par1, par2, ...], expr1, expr2, ...]]
     private evalLetValue(expr: any[], env: any[]): any {
@@ -368,7 +379,7 @@ class Interpreter {
 
         for (const elem of range) {
             env.push(["#scope#", null]);
-            env.push([symbol, this.evalExpr(elem, env)]);
+            env.push([symbol, elem]);
 
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);

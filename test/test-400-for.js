@@ -8,10 +8,27 @@ const easl = new Easl();
 describe('for loop', function () {
     it('loop', function () {
         assert.strictEqual(easl.evaluate(` 
-                {let n 0 }
+                {let n 0}
                 {for e [1 2 3 4 5]
                     {set n (n + e)} }
                 n                                      `), 15);
+    });
+
+    it('loop over string list', function () {
+        assert.strictEqual(easl.evaluate(` 
+                {let n ""}
+                {for e ["1" "2" "3" "4" "5"]
+                    {set n (n + e)} }
+                n                                      `), "12345");
+    });
+
+    it('loop over defined string list', function () {
+        assert.strictEqual(easl.evaluate(` 
+                {let lst ["1" "2" "3" "4" "5"]}
+                {let n ""}
+                {for e lst
+                    {set n (n + e)} }
+                n                                      `), "12345");
     });
 
     it('break', function () {
