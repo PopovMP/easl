@@ -202,6 +202,11 @@ describe('core-lib', function () {
             assert.strictEqual(easl.evaluate(` 
              (type-of {lambda (a b) (+ a b)})        `), "function");
         });
+
+        it('using the string "string"', function () {
+            assert.strictEqual(easl.evaluate(` 
+            (str.length "string")      `), 6);
+        });
     });
 
     describe('to-string', function () {

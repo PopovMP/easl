@@ -9,7 +9,9 @@ class Parser {
     private commentStartChars: string[] = [";"];
 
     public parse(codeText: string): any[] {
-        const fixedText = codeText.replace(/λ/g,"lambda");
+        const fixedText = codeText
+            .replace(/λ/g,"lambda")
+            .replace(/\(string\)/g,'""');
         const codeTree = this.tokenize(fixedText);
         const ilTree = this.nest(codeTree);
         return ilTree;
@@ -95,11 +97,17 @@ class Parser {
             const token: string = tree[i];
 
             if (["{", "[", "("].indexOf(token) > -1) {
-                return list.concat([pass([])]).concat(pass([]));
+                if (i === 0 || i > 0 && tree[i - 1] !== "string") {
+                    return list.concat([pass([])]).concat(pass([]));
+                }
             }
 
             if ([")", "]", "}"].indexOf(token) > -1) {
-                return list;
+                if (i === 0 ||
+                    (i > 1 && tree[i - 1] === "string" && tree[i - 2] !== "(") ||
+                    (i > 0 && tree[i - 1] !== "string")) {
+                    return list;
+                }
             }
 
             return pass(list.concat(token));

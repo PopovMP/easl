@@ -65,4 +65,18 @@ describe('case', function () {
             {case 1
                 ([a] 3) }               `), 3);
     });
+
+
+    it('match [', function () {
+        assert.strictEqual(easl.evaluate(`
+            {case "["
+                {["["] 3} }               `), 3);
+    });
+
+    it('match ]', function () {
+        assert.strictEqual(easl.evaluate(`
+            {case "]"
+                {["]"] 3} }               `), 3);
+    });
+
 });

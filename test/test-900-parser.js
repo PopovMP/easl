@@ -33,9 +33,33 @@ describe('Parser', function () {
             assert.deepStrictEqual(parser.tokenize("1 2"), [1, 2]);
         });
 
+        it("case", function () {
+            assert.deepStrictEqual(parser.tokenize(`{case "[" {["["] 3}}`),
+                [ '{', 'case', '(', 'string', '[', ')', '{', '[', 'list', '(', 'string', '[', ')', ']', 3, '}', '}' ]);
+        });
     });
 
     describe("tokenize strings", function () {
+        it("char A", function () {
+            assert.deepStrictEqual(parser.tokenize(`  "A"  `), ["(", "string", "A", ")"]);
+        });
+        it("char 1", function () {
+            assert.deepStrictEqual(parser.tokenize(`  "1"  `), ["(", "string", "1", ")"]);
+        });
+        it("char [", function () {
+            assert.deepStrictEqual(parser.tokenize(`  "["  `), ["(", "string", "[", ")"]);
+        });
+        it("char (", function () {
+            assert.deepStrictEqual(parser.tokenize(`  "("  `), ["(", "string", "(", ")"]);
+        });
+        it("char )", function () {
+            assert.deepStrictEqual(parser.tokenize(`  ")"  `), ["(", "string", ")", ")"]);
+        });
+
+        it("char ]", function () {
+            assert.deepStrictEqual(parser.tokenize(`  "]"  `), ["(", "string", "]", ")"]);
+        });
+
         it("let - string", function () {
             assert.deepStrictEqual(parser.tokenize("{let name  \"John\"}"),
                 ["{", "let", "name", "(", "string", "John", ")", "}"]);
@@ -65,6 +89,14 @@ describe('Parser', function () {
             assert.deepStrictEqual(parser.tokenize(`""""""`),
                 ['(', 'string', '""', ')']);
         });
+
+        it("char [ in list", function () {
+            assert.deepStrictEqual(parser.tokenize(`  ["["]  `), ["[", "list", "(", "string", "[", ")", "]"]);
+        });
+        it("char ] in list", function () {
+            assert.deepStrictEqual(parser.tokenize(`  ["]"]  `), ["[", "list", "(", "string", "]", ")", "]"]);
+        });
+
     });
 
     describe("tokenize comments", function () {
@@ -133,5 +165,32 @@ describe('Parser', function () {
 
             assert.deepStrictEqual(parser.parse(codeText), ilCode);
         });
+
+        it("char [", function () {
+            assert.deepStrictEqual(parser.parse(`
+                  "["    `),
+                [
+                    ['string', "["]
+                ]);
+        });
+
+        it("list of [", function () {
+            assert.deepStrictEqual(parser.parse(`
+                  ["["]    `),
+                [
+                    ['list', ['string', '[']]
+                ]);
+        });
+
+        it("case", function () {
+            assert.deepStrictEqual(parser.parse(`
+                  {case "["
+                       {["["] 3} }`),
+                [
+                    ['case', ['string', '['],
+                        [['list', ['string', '[']], 3] ]
+                ]);
+        });
+
     });
 });
