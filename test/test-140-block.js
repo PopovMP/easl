@@ -8,8 +8,8 @@ const easl = new Easl();
 
 describe('block', function () {
 
-    it('{block} → "Error: empty body"', function () {
-        assert.strictEqual(easl.evaluate("{block}"), "Error: Empty body");
+    it('{block} → "Error: Empty block"', function () {
+        assert.strictEqual(easl.evaluate("{block}"), "Error: Empty block");
     });
 
     it('{block 1} → 1', function () {
