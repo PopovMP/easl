@@ -1,6 +1,7 @@
 "use strict";
 
 const assert = require("assert");
+const {describe, it} = require("mocha");
 const Easl = require("../bin/easl.js").Easl;
 
 const easl = new Easl();
@@ -21,7 +22,7 @@ describe('do loop', function () {
                 {let i 0}
                 {do
                     {set i (+ i 1)}
-                    {if (> i 2) break}
+                    {if (> i 2) {break}}
                     {set n (+ n 1)}
                     (< i 100) }
                 n                                      `), 2);
@@ -33,7 +34,7 @@ describe('do loop', function () {
                 {let i 0}
                 {do
                     {set i (+ i 1)}
-                    {if (= (% i 2) 1) continue}
+                    {if (= (% i 2) 1) {continue}}
                     {set n (+ n 1)}
                     (< i 10) }
                 n                                      `), 5);

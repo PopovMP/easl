@@ -1,6 +1,7 @@
 "use strict";
 
 const assert = require("assert");
+const {describe, it} = require("mocha");
 const Easl = require("../bin/easl.js").Easl;
 
 const easl = new Easl();
@@ -35,7 +36,7 @@ describe('for loop', function () {
         assert.strictEqual(easl.evaluate(`
                 {let n 0}
                 {for e [1 2 3 4 5]
-                    {if (e > 2) break}
+                    {if (e > 2) {break}}
                     {set n (n + e)} }
                 n                                      `), 3);
     });
@@ -44,7 +45,7 @@ describe('for loop', function () {
         assert.strictEqual(easl.evaluate(`
                 {let n 0}
                 {for e [1 2 3 4 5]
-                    {if ((e % 2) = 1) continue}
+                    {if ((e % 2) = 1) {continue}}
                     {set n (n + e)} }
                 n                                      `), 6);
     });

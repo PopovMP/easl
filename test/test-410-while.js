@@ -1,10 +1,10 @@
 "use strict";
 
 const assert = require("assert");
+const {describe, it} = require("mocha");
 const Easl = require("../bin/easl.js").Easl;
 
 const easl = new Easl();
-
 
 describe('while loop', function () {
     it('while loop', function () {
@@ -21,7 +21,7 @@ describe('while loop', function () {
                 {let i 0}
                 {while (< i 100)
                     {set i (+ i 1)}
-                    {if (> i 2) break}
+                    {if (> i 2) {break}}
                     {set n (+ n 1)} }
                 n                                      `), 2);
     });
@@ -32,7 +32,7 @@ describe('while loop', function () {
                 {let i 0}
                 {while (< i 10)
                     {set i (+ i 1)}
-                    {if (= (% i 2) 1) continue}
+                    {if (= (% i 2) 1) {continue}}
                     {set n (+ n 1)} }
                 n                                      `), 5);
     });

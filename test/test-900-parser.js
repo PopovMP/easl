@@ -1,7 +1,9 @@
 "use strict";
 
 const assert = require("assert");
+const {describe, it} = require("mocha");
 const Parser = require("../bin/easl.js").Parser;
+
 const parser = new Parser();
 
 describe('Parser', function () {
