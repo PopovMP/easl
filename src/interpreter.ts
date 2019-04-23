@@ -70,7 +70,7 @@ class Interpreter {
 
         if (this.isDebug) {
             this.isDebug = false;
-            this.dumpState(expr, env);
+            this.dumpExpression(expr);
         }
 
         // Special forms
@@ -79,7 +79,7 @@ class Interpreter {
             case "call"     : return this.evalCall(expr, env);
             case "case"     : return this.evalCase(expr, env);
             case "cond"     : return this.evalCond(expr, env);
-            case "debug"    : return this.evalDebug();
+            case "debug"    : return this.evalDebug(env);
             case "do"       : return this.evalDo(expr, env);
             case "for"      : return this.evalFor(expr, env);
             case "function" : return this.evalFunction(expr, env);
@@ -192,7 +192,7 @@ class Interpreter {
         return closureEnv;
     }
 
-    // [string str1, str2, ...]
+    // [string, str1, str2, ...]
     private evalStringConstructor(expr: string[]): string {
         if (expr.length === 1) {
             return "";
@@ -233,10 +233,10 @@ class Interpreter {
         return value;
     }
 
-    // [dec, symbol, inc]
+    // [dec, symbol, dec]
     private evalDecrement(expr: any[], env: any[]): any {
-        const inc: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
-        const value: number = this.evalExpr(expr[1], env) - inc;
+        const dec: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
+        const value: number = this.evalExpr(expr[1], env) - dec;
 
         this.setInEnv(expr[1], value, env);
 
@@ -257,8 +257,8 @@ class Interpreter {
 
     // [block, expr1, expr2, ...]
     private evalBlock(expr: any[], env: any[]): any {
-        if (expr.length === 1) throw "Error: Empty body";
-        env.push(["#scope#", null]);
+        if (expr.length === 1) throw "Error: Empty block";
+        env.push(["#scope#", "block"]);
 
         const res: any = expr.length === 2
             ? this.evalExpr(expr[1], env)
@@ -329,7 +329,7 @@ class Interpreter {
     //     [else, expr1, expr2, ...]]
     private evalCond(expr: any, env: any[]): any {
         const clauses: any[] = expr.slice(1);
-        env.push(["#scope#", null]);
+        env.push(["#scope#", "cond"]);
 
         for (const clause of clauses) {
             if (clause[0] === "else" || this.evalExpr(clause[0], env)) {
@@ -352,7 +352,7 @@ class Interpreter {
     private evalCase(expr: any, env: any[]): any {
         const val: any = this.evalExpr(expr[1], env);
         const clauses: any[] = expr.slice(2);
-        env.push(["#scope#", null]);
+        env.push(["#scope#", "case"]);
 
         for (const clause of clauses) {
             if (clause[0] === "else" || this.evalExpr(clause[0], env).indexOf(val) > -1) {
@@ -378,7 +378,7 @@ class Interpreter {
         if (range.length === 0) return null;
 
         for (const elem of range) {
-            env.push(["#scope#", null]);
+            env.push(["#scope#", "for"]);
             env.push([symbol, elem]);
 
             for (const bodyExpr of loopBody) {
@@ -402,7 +402,7 @@ class Interpreter {
         const loopBody: any = expr.slice(2);
 
         while (this.evalExpr(testExpr, env)) {
-            env.push(["#scope#", null]);
+            env.push(["#scope#", "while"]);
 
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
@@ -425,7 +425,7 @@ class Interpreter {
         const loopBody: any = expr.slice(1, expr.length - 1);
 
         do {
-            env.push(["#scope#", null]);
+            env.push(["#scope#", "do"]);
 
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
@@ -450,7 +450,7 @@ class Interpreter {
         const loopBody: any = expr.slice(2);
 
         for (let i: number = 0; i < count; i++){
-            env.push(["#scope#", null]);
+            env.push(["#scope#", "repeat"]);
 
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
@@ -499,7 +499,7 @@ class Interpreter {
     // [try, symbol | expr, expr1, expr2, ...]
     private evalTry(expr: any[], env: any[]): any {
         try {
-            env.push(["#scope#", null]);
+            env.push(["#scope#", "try"]);
             const res = expr.length === 3
                 ? this.evalExpr(expr[2], env)
                 : this.evalExprLst(expr.slice(2), env);
@@ -547,12 +547,13 @@ class Interpreter {
     }
 
     // [debug]
-    private evalDebug(): null {
+    private evalDebug(env: any): null {
+        this.dumpEnvironment(env);
         this.isDebug = true;
         return null;
     }
 
-    private dumpState(expr: any[], env: any[]): null {
+    private dumpEnvironment(env: any[]): null {
         const getCircularReplacer = () => {
             const seen: object[] = [];
             return (key: string, value: any) => {
@@ -573,7 +574,14 @@ class Interpreter {
         }
 
         const envDumpText: string = envDumpList.join("\n      ");
-        const message: string = `Expr: ${JSON.stringify(expr)}\nEnv : ${envDumpText}`;
+        const message: string = `Env : ${envDumpText}`;
+
+        this.options.printer(message);
+        return null;
+    }
+
+    private dumpExpression(expr: any[]): null {
+        const message: string = `Expr: ${JSON.stringify(expr)}`;
 
         this.options.printer(message);
         return null;
