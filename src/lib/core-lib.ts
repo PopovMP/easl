@@ -262,15 +262,9 @@ class CoreLib implements ILib {
 
     private evalToString(expr: any[], env: any[]): string {
         function bodyToString(body: any): string {
-            if (Array.isArray(body)) {
-                if (body[0] === "block") {
-                    return body.slice(1).join(" ");
-                }
-
-                return body.join(" ");
-            }
-
-            return String(body);
+            return Array.isArray(body)
+                ? (body[0] === "#body#" ? body.slice(1) : body).map(e => String(e)).join(" ")
+                : String(body);
         }
 
         function getText(entity: any): string {

@@ -94,6 +94,7 @@ class Interpreter {
             case "throw"    : return this.evalThrow(expr, env);
             case "try"      : return this.evalTry(expr, env);
             case "while"    : return this.evalWhile(expr, env);
+            case "#body#"   : return this.evalBody(expr, env);
         }
 
         if (expr.length === 3 && this.infixOperators.indexOf(expr[1]) > -1) {
@@ -177,13 +178,13 @@ class Interpreter {
             ? [this.evalExpr(expr[1], env)]
             : this.mapExprLst(expr.slice(1), env);
 
-        const closureEnv: any[] = this.makeProcEnv(funcName, closure[1], args, closure[3]);
+        const closureEnv: any[] = this.makeClosureEnv(funcName, closure[1], args, closure[3]);
 
         return this.evalExpr(closure[2], closureEnv);
     }
 
-    private makeProcEnv(funcName: string, params: string[], args: any[], env: any[]): any[] {
-        const closureEnv = env.concat([["func-name", funcName], ["func-params", params], ["func-args", args]]);
+    private makeClosureEnv(funcName: string, params: string[], args: any[], env: any[]): any[] {
+        const closureEnv = env.concat([["#scope#", funcName], ["func-name", funcName], ["func-params", params], ["func-args", args]]);
 
         for (let i = 0; i < params.length; i++) {
             closureEnv.push([params[i], i < args.length ? args[i] : null]);
@@ -268,6 +269,18 @@ class Interpreter {
         return res;
     }
 
+    // [#body#, expr1, expr2, ...]
+    private evalBody(expr: any[], env: any[]): any {
+        if (expr.length === 1) throw "Error: Empty body";
+
+        const res: any = expr.length === 2
+            ? this.evalExpr(expr[1], env)
+            : this.evalExprLst(expr.slice(1), env);
+
+        this.cleanEnv("#scope#", env);
+        return res;
+    }
+
     private cleanEnv(tag: string, env: any[]): void {
         let cell: [string, any];
         do {
@@ -283,7 +296,7 @@ class Interpreter {
         this.throwOnExistingDef(symbol, env);
 
         const params: any[] = Array.isArray(expr[2]) ? expr[2] : [expr[2]];
-        const body: any[]   = expr.length === 4 ? expr[3] : ["block", ... expr.slice(3)];
+        const body: any[]   = expr.length === 4 ? expr[3] : ["#body#", ... expr.slice(3)];
         const value: any    = this.evalLambda(["lambda", params, body], env);
 
         env.push([symbol, value]);
@@ -300,7 +313,7 @@ class Interpreter {
         if (expr.length < 3) throw "Error: Improper function";
 
         const params: any[] = Array.isArray(expr[1]) ? expr[1] : [expr[1]];
-        const body: any[]   = expr.length === 3 ? expr[2] : ["block", ... expr.slice(2)];
+        const body: any[]   = expr.length === 3 ? expr[2] : ["#body#", ... expr.slice(2)];
 
         return ["closure", params, body, env];
     }
