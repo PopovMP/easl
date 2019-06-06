@@ -16,9 +16,6 @@ describe('infix operators', function () {
     it('((1 + 2) + (3 + 4)) → 10', function () {
         assert.strictEqual(easl.evaluate("((1 + 2) + (3 + 4))"), 10);
     });
-    it('(false or true) → true', function () {
-        assert.strictEqual(easl.evaluate("(false or true)"), true);
-    });
     it('(if (3 > 2) 3 2) → 3', function () {
         assert.strictEqual(easl.evaluate("(if (3 > 2) 3 2)"), 3);
     });
