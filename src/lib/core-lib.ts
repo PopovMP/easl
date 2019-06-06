@@ -2,7 +2,7 @@
 
 class CoreLib implements ILib {
     private readonly inter: Interpreter;
-    public readonly builtinFunc = ["!=", "%", "*", "+", "-", "/", "<", "<=", "=", ">", ">=", "and", "eval", "not", "or",
+    public readonly builtinFunc = ["!=", "%", "*", "+", "-", "/", "<", "<=", "=", ">", ">=", "eval", "not",
         "parse", "print", "to-boolean", "to-number", "to-string", "type-of"];
     public readonly builtinHash: any = {};
 
@@ -27,8 +27,6 @@ class CoreLib implements ILib {
             case "!="         : return this.inter.evalExpr(expr[1], env) !== this.inter.evalExpr(expr[2], env);
             case ">="         : return this.inter.evalExpr(expr[1], env) >= this.inter.evalExpr(expr[2], env);
             case "<="         : return this.inter.evalExpr(expr[1], env) <= this.inter.evalExpr(expr[2], env);
-            case "and"        : return this.evalAnd(expr, env);
-            case "or"         : return this.evalOr(expr, env);
             case "not"        : return this.evalNot(this.inter.evalExpr(expr[1], env));
             case "type-of"    : return this.evalTypeOf(expr, env);
             case "to-string"  : return this.evalToString(expr, env);
@@ -165,42 +163,6 @@ class CoreLib implements ILib {
         }
 
         throw Error("Wrong number of arguments: " + "=");
-    }
-
-    private evalAnd(expr: any[], env: any[]): boolean {
-        if (expr.length === 1) {
-            return true;
-        }
-
-        if (expr.length === 2) {
-            return this.inter.evalExpr(expr[1], env);
-        }
-
-        if (expr.length === 3) {
-            const val: any = this.inter.evalExpr(expr[1], env);
-            return this.inter.isTruthy(val) ? this.inter.evalExpr(expr[2], env) : val;
-        }
-
-        const val: any = this.inter.evalExpr(expr[1], env);
-        return this.inter.isTruthy(val) ? this.evalAnd(expr.slice(1), env) : val;
-    }
-
-    private evalOr(expr: any[], env: any[]): any {
-        if (expr.length === 1) {
-            return false;
-        }
-
-        if (expr.length === 2) {
-            return this.inter.evalExpr(expr[1], env);
-        }
-
-        if (expr.length === 3) {
-            const val: any = this.inter.evalExpr(expr[1], env);
-            return this.inter.isTruthy(val) ? val : this.inter.evalExpr(expr[2], env);
-        }
-
-        const val: any = this.inter.evalExpr(expr[1], env);
-        return this.inter.isTruthy(val) ? val : this.evalOr(expr.slice(1), env);
     }
 
     private evalNot(a: any): boolean {

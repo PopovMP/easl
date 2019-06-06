@@ -3,7 +3,7 @@
 class Interpreter {
     private isDebug: boolean;
     private readonly libs: ILib[];
-    public readonly infixOperators = ["!=","%","*","+","-","/","<","<=","=",">",">=","and","or"];
+    public readonly infixOperators = ["!=","%","*","+","-","/","<","<=","=",">",">="];
 
     public options: Options;
 
@@ -91,6 +91,8 @@ class Interpreter {
             case "let"      : return this.evalLet(expr, env);
             case "repeat"   : return this.evalRepeat(expr, env);
             case "set"      : return this.evalSet(expr, env);
+            case "and"      : return this.evalAnd(expr, env);
+            case "or"       : return this.evalOr(expr, env);
             case "throw"    : return this.evalThrow(expr, env);
             case "try"      : return this.evalTry(expr, env);
             case "while"    : return this.evalWhile(expr, env);
@@ -507,6 +509,42 @@ class Interpreter {
                 : [symbol, ...callArgs];
 
         return this.evalExpr(proc, env);
+    }
+
+    private evalAnd(expr: any[], env: any[]): boolean {
+        if (expr.length === 1) {
+            return true;
+        }
+
+        if (expr.length === 2) {
+            return this.evalExpr(expr[1], env);
+        }
+
+        if (expr.length === 3) {
+            const val: any = this.evalExpr(expr[1], env);
+            return this.isTruthy(val) ? this.evalExpr(expr[2], env) : val;
+        }
+
+        const val: any = this.evalExpr(expr[1], env);
+        return this.isTruthy(val) ? this.evalAnd(expr.slice(1), env) : val;
+    }
+
+    private evalOr(expr: any[], env: any[]): any {
+        if (expr.length === 1) {
+            return false;
+        }
+
+        if (expr.length === 2) {
+            return this.evalExpr(expr[1], env);
+        }
+
+        if (expr.length === 3) {
+            const val: any = this.evalExpr(expr[1], env);
+            return this.isTruthy(val) ? val : this.evalExpr(expr[2], env);
+        }
+
+        const val: any = this.evalExpr(expr[1], env);
+        return this.isTruthy(val) ? val : this.evalOr(expr.slice(1), env);
     }
 
     // [try, symbol | expr, expr1, expr2, ...]
