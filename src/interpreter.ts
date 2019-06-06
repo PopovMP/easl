@@ -210,7 +210,9 @@ class Interpreter {
     private evalLet(expr: any[], env: any[]): any {
         const symbol: string = expr[1];
         this.throwOnExistingDef(symbol, env);
-        const value: any = this.evalLetValue(expr, env);
+        const value: any = expr.length === 3
+            ? this.evalLetValue(expr, env)
+            : null;
 
         env.push([symbol, value]);
 

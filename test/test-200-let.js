@@ -9,11 +9,17 @@ const easl = new Easl();
 describe('let', function () {
 
     describe('let with numbers', function () {
+        it('{let a} → null', function () {
+            assert.strictEqual(easl.evaluate(`    {let a}     `), null);
+        });
+        it('{let a} a → null', function () {
+            assert.strictEqual(easl.evaluate(`    {let a} a   `), null);
+        });
         it('{let a 2} → 2', function () {
-            assert.strictEqual(easl.evaluate(`    {let a 2}  `), 2);
+            assert.strictEqual(easl.evaluate(`    {let a 2}   `), 2);
         });
         it('{let a 2} a → 2', function () {
-            assert.strictEqual(easl.evaluate(`    {let a 2} a  `), 2);
+            assert.strictEqual(easl.evaluate(`    {let a 2} a `), 2);
         });
         it('{let a 2} {let b 3} a → 2', function () {
             assert.strictEqual(easl.evaluate(`    {let a 2} {let b 3} a  `), 2);
