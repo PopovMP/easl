@@ -176,13 +176,45 @@ class Interpreter {
 
         if (!Array.isArray(closure)) {throw `Error: Improper function: ${closure}`;}
 
-        const args: any[] = expr.length === 1 ? [] : expr.length === 2
-            ? [this.evalExpr(expr[1], env)]
-            : this.mapExprLst(expr.slice(1), env);
+        if (closure[0] === "closure") {
+            const args: any[] = expr.length === 1 ? [] : expr.length === 2
+                ? [this.evalExpr(expr[1], env)]
+                : this.mapExprLst(expr.slice(1), env);
 
-        const closureEnv: any[] = this.makeClosureEnv(funcName, closure[1], args, closure[3]);
+            const closureEnv: any[] = this.makeClosureEnv(funcName, closure[1], args, closure[3]);
 
-        return this.evalExpr(closure[2], closureEnv);
+            return this.evalExpr(closure[2], closureEnv);
+        }
+
+        return this.callList(expr, env, closure);
+    }
+
+    private callList(expr: any[], env: any[], lst: any[]): any {
+        if (expr.length === 1) {
+            // Get list length
+            return lst.length;
+        }
+
+        const index = this.evalExpr(expr[1], env);
+
+        if (index < 0 && index >= lst.length) {
+            throw `Error: Index out of range`;
+        }
+
+        if (expr.length === 2) {
+            // Get list element
+            return lst[index];
+        }
+
+        if (expr.length === 3) {
+            // Set list element
+            const val: any = this.evalExpr(expr[2], env);
+            lst[index] = val;
+
+            return lst;
+        }
+
+        throw `Error: Improper list call`;
     }
 
     private makeClosureEnv(funcName: string, params: string[], args: any[], env: any[]): any[] {
