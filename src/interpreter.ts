@@ -75,26 +75,27 @@ class Interpreter {
 
         // Special forms
         switch (expr[0]) {
+            case "and"      : return this.evalAnd(expr, env);
             case "block"    : return this.evalBlock(expr, env);
             case "call"     : return this.evalCall(expr, env);
             case "case"     : return this.evalCase(expr, env);
             case "cond"     : return this.evalCond(expr, env);
             case "debug"    : return this.evalDebug(env);
+            case "dec"      : return this.evalDecrement(expr, env);
+            case "delete"   : return this.evalDelete(expr, env);
             case "do"       : return this.evalDo(expr, env);
             case "for"      : return this.evalFor(expr, env);
             case "function" : return this.evalFunction(expr, env);
             case "if"       : return this.evalIf(expr, env);
-            case "unless"   : return this.evalUnless(expr, env);
             case "inc"      : return this.evalIncrement(expr, env);
-            case "dec"      : return this.evalDecrement(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
             case "let"      : return this.evalLet(expr, env);
+            case "or"       : return this.evalOr(expr, env);
             case "repeat"   : return this.evalRepeat(expr, env);
             case "set"      : return this.evalSet(expr, env);
-            case "and"      : return this.evalAnd(expr, env);
-            case "or"       : return this.evalOr(expr, env);
             case "throw"    : return this.evalThrow(expr, env);
             case "try"      : return this.evalTry(expr, env);
+            case "unless"   : return this.evalUnless(expr, env);
             case "while"    : return this.evalWhile(expr, env);
         }
 
@@ -263,6 +264,23 @@ class Interpreter {
         this.setInEnv(expr[1], value, env);
 
         return value;
+    }
+
+    // [delete, symbol]
+    private evalDelete(expr: any[], env: any[]): any {
+        const symbol: string = expr[1];
+
+        for (let i = env.length - 1; i > -1; i--) {
+            const cellKey = env[i][0];
+            if (cellKey === "#scope#") throw `Error: Unbound identifier: ${symbol}`;
+            if (cellKey === symbol) {
+                const cellValue = env[i][1];
+                env.splice(i, 1);
+                return cellValue;
+            }
+        }
+
+        throw `Error: Unbound identifier: ${symbol}`;
     }
 
     // [inc, symbol, inc]
