@@ -280,21 +280,26 @@ describe('function', function () {
                 (fn 5)                              `), "Error: Identifier already defined: a");
     });
 
-    it('cannot redefine parameter from body - many expr', function () {
+    it('can redefine parameter from body - many expr', function () {
         assert.strictEqual(easl.evaluate(` 
-                {function fn (a) {let a 1} 1}
-                (fn 5)                              `), "Error: Identifier already defined: a");
+                {function fn (a)
+                    {let a 1}
+                    a }
+                (fn 5)                              `), 1);
     });
 
     it('cannot redefine func-name', function () {
         assert.strictEqual(easl.evaluate(` 
-                {function fn (a) {let func-name "hmm"}}
+                {function fn (a)
+                    {let func-name "hmm"} }
                 (fn 5)                              `), "Error: Identifier already defined: func-name");
     });
 
-    it('cannot redefine func-name in body', function () {
+    it('can redefine func-name in body', function () {
         assert.strictEqual(easl.evaluate(` 
-                {function fn (a) {let b 1} {let func-name "hmm"}}
-                (fn 5)                              `), "Error: Identifier already defined: func-name");
+                {function fn (a)
+                    {let b 1}
+                    {let func-name "hmm"} }
+                (fn 5)                              `), "hmm");
     });
 });
