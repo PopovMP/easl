@@ -2,8 +2,8 @@
 
 class ListLib implements ILib {
     private readonly inter: Interpreter;
-    public readonly builtinFunc = ["list.add", "list.concat", "list.first", "list.flatten", "list.get",
-        "list.has", "list.index", "list.join", "list.last", "list.less", "list.length", "list.push",
+    public readonly builtinFunc = ["list.add", "list.concat", "list.dec", "list.first", "list.flatten", "list.get",
+        "list.has", "list.inc", "list.index", "list.join", "list.last", "list.less", "list.length", "list.push",
         "list.range", "list.reverse", "list.rest", "list.set", "list.slice", "list.sort"];
     public readonly builtinHash: any = {};
 
@@ -19,10 +19,12 @@ class ListLib implements ILib {
         switch (expr[0]) {
             case "list.add"     : return this.listAdd(expr, env);
             case "list.concat"  : return this.listConcat(expr, env);
+            case "list.dec"     : return this.listDec(expr, env);
             case "list.first"   : return this.listFirst(expr, env);
             case "list.flatten" : return this.listFlatten(expr, env);
             case "list.get"     : return this.listGet(expr, env);
             case "list.has"     : return this.listHas(expr, env);
+            case "list.inc"     : return this.listInc(expr, env);
             case "list.index"   : return this.listIndex(expr, env);
             case "list.join"    : return this.listJoin(expr, env);
             case "list.last"    : return this.listLast(expr, env);
@@ -106,6 +108,20 @@ class ListLib implements ILib {
         }
 
         return -1;
+    }
+
+    private listInc(expr: any[], env: any[]): number {
+        const lst: any[]  = this.inter.evalExpr(expr[1], env);
+        const elm: number = this.inter.evalExpr(expr[2], env);
+
+        return ++lst[elm];
+    }
+
+    private listDec(expr: any[], env: any[]): number {
+        const lst: any[]  = this.inter.evalExpr(expr[1], env);
+        const elm: number = this.inter.evalExpr(expr[2], env);
+
+        return --lst[elm];
     }
 
     private listJoin(expr: any[], env: any): string {
