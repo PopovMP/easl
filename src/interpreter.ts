@@ -84,6 +84,7 @@ class Interpreter {
             case "dec"      : return this.evalDecrement(expr, env);
             case "delete"   : return this.evalDelete(expr, env);
             case "do"       : return this.evalDo(expr, env);
+            case "enum"     : return this.evalEnum(expr, env);
             case "for"      : return this.evalFor(expr, env);
             case "function" : return this.evalFunction(expr, env);
             case "if"       : return this.evalIf(expr, env);
@@ -498,6 +499,17 @@ class Interpreter {
 
             this.cleanEnv("#scope#", env);
         } while (this.evalExpr(testExpr, env));
+
+        return null;
+    }
+
+    // [enum, symbol1, symbol2, ...]
+    private evalEnum(expr: any[], env: any[]): null {
+        for (let i: number = 1; i < expr.length; i++) {
+            const symbol: string = expr[i];
+            this.throwOnExistingDef(symbol, env);
+            env.push([symbol, i - 1]);
+        }
 
         return null;
     }
