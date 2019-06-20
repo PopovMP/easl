@@ -11,9 +11,7 @@ class Parser {
     public parse(codeText: string): any[] {
         const fixedText = codeText
             .replace(/λ/g, "lambda")
-            .replace(/\(string\)/g, '""')
-            .replace(/[{(]break[})]/g, "break")
-            .replace(/[{(]continue[})]/g, "continue");
+            .replace(/\(string\)/g, '""');
         const codeTree = this.tokenize(fixedText);
         const ilTree = this.nest(codeTree);
         return ilTree;

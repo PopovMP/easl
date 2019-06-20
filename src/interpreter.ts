@@ -52,8 +52,6 @@ class Interpreter {
             case "null"     : return null;
             case "true"     : return true;
             case "false"    : return false;
-            case "break"    : return "break";
-            case "continue" : return "continue";
         }
 
         // Types
@@ -66,6 +64,12 @@ class Interpreter {
         switch (expr[0]) {
             case "list"     : return this.mapExprLst(expr.slice(1), env);
             case "string"   : return this.evalStringConstructor(expr);
+        }
+
+        // Loop controls
+        switch (expr[0]) {
+            case "break"    : return "break";
+            case "continue" : return "continue";
         }
 
         if (this.isDebug) {

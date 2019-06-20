@@ -193,7 +193,7 @@ class StringLib implements ILib {
         return str.length;
     }
 
-    // [str.march, str, pattern, modifiers?]
+    // [str.match, str, pattern, modifiers?]
     private strMatch(expr: any[], env: any): string[] | null {
         const str: string | any = this.inter.evalExpr(expr[1], env);
         const pattern: string | any = this.inter.evalExpr(expr[2], env);
@@ -232,7 +232,7 @@ class StringLib implements ILib {
         return str.repeat(count);
     }
 
-    // [str.march, str, pattern, replace, modifiers?]
+    // [str.replace, str, pattern, replace, modifiers?]
     private strReplace(expr: any[], env: any): string {
         const str: string | any = this.inter.evalExpr(expr[1], env);
         const pattern: string | any = this.inter.evalExpr(expr[2], env);
