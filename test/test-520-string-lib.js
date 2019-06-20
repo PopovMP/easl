@@ -127,6 +127,12 @@ describe('str library', function () {
         it('with separator', function () {
             assert.deepStrictEqual(easl.evaluate(`(str.split "A-B-C" "-")`), ["A", "B", "C"]);
         });
+        it('new line', function () {
+            assert.deepStrictEqual(easl.evaluate(`
+                  (str.split "A
+B
+C" "\n")`                                 ), ["A", "B", "C"]);
+        });
     });
 
     describe('str.to-lowercase', function () {

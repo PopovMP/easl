@@ -51,6 +51,26 @@ describe('EASL design', function () {
         });
     });
 
+    describe('string', function () {
+        it('empty', function () {
+            assert.strictEqual(easl.evaluate(`  ""  `), "");
+        });
+        it('non empty', function () {
+            assert.strictEqual(easl.evaluate(`  "a"  `), "a");
+        });
+        it('multiline', function () {
+            assert.strictEqual(easl.evaluate(` "
+a
+b"                                                   `), "\na\nb");
+        });
+        it('quotation marks', function () {
+            assert.strictEqual(easl.evaluate(` "a ""b"" c" `), "a \"b\" c");
+        });
+        it('quotation marks escape', function () {
+            assert.strictEqual(easl.evaluate(` "a \\"b\\" c" `), "a \"b\" c");
+        });
+    });
+
     describe('variable definition', function () {
         it('number', function () {
             assert.strictEqual(easl.evaluate(`      {let answer 42}
