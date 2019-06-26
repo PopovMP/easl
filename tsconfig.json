@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "incremental": true,
-    "target": "es5",
+    "target": "esnext",
     "strict": true,
     "removeComments": true,
     "sourceMap": false,
