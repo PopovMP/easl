@@ -20,10 +20,23 @@ describe('case', function () {
                 {[1 2 3] "ok"} }            `), "ok");
     });
 
+    it('Clause with single number', function () {
+        assert.strictEqual(easl.evaluate(`
+            {case 1
+                {1 "ok"} }                  `), "ok");
+    });
+
     it('Not in options', function () {
         assert.strictEqual(easl.evaluate(`
             {case 3
                 {[2] "ok"} }                `), null);
+    });
+
+    it('A clause with empty body', function () {
+        assert.strictEqual(easl.evaluate(`
+            {case 1
+                {1}
+                {else 2} }                  `), null);
     });
 
     it('Two clauses', function () {

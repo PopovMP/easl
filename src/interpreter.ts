@@ -411,19 +411,23 @@ class Interpreter {
     }
 
     // [case, expr,
-    //     [[a1, a2, ...] expr],
-    //     [[b1, b2, ...] expr],
-    //     [else          expr]]
+    //     [a | [a1, a2, ...] expr],
+    //     [b | [b1, b2, ...] expr],
+    //     [else              expr] ]
     private evalCase(expr: any, env: any[]): any {
         const val: any = this.evalExpr(expr[1], env);
         const clauses: any[] = expr.slice(2);
         env.push(["#scope#", "case"]);
 
         for (const clause of clauses) {
-            if (clause[0] === "else" || this.evalExpr(clause[0], env).indexOf(val) > -1) {
-                const res: any = clause.length === 2
-                    ? this.evalExpr(clause[1], env)
-                    : this.evalExprLst(clause.slice(1), env);
+            const target: any|any[] = clause[0];
+            if (target === "else" ||
+                (!Array.isArray(target) && this.evalExpr(target, env) === val) ||
+                this.evalExpr(target, env).indexOf(val) > -1) {
+                const res: any = clause.length === 1 ? null
+                    : clause.length === 2
+                        ? this.evalExpr(clause[1], env)
+                        : this.evalExprLst(clause.slice(1), env);
                 this.cleanEnv("#scope#", env);
                 return res;
             }
