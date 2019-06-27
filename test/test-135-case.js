@@ -25,6 +25,17 @@ describe('case', function () {
             {case 1
                 {1 "ok"} }                  `), "ok");
     });
+    it('Clause with single number and body number', function () {
+        assert.strictEqual(easl.evaluate(`
+            {case 1
+                {1 1} }                  `), 1);
+    });
+    it('Two clauses with single number and body number', function () {
+        assert.strictEqual(easl.evaluate(`
+            {case 2
+                {1 1}
+                {2 2} }                  `), 2);
+    });
 
     it('Not in options', function () {
         assert.strictEqual(easl.evaluate(`

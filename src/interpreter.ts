@@ -421,9 +421,10 @@ class Interpreter {
 
         for (const clause of clauses) {
             const target: any|any[] = clause[0];
+            const targetArray: boolean = Array.isArray(target);
             if (target === "else" ||
-                (!Array.isArray(target) && this.evalExpr(target, env) === val) ||
-                this.evalExpr(target, env).indexOf(val) > -1) {
+                (!targetArray && this.evalExpr(target, env) === val) ||
+                (targetArray && this.evalExpr(target, env).indexOf(val) > -1)) {
                 const res: any = clause.length === 1 ? null
                     : clause.length === 2
                         ? this.evalExpr(clause[1], env)
