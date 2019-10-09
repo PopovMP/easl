@@ -101,6 +101,7 @@ class Interpreter {
             case "throw"    : return this.evalThrow(expr, env);
             case "try"      : return this.evalTry(expr, env);
             case "unless"   : return this.evalUnless(expr, env);
+            case "when"     : return this.evalWhen(expr, env);
             case "while"    : return this.evalWhile(expr, env);
         }
 
@@ -386,6 +387,21 @@ class Interpreter {
             : expr.length === 4
                 ? this.evalExpr(expr[3], env)
                 : null;
+    }
+
+    // [when, test-expr, expr1, expr2, ...]
+    private evalWhen(expr: any[], env: any[]): any {
+        if (!this.isTruthy(this.evalExpr(expr[1], env))) { return null; }
+
+        if (expr.length === 2) throw "Error: Empty when block";
+        env.push(["#scope#", "when"]);
+
+        const res: any = expr.length === 3
+            ? this.evalExpr(expr[2], env)
+            : this.evalExprLst(expr.slice(2), env);
+
+        this.cleanEnv("#scope#", env);
+        return res;
     }
 
     // [cond,
