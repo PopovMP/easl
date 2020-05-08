@@ -3,13 +3,13 @@
 class Interpreter {
     private isDebug: boolean;
     private readonly libs: ILib[];
-    public readonly infixOperators = ["!=","%","*","+","-","/","<","<=","=",">",">="];
+    public  readonly infixOperators = ["+","-","*","/","%","<","<=","=",">=",">","!="];
 
     public options: Options;
 
     constructor() {
         this.isDebug = false;
-        this.libs = [];
+        this.libs    = [];
         this.options = new Options();
     }
 
@@ -127,8 +127,9 @@ class Interpreter {
     }
 
     public isFaulty(value: any): boolean {
-        if (Array.isArray(value) && value.length === 0) return true;
-        return !value;
+        return (Array.isArray(value) && value.length === 0)
+            ? true
+            : !value;
     }
 
     private lookup(symbol: string, env: any[]): any {
@@ -211,32 +212,30 @@ class Interpreter {
         return closureEnv;
     }
 
+    // Call a list as a function
     private callList(expr: any[], env: any[], lst: any[]): any {
+        // [lst] => Get list length
         if (expr.length === 1) {
-            // Get list length
             return lst.length;
         }
 
         const index = this.evalExpr(expr[1], env);
 
         if (index < 0 && index >= lst.length) {
-            throw `Error: Index out of range`;
+            throw "Error: Index out of range";
         }
 
+        // [lst, index] => Get the element at `index`
         if (expr.length === 2) {
-            // Get list element
             return lst[index];
         }
 
+        // [lst, index, value] => Set the element at `index` to be equal to `value`
         if (expr.length === 3) {
-            // Set list element
-            const val: any = this.evalExpr(expr[2], env);
-            lst[index] = val;
-
-            return lst;
+            return lst[index] = this.evalExpr(expr[2], env);
         }
 
-        throw `Error: Improper list call`;
+        throw "Error: Improper list call";
     }
 
     // [string, str1, str2, ...]
@@ -330,11 +329,11 @@ class Interpreter {
             ? this.evalExpr(expr[1], env)
             : this.evalExprLst(expr.slice(1), env);
 
-        this.cleanEnv("#scope#", env);
+        this.clearEnv("#scope#", env);
         return res;
     }
 
-    private cleanEnv(tag: string, env: any[]): void {
+    private clearEnv(tag: string, env: any[]): void {
         let cell: [string, any];
         do {
             cell = env.pop();
@@ -391,16 +390,25 @@ class Interpreter {
 
     // [when, test-expr, expr1, expr2, ...]
     private evalWhen(expr: any[], env: any[]): any {
-        if (!this.isTruthy(this.evalExpr(expr[1], env))) { return null; }
+        if (expr.length === 1) {
+            throw "Error: Empty 'when'";
+        }
 
-        if (expr.length === 2) throw "Error: Empty when block";
+        if (expr.length === 2) {
+            throw "Error: Empty 'when' block";
+        }
+
+        if (!this.isTruthy(this.evalExpr(expr[1], env))) {
+            return null;
+        }
+
         env.push(["#scope#", "when"]);
 
         const res: any = expr.length === 3
             ? this.evalExpr(expr[2], env)
             : this.evalExprLst(expr.slice(2), env);
 
-        this.cleanEnv("#scope#", env);
+        this.clearEnv("#scope#", env);
         return res;
     }
 
@@ -417,12 +425,12 @@ class Interpreter {
                 const res: any = clause.length === 2
                     ? this.evalExpr(clause[1], env)
                     : this.evalExprLst(clause.slice(1), env);
-                this.cleanEnv("#scope#", env);
+                this.clearEnv("#scope#", env);
                 return res;
             }
         }
 
-        this.cleanEnv("#scope#", env);
+        this.clearEnv("#scope#", env);
         return null;
     }
 
@@ -445,12 +453,12 @@ class Interpreter {
                     : clause.length === 2
                         ? this.evalExpr(clause[1], env)
                         : this.evalExprLst(clause.slice(1), env);
-                this.cleanEnv("#scope#", env);
+                this.clearEnv("#scope#", env);
                 return res;
             }
         }
 
-        this.cleanEnv("#scope#", env);
+        this.clearEnv("#scope#", env);
         return null;
     }
 
@@ -471,12 +479,12 @@ class Interpreter {
                 const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
                 if (res === "break") {
-                    this.cleanEnv("#scope#", env);
+                    this.clearEnv("#scope#", env);
                     return null;
                 }
             }
 
-            this.cleanEnv("#scope#", env);
+            this.clearEnv("#scope#", env);
         }
 
         return null;
@@ -494,12 +502,12 @@ class Interpreter {
                 const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
                 if (res === "break") {
-                    this.cleanEnv("#scope#", env);
+                    this.clearEnv("#scope#", env);
                     return null;
                 }
             }
 
-            this.cleanEnv("#scope#", env);
+            this.clearEnv("#scope#", env);
         }
 
         return null;
@@ -517,12 +525,12 @@ class Interpreter {
                 const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
                 if (res === "break") {
-                    this.cleanEnv("#scope#", env);
+                    this.clearEnv("#scope#", env);
                     return null;
                 }
             }
 
-            this.cleanEnv("#scope#", env);
+            this.clearEnv("#scope#", env);
         } while (this.evalExpr(testExpr, env));
 
         return null;
@@ -553,12 +561,12 @@ class Interpreter {
                 const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
                 if (res === "break") {
-                    this.cleanEnv("#scope#", env);
+                    this.clearEnv("#scope#", env);
                     return null;
                 }
             }
 
-            this.cleanEnv("#scope#", env);
+            this.clearEnv("#scope#", env);
         }
 
         return null;
@@ -573,7 +581,7 @@ class Interpreter {
 
         for (let i: number = 0; i < callArgs.length; i++) {
             const elm: any = callArgs[i];
-            if (typeof elm === "string" &&["true", "false", "null"].indexOf(elm) === -1) {
+            if (typeof elm === "string" && ["true", "false", "null"].indexOf(elm) === -1) {
                 callArgs[i] = ["string", elm];
             } else if (elm === true) {
                 callArgs[i] = "true";
@@ -636,10 +644,10 @@ class Interpreter {
             const res = expr.length === 3
                 ? this.evalExpr(expr[2], env)
                 : this.evalExprLst(expr.slice(2), env);
-            this.cleanEnv("#scope#", env);
+            this.clearEnv("#scope#", env);
             return res;
         } catch (e) {
-            this.cleanEnv("#scope#", env);
+            this.clearEnv("#scope#", env);
             return this.evalCatch(expr[1], String(e), env);
         }
     }

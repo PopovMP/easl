@@ -9,7 +9,7 @@ const easl = new Easl();
 describe('when', function () {
 
     it('{when true} → "Error: Empty when block"', function () {
-        assert.strictEqual(easl.evaluate("{when true}"), "Error: Empty when block");
+        assert.strictEqual(easl.evaluate("{when true}"), "Error: Empty 'when' block");
     });
 
     it('{when true 1} → 1', function () {

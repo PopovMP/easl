@@ -42,10 +42,10 @@ describe('Eval basics', function () {
             assert.strictEqual(easl.evaluate("{let lst [3]} (lst (- 5 5))"), 3);
         });
         it('set element', function () {
-            assert.deepStrictEqual(easl.evaluate("{let lst [3]} (lst 0 5)"), [5]);
+            assert.deepStrictEqual(easl.evaluate("{let lst [3]} (lst 0 5)"), 5);
         });
         it('set element calculate index and value', function () {
-            assert.deepStrictEqual(easl.evaluate("{let lst [3]} (lst (- 5 5) (+ 3 2))"), [5]);
+            assert.deepStrictEqual(easl.evaluate("{let lst [3]} (lst (- 5 5) (+ 3 2))"), 5);
         });
     });
 });
