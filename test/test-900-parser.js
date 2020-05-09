@@ -112,6 +112,17 @@ describe('Parser', function () {
         });
     });
 
+    describe("tokenize $", function () {
+        it("{let a $ + 1 2}", function () {
+            assert.deepStrictEqual(parser.tokenize("{let a $ + 1 2}"),
+                ["{", "let", "a", "(", "+", 1, 2, ")", "}"]);
+        });
+        it("{let a $ * (+ 1 2) 3}", function () {
+            assert.deepStrictEqual(parser.tokenize("{let a $ * (+ 1 2) 3}"),
+                ["{", "let", "a", "(", "*", "(", "+", 1, 2, ")", 3, ")", "}"]);
+        });
+    });
+
     describe('parser', function () {
         it('parse 1', function () {
             const codeText = "1";

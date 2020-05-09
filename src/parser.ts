@@ -1,11 +1,11 @@
 "use strict";
 
 class Parser {
-    private numberRegExp = /^[-+]?\d+(?:-\d\d\d)*(?:\.\d+)*$/;
-    private openParenChars: string[] = ["(", "[", "{"];
-    private closeParenChars: string[] = [")", "]", "}"];
-    private whiteSpaceChars: string[] = [" ", "\t"];
-    private endOfLineChars: string[] = ["\r", "\n"];
+    private numberRegExp: RegExp        = /^[-+]?\d+(?:-\d\d\d)*(?:\.\d+)*$/;
+    private openParenChars: string[]    = ["(", "[", "{"];
+    private closeParenChars: string[]   = [")", "]", "}"];
+    private whiteSpaceChars: string[]   = [" ", "\t"];
+    private endOfLineChars: string[]    = ["\r", "\n"];
     private commentStartChars: string[] = [";"];
 
     public parse(codeText: string): any[] {
@@ -22,6 +22,8 @@ class Parser {
 
     public tokenize(code: string): any[] {
         const lexList: any[] = [];
+        let dollar    = 0;
+        let openParen = 0;
 
         const pushSymbol = (symbol: string): void => {
             if (symbol === "") return;
@@ -68,6 +70,24 @@ class Parser {
             if (this.isParen(ch)) {
                 pushSymbol(symbol);
                 symbol = "";
+
+                if (dollar > 0) {
+                    if (ch === "(" || ch === "{") {
+                        openParen++;
+                    }
+
+                    if (ch === ")" || ch === "}") {
+                        if (openParen === 0) {
+                            for (let i: number = 0; i < dollar; i++) {
+                                lexList.push(")");
+                            }
+                            dollar = 0;
+                        } else {
+                            openParen--;
+                        }
+                    }
+                }
+
                 lexList.push(ch);
 
                 if (ch === "[") {
@@ -79,6 +99,12 @@ class Parser {
             if (this.isWhiteSpace(ch)) {
                 pushSymbol(symbol);
                 symbol = "";
+                continue;
+            }
+
+            if (ch === "$") {
+                lexList.push("(");
+                dollar++;
                 continue;
             }
 
@@ -132,8 +158,7 @@ class Parser {
     }
 
     private isWhiteSpace(ch: string): boolean {
-        return this.whiteSpaceChars.indexOf(ch) > -1 ||
-            this.endOfLineChars.indexOf(ch) > -1;
+        return this.whiteSpaceChars.indexOf(ch) > -1 || this.endOfLineChars.indexOf(ch) > -1;
     }
 
     private isLineComment(ch: string): boolean {
@@ -149,10 +174,10 @@ class Parser {
     }
 
     private parseNumber(numberText: string): number {
-        const isNegative = numberText[0] === "-";
+        const isNegative      = numberText[0] === "-";
         const cleanedNumbText = numberText.replace(/-/g, "");
-        const parsedNumber = Number(cleanedNumbText);
-        const number = isNegative ? -parsedNumber : parsedNumber;
+        const parsedNumber    = Number(cleanedNumbText);
+        const number          = isNegative ? -parsedNumber : parsedNumber;
         return number;
     }
 }
