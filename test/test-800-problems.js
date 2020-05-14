@@ -7,6 +7,23 @@ const Easl = require("../bin/easl.js").Easl;
 const easl = new Easl();
 
 describe('problems', function () {
+
+    it("Lambda calculus Tuple", function () {
+        const actual = easl.evaluate(`   
+            {function Tuple (a b)
+               {λ (f) (f a b)} }
+
+            {function first  (a b) a }
+            {function second (a b) b }
+
+            {let tuple (Tuple 1 2)}
+
+            (tuple first)
+        `);
+
+        assert.deepStrictEqual(actual, 1);
+    });
+
     it('Sequence generator', function () {
         assert.deepStrictEqual(easl.evaluate(`   
             {function make-sequence (start length next)
@@ -17,7 +34,7 @@ describe('problems', function () {
                     (loop [start] 1) }
             
               {make-sequence 3 10 {λ cur $ * cur 3} )
-                                                             `),
+            `),
             [3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049]);
     });
 

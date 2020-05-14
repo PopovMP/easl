@@ -43,7 +43,7 @@ describe('ext library', function () {
 
         it('call with func calls', function () {
             assert.strictEqual(easl.evaluate(`
-              {let res (ext.sum (2 + 3) (2 + 4))}
+              {let res (ext.sum (+ 2 3) (+ 2 4))}
               res                                               `, options), 11);
         });
 

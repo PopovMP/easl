@@ -3,7 +3,6 @@
 class Interpreter {
     private isDebug: boolean;
     private readonly libs: ILib[];
-    public  readonly infixOperators = ["+","-","*","/","%","<","<=","=",">=",">","!="];
 
     public options: Options;
 
@@ -103,12 +102,6 @@ class Interpreter {
             case "unless"   : return this.evalUnless(expr, env);
             case "when"     : return this.evalWhen(expr, env);
             case "while"    : return this.evalWhile(expr, env);
-        }
-
-        if (expr.length === 3 && this.infixOperators.indexOf(expr[1]) > -1) {
-            const operator = expr[1];
-            expr[1] = Array.isArray(expr[0]) ? expr[0].slice() : expr[0];
-            expr[0] = operator;
         }
 
         const identifier: string = expr[0];
@@ -352,10 +345,6 @@ class Interpreter {
         const value:  any   = this.evalLambda(["lambda", params, body], env);
 
         env.push([symbol, value]);
-
-        if (params.length === 2) {
-            this.infixOperators.push(symbol);
-        }
 
         return value;
     }

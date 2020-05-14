@@ -12,16 +12,14 @@ describe('let lambda - recursive', function () {
         assert.strictEqual(easl.evaluate(`   
 
             {let count {lambda (lst cnt)
-                           {if ((list.length lst) = 0)
+                           {if (= (list.length lst) 0)
                                cnt
                                (count (list.rest lst)
-                                      (cnt + 1) )}}}
-            
+                                      (+ cnt 1) )}}}
+
             (count [1 2 3 4 5] 0)
-                                                  
                                                     `), 5);
     });
-
 
     it('factorial 5  → 120', function () {
         assert.strictEqual(easl.evaluate(` 
@@ -49,7 +47,6 @@ describe('let lambda - recursive', function () {
                             (loop n (+ i 1) cur (+ prev cur))}}}
     
             (fibo 10)        
-        
                                                     `), 55);
     });
 

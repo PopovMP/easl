@@ -60,11 +60,11 @@ describe('lambda', function () {
     });
 
     it('lambda with more than one expr ', function () {
-        assert.strictEqual(easl.evaluate("({lambda n {let a 5} (n + a)} 3)"), 8);
+        assert.strictEqual(easl.evaluate("({lambda n {let a 5} (+ n a)} 3)"), 8);
     });
 
     it('lambda with no args and more than one expr ', function () {
-        assert.strictEqual(easl.evaluate("({lambda () {let a 5} (a + a)})"), 10);
+        assert.strictEqual(easl.evaluate("({lambda () {let a 5} (+ a a)})"), 10);
     });
 
     it('Improper function', function () {
