@@ -33,7 +33,7 @@ describe('problems', function () {
                             (loop (list.add lst $ next $ list.last lst) $ + i 1) }}
                     (loop [start] 1) }
             
-              {make-sequence 3 10 {λ cur $ * cur 3} )
+              {make-sequence 3 10 {λ (cur) $ * cur 3} )
             `),
             [3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049]);
     });

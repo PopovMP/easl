@@ -144,7 +144,7 @@ class Interpreter {
     private throwOnExistingDef(symbol: string, env: any[]): void {
         for (let i = env.length - 1; i > -1; i--) {
             const cellKey = env[i][0];
-            if (cellKey === "#scope#") return;
+            if (cellKey === "#scope") return;
             if (cellKey === symbol) throw `Error: Identifier already defined: ${symbol}`;
         }
     }
@@ -162,7 +162,6 @@ class Interpreter {
 
     // [func-id, arg1, arg2, ...]
     // [[lambda, [par1, par2, ...], expr1, expr2, ...], arg1, arg2, ...]
-    // [list-id, index, value]
     private callProc(expr: any[], env: any[]): any {
         const proc: string | any[] = expr[0];
         const isNamed: boolean = typeof proc === "string";
@@ -191,8 +190,8 @@ class Interpreter {
         return this.evalExpr(closureBody, closureEnv);
     }
 
-    private makeClosureEnv(funcName: string, params: string[], args: any[], env: any[]): any[] {
-        const closureEnv = env.concat([["#scope#", funcName], ["func-name", funcName], ["func-params", params], ["func-args", args]]);
+    private makeClosureEnv(name: string, params: string[], args: any[], env: any[]): any[] {
+        const closureEnv = env.concat([["#scope", name], ["#args", args], ["#name", name]]);
 
         for (let i = 0; i < params.length; i++) {
             const param: string = params[i];
@@ -242,7 +241,7 @@ class Interpreter {
 
         for (let i = env.length - 1; i > -1; i--) {
             const cellKey = env[i][0];
-            if (cellKey === "#scope#") throw `Error: Unbound identifier: ${symbol}`;
+            if (cellKey === "#scope") throw `Error: Unbound identifier: ${symbol}`;
             if (cellKey === symbol) {
                 const cellValue = env[i][1];
                 env.splice(i, 1);
@@ -288,13 +287,13 @@ class Interpreter {
     // [block, expr1, expr2, ...]
     private evalBlock(expr: any[], env: any[]): any {
         if (expr.length === 1) throw "Error: Empty block";
-        env.push(["#scope#", "block"]);
+        env.push(["#scope", "block"]);
 
         const res: any = expr.length === 2
             ? this.evalExpr(expr[1], env)
             : this.evalExprLst(expr.slice(1), env);
 
-        this.clearEnv("#scope#", env);
+        this.clearEnv("#scope", env);
         return res;
     }
 
@@ -310,22 +309,23 @@ class Interpreter {
         const symbol: string = expr[1];
 
         if (expr.length < 4) throw `Error: Improper function: ${symbol}`;
+        if (!Array.isArray(expr[2])) throw `Error: Improper function parameters: ${symbol}`;
         this.throwOnExistingDef(symbol, env);
 
-        const params: any[] = Array.isArray(expr[2]) ? expr[2] : [expr[2]];
-        const body:   any[] = expr.length === 4 ? expr[3] : ["block", ... expr.slice(3)];
-        const value:  any   = this.evalLambda(["lambda", params, body], env);
+        const body:    any[] = expr.length === 4 ? expr[3] : ["block", ... expr.slice(3)];
+        const closure: any[] = ["closure", expr[2], body, env];
 
-        env.push([symbol, value]);
+        env.push([symbol, closure]);
 
-        return value;
+        return closure;
     }
 
     // [lambda, [par1, par2, ...], expr1, expr2, ...]
     private evalLambda(expr: any[], env: any[]): any[] {
         if (expr.length < 3) throw "Error: Improper function";
+        if (!Array.isArray(expr[1])) throw "Error: Improper function parameters";
 
-        const params: any[] = Array.isArray(expr[1]) ? expr[1] : [expr[1]];
+        const params: any[] = expr[1];
         const body:   any[] = expr.length === 3 ? expr[2] : ["block", ... expr.slice(2)];
 
         return ["closure", params, body, env];
@@ -363,13 +363,13 @@ class Interpreter {
             return null;
         }
 
-        env.push(["#scope#", "when"]);
+        env.push(["#scope", "when"]);
 
         const res: any = expr.length === 3
             ? this.evalExpr(expr[2], env)
             : this.evalExprLst(expr.slice(2), env);
 
-        this.clearEnv("#scope#", env);
+        this.clearEnv("#scope", env);
         return res;
     }
 
@@ -379,19 +379,19 @@ class Interpreter {
     //     [else, expr1, expr2, ...]]
     private evalCond(expr: any, env: any[]): any {
         const clauses: any[] = expr.slice(1);
-        env.push(["#scope#", "cond"]);
+        env.push(["#scope", "cond"]);
 
         for (const clause of clauses) {
             if (clause[0] === "else" || this.evalExpr(clause[0], env)) {
                 const res: any = clause.length === 2
                     ? this.evalExpr(clause[1], env)
                     : this.evalExprLst(clause.slice(1), env);
-                this.clearEnv("#scope#", env);
+                this.clearEnv("#scope", env);
                 return res;
             }
         }
 
-        this.clearEnv("#scope#", env);
+        this.clearEnv("#scope", env);
         return null;
     }
 
@@ -402,7 +402,7 @@ class Interpreter {
     private evalCase(expr: any, env: any[]): any {
         const val: any = this.evalExpr(expr[1], env);
         const clauses: any[] = expr.slice(2);
-        env.push(["#scope#", "case"]);
+        env.push(["#scope", "case"]);
 
         for (const clause of clauses) {
             const target: any|any[] = clause[0];
@@ -414,12 +414,12 @@ class Interpreter {
                     : clause.length === 2
                         ? this.evalExpr(clause[1], env)
                         : this.evalExprLst(clause.slice(1), env);
-                this.clearEnv("#scope#", env);
+                this.clearEnv("#scope", env);
                 return res;
             }
         }
 
-        this.clearEnv("#scope#", env);
+        this.clearEnv("#scope", env);
         return null;
     }
 
@@ -433,19 +433,19 @@ class Interpreter {
         if (range.length === 0) return null;
 
         for (const elem of range) {
-            env.push(["#scope#", "for"]);
+            env.push(["#scope", "for"]);
             env.push([symbol, elem]);
 
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
                 if (res === "break") {
-                    this.clearEnv("#scope#", env);
+                    this.clearEnv("#scope", env);
                     return null;
                 }
             }
 
-            this.clearEnv("#scope#", env);
+            this.clearEnv("#scope", env);
         }
 
         return null;
@@ -457,18 +457,18 @@ class Interpreter {
         const loopBody: any = expr.slice(2);
 
         while (this.evalExpr(testExpr, env)) {
-            env.push(["#scope#", "while"]);
+            env.push(["#scope", "while"]);
 
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
                 if (res === "break") {
-                    this.clearEnv("#scope#", env);
+                    this.clearEnv("#scope", env);
                     return null;
                 }
             }
 
-            this.clearEnv("#scope#", env);
+            this.clearEnv("#scope", env);
         }
 
         return null;
@@ -480,18 +480,18 @@ class Interpreter {
         const loopBody: any = expr.slice(1, expr.length - 1);
 
         do {
-            env.push(["#scope#", "do"]);
+            env.push(["#scope", "do"]);
 
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
                 if (res === "break") {
-                    this.clearEnv("#scope#", env);
+                    this.clearEnv("#scope", env);
                     return null;
                 }
             }
 
-            this.clearEnv("#scope#", env);
+            this.clearEnv("#scope", env);
         } while (this.evalExpr(testExpr, env));
 
         return null;
@@ -516,18 +516,18 @@ class Interpreter {
         const loopBody: any = expr.slice(2);
 
         for (let i: number = 0; i < count; i++){
-            env.push(["#scope#", "repeat"]);
+            env.push(["#scope", "repeat"]);
 
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
                 if (res === "continue") break;
                 if (res === "break") {
-                    this.clearEnv("#scope#", env);
+                    this.clearEnv("#scope", env);
                     return null;
                 }
             }
 
-            this.clearEnv("#scope#", env);
+            this.clearEnv("#scope", env);
         }
 
         return null;
@@ -601,14 +601,14 @@ class Interpreter {
     // [try, symbol | expr, expr1, expr2, ...]
     private evalTry(expr: any[], env: any[]): any {
         try {
-            env.push(["#scope#", "try"]);
+            env.push(["#scope", "try"]);
             const res = expr.length === 3
                 ? this.evalExpr(expr[2], env)
                 : this.evalExprLst(expr.slice(2), env);
-            this.clearEnv("#scope#", env);
+            this.clearEnv("#scope", env);
             return res;
         } catch (e) {
-            this.clearEnv("#scope#", env);
+            this.clearEnv("#scope", env);
             return this.evalCatch(expr[1], String(e), env);
         }
     }

@@ -91,7 +91,7 @@ describe("function", function () {
 
         it("identity 2", function () {
             assert.strictEqual(easl.evaluate(`
-                {function identity a a}
+                {function identity (a) a}
                 (identity 5)                         `), 5);
         });
 
@@ -107,21 +107,9 @@ describe("function", function () {
                 (fun 1)                             `,), null);
         });
 
-        it("function defines `func-name`", function () {
-            assert.strictEqual(easl.evaluate(`
-                {function fun (a b) func-name}
-                (fun 1 2 3 4)                        `), "fun");
-        });
-
-        it("function defines `func-params`", function () {
-            assert.deepStrictEqual(easl.evaluate(`
-                {function fun (a b) func-params}
-                (fun 1 2 3 4)                        `), ["a", "b"]);
-        });
-
         it("function defines `func-args`", function () {
             assert.deepStrictEqual(easl.evaluate(`
-                {function fun (a b) func-args}
+                {function fun (a b) #args}
                 (fun 1 2 3 4)                        `), [1, 2, 3, 4]);
         });
 
@@ -144,7 +132,7 @@ describe("function", function () {
 
         it("make identity", function () {
             assert.strictEqual(easl.evaluate(` 
-                {function make-identity () {lambda a a}}
+                {function make-identity () {lambda (a) a}}
                 {let identity (make-identity)}
                 (identity 5)
                                                  `), 5);
@@ -160,13 +148,13 @@ describe("function", function () {
         });
         it("one arg", function () {
             assert.strictEqual(easl.evaluate(` 
-                {function foo a a}
-                {function bar a (foo a)}
+                {function foo (a) a}
+                {function bar (a) (foo a)}
                 (bar 5)                           `), 5);
         });
         it("one arg - 2", function () {
             assert.strictEqual(easl.evaluate(` 
-                {function foo a a}
+                {function foo (a) a}
                 {function bar () foo}
                 ((bar) 5)                          `), 5);
         });
@@ -175,7 +163,7 @@ describe("function", function () {
     describe("recursion", function () {
         it("fibonacci tail optimized", function () {
             assert.strictEqual(easl.evaluate(` 
-                {function fibo n
+                {function fibo (n)
                     {function loop (i prev cur)
                         {if (= i n)
                             cur
@@ -210,7 +198,7 @@ describe("function", function () {
         it("calc", function () {
             assert.strictEqual(easl.evaluate(` 
                 {function apply (f a) (f a)}
-                (apply {lambda a (* 2 a)}  2)            `), 4);
+                (apply {lambda (a) (* 2 a)}  2)            `), 4);
         });
     });
 
@@ -236,7 +224,7 @@ describe("function", function () {
         it("calc", function () {
             assert.strictEqual(easl.evaluate(` 
                 {function apply (f a) (f a)}
-                {let double {lambda a (* 2 a)}}
+                {let double {lambda (a) (* 2 a)}}
                 (apply double 2)                         `), 4);
         });
     });
@@ -263,7 +251,7 @@ describe("function", function () {
         it("calc", function () {
             assert.strictEqual(easl.evaluate(` 
                 {function apply (f a) (f a)}
-                (function double a (* a 2)}
+                (function double (a) (* a 2)}
                 (apply double 2)                         `), 4);
         });
     });
@@ -286,20 +274,5 @@ describe("function", function () {
                     {let a 1}
                     a }
                 (fn 5)                              `), 1);
-    });
-
-    it("cannot redefine func-name", function () {
-        assert.strictEqual(easl.evaluate(` 
-                {function fn (a)
-                    {let func-name "hmm"} }
-                (fn 5)                              `), "Error: Identifier already defined: func-name");
-    });
-
-    it("can redefine func-name in body", function () {
-        assert.strictEqual(easl.evaluate(` 
-                {function fn (a)
-                    {let b 1}
-                    {let func-name "hmm"} }
-                (fn 5)                              `), "hmm");
     });
 });

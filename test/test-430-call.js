@@ -15,13 +15,13 @@ describe('call', function () {
 
     it('call let lambda with one arg - number', function () {
         assert.strictEqual(easl.evaluate(`
-            {let double {lambda n (* 2 n)}}
+            {let double {lambda (n) (* 2 n)}}
             {call double [2]}                       `), 4);
     });
 
     it('call let lambda with one arg - string', function () {
         assert.strictEqual(easl.evaluate(`
-            {let identity {lambda a a}}
+            {let identity {lambda (a) a}}
             {call identity ["hello"]}               `), "hello");
     });
 
@@ -46,14 +46,14 @@ describe('call', function () {
 
     it('call function with one arg - number', function () {
         assert.strictEqual(easl.evaluate(`
-            {function double n (* 2 n)}
+            {function double (n) (* 2 n)}
             {call double [2]}                       `), 4);
     });
 
     it('call function with one arg - string', function () {
         assert.strictEqual(easl.evaluate(`
-            {function identity a a}
-            {call identity ["hello"]}               `), "hello");
+            {function id (a) a}
+            {call id ["hello"]}               `), "hello");
     });
 
     it('call function with list of args', function () {

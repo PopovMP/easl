@@ -48,12 +48,12 @@ describe('try throw', function () {
     });
 
     it('try with lambda', function () {
-        assert.strictEqual(easl.evaluate(` {try {lambda a a} {throw "error"} }  `), "error");
+        assert.strictEqual(easl.evaluate(` {try {lambda (a) a} {throw "error"} }  `), "error");
     });
 
     it('try with function', function () {
         assert.strictEqual(easl.evaluate(`
-            {function catch e (+ "Error: " e)}
+            {function catch (e) (+ "Error: " e)}
             {try catch {throw "from throw"} }  `), "Error: from throw");
     });
 });

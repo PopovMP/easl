@@ -20,15 +20,15 @@ describe('lambda', function () {
     });
 
     it('({lambda a a} 5) → 5', function () {
-        assert.strictEqual(easl.evaluate("({lambda a a} 5)"), 5);
+        assert.strictEqual(easl.evaluate("({lambda (a) a} 5)"), 5);
     });
 
     it('({lambda x x} 5) → 5', function () {
-        assert.strictEqual(easl.evaluate("({lambda x x} 5)"), 5);
+        assert.strictEqual(easl.evaluate("({lambda (x) x} 5)"), 5);
     });
 
     it('({lambda a (* 2 a)} 5) → 10', function () {
-        assert.strictEqual(easl.evaluate("({lambda a (* 2 a)} 5)"), 10);
+        assert.strictEqual(easl.evaluate("({lambda (a) (* 2 a)} 5)"), 10);
     });
 
     it('({lambda (a) (+ a 1)} 5) → 6', function () {
@@ -48,19 +48,15 @@ describe('lambda', function () {
     });
 
     it('lambda func-name', function () {
-        assert.strictEqual(easl.evaluate("({lambda (a b) func-name} 1 2 3 4)"), "lambda");
-    });
-
-    it('lambda func-params', function () {
-        assert.deepStrictEqual(easl.evaluate("({lambda (a b) func-params} 1 2 3 4)"), ['a', 'b']);
+        assert.strictEqual(easl.evaluate("({lambda (a b) #name} 1 2 3 4)"), "lambda");
     });
 
     it('lambda func-args', function () {
-        assert.deepStrictEqual(easl.evaluate("({lambda (a b) func-args} 1 2 3 4)"), [1, 2, 3, 4]);
+        assert.deepStrictEqual(easl.evaluate("({lambda (a b) #args} 1 2 3 4)"), [1, 2, 3, 4]);
     });
 
     it('lambda with more than one expr ', function () {
-        assert.strictEqual(easl.evaluate("({lambda n {let a 5} (+ n a)} 3)"), 8);
+        assert.strictEqual(easl.evaluate("({lambda (n) {let a 5} (+ n a)} 3)"), 8);
     });
 
     it('lambda with no args and more than one expr ', function () {

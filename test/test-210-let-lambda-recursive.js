@@ -25,7 +25,7 @@ describe('let lambda - recursive', function () {
         assert.strictEqual(easl.evaluate(` 
   
             {let fac
-                {lambda n
+                {lambda (n)
                     {if (> n 0)
                         (* n (fac (- n 1)))
                         1 }}} 
@@ -38,7 +38,7 @@ describe('let lambda - recursive', function () {
     it('fibonacci tail optimized', function () {
         assert.strictEqual(easl.evaluate(` 
 
-            {let fibo {lambda n
+            {let fibo {lambda (n)
                 (loop n 2 1 1)}}
     
             {let loop {lambda (n i prev cur)
@@ -54,10 +54,10 @@ describe('let lambda - recursive', function () {
     it('mutual recursion', function () {
         assert.strictEqual(easl.evaluate(`  
 
-            {let is-even? (lambda n (or (= n 0)
+            {let is-even? (lambda (n) (or (= n 0)
                                         (is-odd? (- n 1))))}
             
-            {let is-odd?  (lambda n (and (!= n 0)
+            {let is-odd?  (lambda (n) (and (!= n 0)
                                          (is-even? (- n 1))))}
             
             (is-odd? 3)   
