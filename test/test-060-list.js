@@ -27,25 +27,4 @@ describe('Eval basics', function () {
             assert.deepStrictEqual(easl.evaluate(`["a" (+ "a" "b") "b"]`), ["a", "ab", "b"]);
         });
     });
-
-    describe('Call list', function () {
-        it('get list length of empty list', function () {
-            assert.strictEqual(easl.evaluate("{let lst []} (lst)"), 0);
-        });
-        it('get list length', function () {
-            assert.strictEqual(easl.evaluate("{let lst [3 5]} (lst)"), 2);
-        });
-        it('get element', function () {
-            assert.strictEqual(easl.evaluate("{let lst [3]} (lst 0)"), 3);
-        });
-        it('get element calculate index', function () {
-            assert.strictEqual(easl.evaluate("{let lst [3]} (lst (- 5 5))"), 3);
-        });
-        it('set element', function () {
-            assert.deepStrictEqual(easl.evaluate("{let lst [3]} (lst 0 5)"), 5);
-        });
-        it('set element calculate index and value', function () {
-            assert.deepStrictEqual(easl.evaluate("{let lst [3]} (lst (- 5 5) (+ 3 2))"), 5);
-        });
-    });
 });

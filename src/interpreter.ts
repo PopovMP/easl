@@ -177,9 +177,7 @@ class Interpreter {
 
         if (!Array.isArray(closure)) {throw `Error: Improper function: ${closure}`;}
 
-        return (closure[0] === "closure")
-            ? this.callClosure(expr, env, closure, funcName)
-            : this.callList(expr, env, closure);
+        return this.callClosure(expr, env, closure, funcName);
     }
 
     private callClosure(expr: any[], env: any[], closure: any[], funcName: string) {
@@ -203,32 +201,6 @@ class Interpreter {
         }
 
         return closureEnv;
-    }
-
-    // Call a list as a function
-    private callList(expr: any[], env: any[], lst: any[]): any {
-        // [lst] => Get list length
-        if (expr.length === 1) {
-            return lst.length;
-        }
-
-        const index = this.evalExpr(expr[1], env);
-
-        if (index < 0 && index >= lst.length) {
-            throw "Error: Index out of range";
-        }
-
-        // [lst, index] => Get the element at `index`
-        if (expr.length === 2) {
-            return lst[index];
-        }
-
-        // [lst, index, value] => Set the element at `index` to be equal to `value`
-        if (expr.length === 3) {
-            return lst[index] = this.evalExpr(expr[2], env);
-        }
-
-        throw "Error: Improper list call";
     }
 
     // [string, str1, str2, ...]
