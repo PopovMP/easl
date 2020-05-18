@@ -232,6 +232,9 @@ describe('core-lib', function () {
         it('empty list', function () {
             assert.strictEqual(easl.evaluate(`   (to-string [])        `), "()");
         });
+        it('[1] -> (1)', function () {
+            assert.strictEqual(easl.evaluate(`   (to-string [1])        `), "(1)");
+        });
         it('non empty list strings', function () {
             assert.strictEqual(easl.evaluate(`   (to-string [1 2 3 4 5])  `),
                 "(1 2 3 4 5)");

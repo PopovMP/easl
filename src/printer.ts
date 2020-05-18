@@ -2,7 +2,7 @@
 
 class Printer {
     public static stringify(input: any[] | any): string {
-        const text:string[] = [""];
+        const text:string[] = [];
         const isOpenParen  = (c: string) => ["{", "[", "("].indexOf(c) >= 0;
         const lastChar     = () => text[text.length - 1][text[text.length - 1].length - 1];
         const delimiter    = () => text[text.length - 1].length === 0 || isOpenParen(lastChar()) ? "" : " ";
@@ -53,13 +53,9 @@ class Printer {
                 return "()";
             }
 
-            if (input.length === 1) {
-                loop(input);
-                text.pop();
-            } else {
-                text.push("(");
-                loop(input);
-            }
+            text.push("(");
+
+            loop(input);
 
             return text.join("");
         }
