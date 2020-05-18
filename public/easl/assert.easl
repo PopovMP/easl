@@ -1,0 +1,22 @@
+;; Simple assert lib for EASL
+
+{function assert.print-passed (message)
+ 	(print "✓ passed:" message)}
+
+{function assert.print-failed (actual expected message)
+ 	(print "✗ failed!" message "Expected:" expected ", but got:" actual)}
+
+{function assert.equal (actual expected message)
+    {if (= actual expected)
+        (assert.print-passed message)
+        (assert.print-failed actual expected message)}}
+
+{function assert.true? (actual message)
+    {if actual
+        (assert.print-passed message)
+        (assert.print-failed actual "truthy" message)}}
+
+{function assert.false? (actual message)
+    {if (not actual)
+        (assert.print-passed message)
+        (assert.print-failed actual "faulty" message)}}

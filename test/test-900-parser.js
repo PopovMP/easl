@@ -2,7 +2,7 @@
 
 const assert = require("assert");
 const {describe, it} = require("mocha");
-const {Parser, Printer} = require("../bin/easl.js");
+const {Parser, Printer} = require("../public/js/easl.js");
 
 const parser = new Parser();
 

@@ -2,7 +2,7 @@
 
 const assert = require("assert");
 const {describe, it} = require("mocha");
-const Easl = require("../bin/easl.js").Easl;
+const Easl = require("../public/js/easl.js").Easl;
 
 const easl = new Easl();
 

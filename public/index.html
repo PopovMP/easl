@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EASL - programming language for the browser</title>
+    <link rel="stylesheet" href="css/style.css?v=01"/>
+    <link rel="stylesheet" href="codemirror/codemirror.css?v=01"/>
+    <link rel="stylesheet" href="codemirror/easl-color.css?v=02"/>
+
+    <link rel="icon" type="image/png" href="favicon.ico">
+</head>
+<body>
+
+<h1>EASL - programming language for the browser</h1>
+
+<p>
+    EASL is designed to be easily integrated and executed in the browser.
+    Source code: <a href="https://github.com/PopovMP/easl">https://github.com/PopovMP/easl</a>.
+</p>
+
+
+<div class="wrapper">
+    <div class="main-bar">
+        <h2>Try EASL</h2>
+        <form>
+            <label for="code-area" style="display: none">Try EASL</label>
+            <textarea id="code-area" name="code"></textarea><br/>
+            <button id="run-button">Run</button>
+        </form>
+
+        <form>
+            <label for="code-output" style="display: none">output</label><br/>
+            <textarea id="code-output" name="code"></textarea>
+        </form>
+        <p class="hotkeys-hint">Hot keys: Ctrl + R - run, Ctrl + K - clear output, Ctrl + L - insert λ</p>
+    </div>
+
+    <div class="link-bar">
+        <h2>Examples</h2>
+        <div id="select-examples"></div>
+    </div>
+</div>
+
+
+<h2 id="whyeasl">Why EASL?</h2>
+
+<p>EASL allows users customizations of an online application without exposing access to the hosting app's internals.</p>
+<p>It works only on the client side because we don't want the users to break hashes on our server, right!</p>
+
+<ul>
+    <li><strong>Pure JavaScript</strong> - EASL is written in JavaScript without third party dependencies.</li>
+
+    <li><strong>Browser only</strong> - EASL executes scripts in the Browser without making requests to the server.</li>
+
+    <li><strong>Safe</strong> - the language works in own environment. It has only access to application's properties
+        and functions you explicitly define.
+    </li>
+
+    <li><strong>Minimal impact</strong> - the EASL scripts cannot damage the hosting application.</li>
+
+    <li><strong>Open</strong> - because it is a pure JS, you can set a break point directly in the Interpreter, if you
+        want to know what exactly happens.
+    </li>
+
+    <li><strong>Functional first</strong> - EASL gives you the opportunity to use the best programming practices.</li>
+
+    <li><strong>Expandable</strong> - EASL can load external libraries in EASL. It parses and caches the external code
+        for a later use.
+    </li>
+
+    <li><strong>It is fun</strong> - how good is to have a factorial of 5 like that: <code>(call * (list.range 1
+        5))</code>.
+    </li>
+</ul>
+
+<h2>Quick Integration</h2>
+
+<pre>    &lt;script src="js/easl.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const easl = new Easl();
+
+        const code = `  {let lst [1 2 3 4]}
+                        (list.length lst)    `;
+
+        const res = easl.evaluate(code);
+        console.log(res); // -> 4
+    &lt;/script&gt;
+</pre>
+
+<h2 id="grammar">Grammar</h2>
+
+<p>EASL is inspired by the <em>Scheme</em> language and covers almost all the Scheme base features. </p>
+
+<h3 id="null">Null</h3>
+
+<p>Null can be represented with the keyword <code>null</code>.</p>
+
+<h3 id="booleanconstant">Boolean constant</h3>
+
+<p>Faulty values are:</p>
+
+<pre> false - reserved keyword,
+ null  - reserved keyword,
+ []    - an empty list,
+ ""    - an empty string,
+ 0     - zero
+</pre>
+
+<p>Truthy values are:</p>
+
+<pre> true     - reserved keyword,
+ [1 2 3]  - a non empty list,
+ "hello"  - a non empty string,
+ 42       - a number. As well as a real number like 3.14
+</pre>
+
+<h3 id="valuetypes">Value types</h3>
+
+<pre>boolean  - true, false
+number   - 0, 42, 3.14, 1-000-000
+string   - "Hello World!"
+null     - the "null" keyword
+function - a function
+list     - a list of values in square brackets: [1 2 3] , ["white", "red", "green"]
+</pre>
+
+<p>We can check the type with the predicates:</p>
+
+<p><code>boolean?</code> - examples: <code>(boolean? true) → true</code>, <code>(boolean? false) → true</code>, <code>(boolean?
+    42) → false</code></p>
+
+<p><code>number?</code> - examples: <code>(number? 0) → true</code>, <code>(number? 3.14) → true</code>, <code>(number?
+    1-000-000) → true</code></p>
+
+<p><code>string?</code> - examples: <code>(string? "") → true</code>, <code>(string? "hello") → true</code>, <code>(string?
+    42) → false</code></p>
+
+<p><code>null?</code> - examples: <code>(null? null) → true</code>, <code>(null? []) → false</code>, <code>(null? 0) →
+    false</code></p>
+
+<p><code>function?</code> - !!! To be done</p>
+
+<p><code>list?</code> - examples: <code>(list? []) → true</code>, <code>(list? [1 (+ 2 3)]) → true</code></p>
+
+<p><code>pair?</code> - examples: <code>(pair? [1 2]) → true</code>, <code>(pair? 1) → false</code></p>
+
+<h2 id="reservedkeywords">Reserved keywords</h2>
+
+<pre>Constants:     true, false, null
+Types:         number, string, list, function,
+Definition:    let, function, lambda
+Condition:     if, else, switch, case
+Cycle:         for, break, continue, do, while, default
+Builtin proc:  typeof
+</pre>
+
+<h2 id="variabledefinition">Variable definition</h2>
+
+<p>EASL defines variables with the keyword <code>let</code>.</p>
+
+<p>There are three possible syntax:</p>
+
+<h4 id="definitionandinitializationofavariablewithaconstantvalue">Definition and initialization of a variable with a
+    constant value</h4>
+
+<pre>{let n 5}
+{let is-member true}
+{let lst [1 2 3 4]}
+{let first-name "John"}
+</pre>
+
+<h3 id="initializationfromanexpression">Initialization from an expression</h3>
+
+<pre>{let pi  (/ 22 7)}
+{let hello (str.append "Hello "  "world!")}
+</pre>
+
+<h2 id="functions">Functions</h2>
+
+<h2 id="namedfunction">Named function</h2>
+
+<p>Definition: <code>{function func-id (par1 par2 ...) (expression) }</code></p>
+
+<p>A function returns the value of the last expression.</p>
+
+<p>We call functions with: <code>(func-id par1 par2)</code></p>
+
+<pre>{function sum (a b) (+ a b)}
+(sum 2 3) ;; → 5
+</pre>
+
+<h3 id="lambda">Lambda</h3>
+
+<p>A lambda is a nameless function: <code>{lambda (par1 par2 ...) (expression)}</code></p>
+
+<p>Yuo can assign a lambda to a variable:</p>
+
+<pre>{let sum {lambda (a b) (+ a b)}}
+(sum 2 3) ;; → 5
+</pre>
+
+<p>You can call a <code>lambda</code> directly by enclosing it in parenthesis:</p>
+
+<pre>({lambda (a b) (+ a b)} 2 3)  ;; → 5
+</pre>
+
+<p>You can use a <code>lambda</code> as a function argument:</p>
+
+<pre>{function calc (operation a b)
+    (operation a b)}
+
+(calc {lambda (a b) (+ a b)} 2 3)   ;; → 5
+</pre>
+
+<p>A function can return a <code>lambda</code>:</p>
+
+<pre>{function make-identity ()
+    {lambda (a) (a)}}
+
+(let identity (make-identity))
+
+(identity 5) ;; → 5
+</pre>
+
+<h2 id="if">if</h2>
+
+<pre>{if (clause) (then-expression) (else-expression) }
+</pre>
+
+<h2 id="cond">cond</h2>
+
+<pre>{cond
+   [(clause)  (expression)]
+   [(clause)  (expression)]
+   [else (expression)]}
+</pre>
+
+<h2 id="for">for</h2>
+
+<pre>{for (i 0) (&lt; i 10) (+ i 1) expr1 expr2 ...}</pre>
+
+<h2 id="lists">Lists</h2>
+
+<p>EASL defines lists in square brackets. Examples: <code>[1 2 3]</code> - a list of numbers, <code>[ "I" "am" "a"
+    "list" "of" "strings"]</code>. A list can contain values from different types.</p>
+
+<p>List functions:</p>
+
+<p><code>list.empty</code> - gets an empty list: <code>(list.empty) → []</code></p>
+
+<p><code>list.empty?</code> - checks if a list is empty: <code>(list.empty? [1 2 3]) → false</code>, <code>(list.empty?
+    []) → true</code></p>
+
+<p><code>list.length</code> - gives the length of a list: <code>(list.length [1 2 3]) → 3</code></p>
+
+<p><code>list.first</code> - gets the first element: <code>(list.first [1 2 3]) → 1</code>, <code>(list.first []) →
+    null</code></p>
+
+<p><code>list.rest</code> - gets all elements without the first one: <code>(list.rest [1 2 3]) → [2 3]</code>, <code>(list.rest
+    []) → []</code></p>
+
+<p><code>list.last</code> - gets the last element: <code>(list.last [1 2 3]) → 3</code>, <code>(list.last []) →
+    []</code></p>
+
+<p><code>list.least</code> - gets all elements without the last one: <code>(list.least [1 2 3]) → [1 2]</code>, <code>(list.least
+    []) → []</code></p>
+
+<p><code>list.add</code> - adds an element to the end: <code>(list.add 4 [1 2 3]) → [1 2 3 4]</code>, <code>(list.add 1
+    []) → [1]</code></p>
+
+<p><code>list.push</code> - pushes an element to the beginning of the list: <code>(list.push 0 [1 2 3]) → [0 1 2
+    3]</code>, <code>(list.push 1 []) → [1]</code></p>
+
+<p><code>list.has</code> - checks if a list contains an element: <code>(list.has 3 [1 2 3]) → true</code>, <code>(list.has
+    1 []) → false</code></p>
+
+<p><code>list.index</code> - gets the index of an element or -1: <code>(list.index 3 [1 2 3]) → 2</code>, <code>(list.has
+    1 [3 4 5]) → -1</code></p>
+
+<p><code>list.get</code> - gets an element at an index: <code>(list.get 1 [1 2 3]) → 2</code>. The index is within the
+    range of the list.</p>
+
+<p><code>list.set</code> - sets an element at an index: <code>(list.set [1 2 3] 0 4) → [4 2 3]</code>. The index is
+    within the range of the list.
+    <code>list.set</code> doesn't modify the list. It returns a new list instead.</p>
+
+<p><code>list.swap</code> - swaps two elements of a list: <code>(list.swap 0 1 [1 2 3]) → [ 2, 1, 3 ]</code></p>
+
+<p><code>list.append</code> - appends lists: <code>(list.append [1 2 3] [4 5 6]) → [1 2 3 4 5 6]</code>.</p>
+
+<p><code>list.slice</code> - gets a subset of a list from index to index (not inclusive): <code>(list.slice 1 3 [1 2 3 4
+    5 6]) → [2 3]</code>.</p>
+
+<p><code>list.flatten</code> - flattens a nested lists: <code>(list.append [1 2 [3 4] 5 6]) → [1 2 3 4 5 6]</code>.</p>
+
+<p><code>list.join</code> - joins the list elements into a string: <code>(list.join ", " [1 2 3]) → "1, 2, 3"</code>.
+</p>
+
+
+<h2 id="strings">Strings</h2>
+
+<p>
+    A string is closed within quotation marks: <code>"Hello World!"</code>.<br />
+    If the string contains a quotation mark, use <code>""</code>.<br />
+    A string may contain new line chars, so it makes it possible to use multiline strings.
+</p>
+
+<h3>string</h3>
+<p>
+
+    <strong>string</strong> - is a string constructor. It returns the parameters concatenated with a space between them.
+    Examples:<br />
+    <code>(string) → ""</code> - when no args are provided, it returns an empty string.<br />
+    <code>(string hello) → "hello"</code><br />
+    <code>(string Hello World!) → "Hello World!"</code><br />
+</p>
+
+<h3>str.length</h3>
+<p>
+    <code>str.length</code> - gets the number of characters:
+    <code>(str.length "hello") → 5</code>
+</p>
+
+<h3>str.has</h3>
+<p>
+    <code>str.has</code> - returns <code>true</code> if the string contains a substring.<br />
+    <code>(str.has "lo" "hello") → true</code>
+</p>
+
+<h3>str.sub-string</h3>
+<p>
+    <code>str.sub-string</code>
+</p>
+
+<h3>str.to-lowercase</h3>
+<p>
+    <code>str.to-lowercase</code> - converts a given string to lowercase. <code>(str.to-uppercase "Hello") →
+    hello</code>
+</p>
+
+<h3>str.to-uppercase</h3>
+<p>
+    <code>str.to-uppercase</code> - converts a given string to uppercase. <code>(str.to-uppercase "hello") →
+    HELLO</code>
+</p>
+
+<h3>str.starts-with</h3>
+<p>
+    <code>str.starts-with</code> - returns <code>true</code> if a string starts with a substring.<br />
+    <code>(str.starts-with "hello" "hel") → true</code><br />
+    <code>(str.starts-with "hello" "wll") → false</code>
+</p>
+
+<h3>str.ends-with</h3>
+<p>
+    <code>str.ends-with</code> - returns <code>true</code> if a string ends with a substring.<br />
+    <code>(str.ends-with "hello" "lo") → true</code><br />
+    <code>(str.ends-with "hello" "ll") → false</code>
+</p>
+
+<h3>str.split</h3>
+<p>
+    <code>str.split</code> - splits a string ro parts and returns them in a list.<br />
+    With no delimiter, splits the string to a list of characters.
+    <code>(str.split "hello") → ["h" "e" "l" "l" "o"]</code><br />
+    With delimiter:
+    <code>(str.split "hello world" " ") → ["hello" "world"]</code>
+</p>
+
+<h2 id="numbers">Numbers</h2>
+
+<p><code>numb.parse</code> - converts string to number. Returns <code>null</code> if the string cannot be converted</p>
+
+<h2 id="math">Math</h2>
+
+<p><code>math.abs</code></p>
+
+<p><code>math.ceil</code></p>
+
+<p><code>math.exp</code></p>
+
+<p><code>math.floor</code></p>
+
+<p><code>math.log</code></p>
+
+<p><code>math.min</code></p>
+
+<p><code>math.max</code></p>
+
+<p><code>math.pow</code></p>
+
+<p><code>math.random</code></p>
+
+<p><code>math.round</code></p>
+
+<p><code>math.sqrt</code></p>
+
+<p><code>math.even</code></p>
+
+<p><code>math.odd</code></p>
+
+<p><code>math.zero</code></p>
+
+
+<script src="js/easl.js?v=24"></script>
+<script src="js/code-examples.js?v=15"></script>
+<script src="js/index.js?v=05"></script>
+
+<script src="codemirror/codemirror.js?v=01"></script>
+<script src="codemirror/easl-mode.js?v=09"></script>
+<script src="codemirror/matchbrackets.js?v=01"></script>
+<script>
+    initialize();
+</script>
+
+</body>
+</html>

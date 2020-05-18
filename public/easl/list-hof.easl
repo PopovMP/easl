@@ -1,0 +1,72 @@
+;; List - Higher Order Functions
+
+{function list.reduce (lst fn val)
+    {let len (list.length lst)}
+    {let i   0}
+    {let acc val}
+
+    {while (< i len)
+        {set acc (fn (list.get lst i) acc i)}
+        {inc i} }
+
+    acc}
+
+{function list.map (lst fn)
+    {let len (list.length lst)}
+    {let i   0}
+    {let res []}
+
+    {while (< i len)
+        (list.add res (fn (list.get lst i) i))
+        {inc i} }
+
+    res}
+
+{function list.for-each (lst fn)
+    {let len (list.length lst)}
+    {let i   0}
+
+    {while (< i len)
+        (fn (list.get lst i) i)
+        {inc i} }
+
+    null}
+
+{function list.filter (lst fn)
+    {let len (list.length lst)}
+    {let i   0}
+    {let res []}
+
+    {while (< i len)
+        {let e (list.get lst i)}
+        {if (fn e i)
+            (list.add res e)}
+        {inc i} }
+
+    res}
+
+{function list.any (lst fn)
+    {let len (list.length lst)}
+    {let i   0}
+    {let any false}
+
+    {while (< i len)
+        {if (fn (list.get lst i) i)
+            {block {set any true}
+                   {break} }}
+        {inc i} }
+
+    any}
+
+{function list.all (lst fn)
+    {let len (list.length lst)}
+    {let i   0}
+    {let all true}
+
+    {while (< i len)
+        {unless (fn (list.get lst i) i)
+            {block {set all false}
+                   {break} }}
+        {inc i} }
+
+    all}

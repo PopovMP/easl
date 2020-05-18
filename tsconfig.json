@@ -5,7 +5,7 @@
     "strict": true,
     "removeComments": true,
     "sourceMap": false,
-    "outFile": "./bin/easl.js"
+    "outFile": "./public/js/easl.js"
   },
   "include": [
     "./src/**/*"

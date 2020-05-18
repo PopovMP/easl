@@ -1,4 +1,4 @@
 .idea
-bin
+public/js/easl.tsbuildinfo
 node_modules
 easl-local-storage
