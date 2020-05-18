@@ -230,23 +230,25 @@ describe('core-lib', function () {
             assert.strictEqual(easl.evaluate(`   (to-string "")        `), "");
         });
         it('empty list', function () {
-            assert.strictEqual(easl.evaluate(`   (to-string [])        `), "");
+            assert.strictEqual(easl.evaluate(`   (to-string [])        `), "()");
         });
-        it('multiple strings', function () {
-            assert.strictEqual(easl.evaluate(`   (to-string "hello" "world")  `), "hello world");
+        it('non empty list strings', function () {
+            assert.strictEqual(easl.evaluate(`   (to-string [1 2 3 4 5])  `),
+                "(1 2 3 4 5)");
         });
         it('lambda', function () {
-            assert.strictEqual(easl.evaluate(`   (to-string {lambda (a b) (+ a b)} )  `), "{lambda (a b) (+ a b)}");
+            assert.strictEqual(easl.evaluate(`   (to-string {lambda (a b) (+ a b)} )  `),
+                "(lambda (a b) (+ a b))");
         });
         it('function', function () {
             assert.strictEqual(easl.evaluate(` 
               {function sum (a b) (+ a b)}
-              (to-string sum)  `), "{lambda (a b) (+ a b)}");
+              (to-string sum)  `), "(lambda (a b) (+ a b))");
         });
         it('function two expressions', function () {
             assert.strictEqual(easl.evaluate(` 
               {function sum (a) {let b 1} (+ a b)}
-              (to-string sum)  `), "{lambda (a) (block let,b,1 +,a,b)}");
+              (to-string sum)  `), "(lambda (a) (block (let b 1) (+ a b)))");
         });
     });
 

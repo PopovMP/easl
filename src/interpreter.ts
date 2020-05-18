@@ -95,6 +95,7 @@ class Interpreter {
             case "lambda"   : return this.evalLambda(expr, env);
             case "let"      : return this.evalLet(expr, env);
             case "or"       : return this.evalOr(expr, env);
+            case "quote"    : return this.evalQuote(expr);
             case "repeat"   : return this.evalRepeat(expr, env);
             case "set"      : return this.evalSet(expr, env);
             case "throw"    : return this.evalThrow(expr, env);
@@ -580,22 +581,36 @@ class Interpreter {
         return this.isTruthy(val) ? this.evalAnd(expr.slice(1), env) : val;
     }
 
+    // [quote, obj] => obj
+    private evalQuote(expr: any[]): any {
+        if (expr.length !== 2) {
+            throw "Error: 'quote' requires 1 argument. Given: " + (expr.length - 1);
+        }
+
+        return expr[1];
+    }
+
+    // [or] => false
+    // [or, expr] => expr
+    // [or, expr1, expr2, ...] => the first truthy or the last one
     private evalOr(expr: any[], env: any[]): any {
-        if (expr.length === 1) {
-            return false;
-        }
 
-        if (expr.length === 2) {
-            return this.evalExpr(expr[1], env);
-        }
-
-        if (expr.length === 3) {
-            const val: any = this.evalExpr(expr[1], env);
-            return this.isTruthy(val) ? val : this.evalExpr(expr[2], env);
+        switch (expr.length) {
+            case 1:
+                return false;
+            case 2:
+                return this.evalExpr(expr[1], env);
+            case 3:
+                const val: any = this.evalExpr(expr[1], env);
+                return this.isTruthy(val)
+                    ? val
+                    : this.evalExpr(expr[2], env);
         }
 
         const val: any = this.evalExpr(expr[1], env);
-        return this.isTruthy(val) ? val : this.evalOr(expr.slice(1), env);
+        return this.isTruthy(val)
+            ? val
+            : this.evalOr(expr.slice(1), env);
     }
 
     // [try, symbol | expr, expr1, expr2, ...]

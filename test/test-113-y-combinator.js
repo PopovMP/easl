@@ -6,15 +6,14 @@ const Easl = require("../bin/easl.js").Easl;
 
 const easl = new Easl();
 
-
-describe('lambda - Y combinator', function () {
-    it('!5 → 120', function () {
+describe("lambda - Y combinator", function () {
+    it("!5 → 120", function () {
         assert.strictEqual(easl.evaluate(`
 
-    (((lambda (!) (lambda (n) ((! !) n)))
-      (lambda (!) (lambda (n) (if (= n 0)
+    (((lambda (f) (lambda (n) ((f f) n)))
+      (lambda (f) (lambda (n) (if (= n 0)
                                   1
-                                  (* ((! !) (- n 1))
+                                  (* ((f f)  (- n 1))
                                      n))))) 5)           `), 120);
 
     });

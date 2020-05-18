@@ -112,14 +112,10 @@ describe('Parser', function () {
         });
     });
 
-    describe("tokenize $", function () {
-        it("{let a $ + 1 2}", function () {
-            assert.deepStrictEqual(parser.tokenize("{let a $ + 1 2}"),
-                ["{", "let", "a", "(", "+", 1, 2, ")", "}"]);
-        });
-        it("{let a $ * (+ 1 2) 3}", function () {
-            assert.deepStrictEqual(parser.tokenize("{let a $ * (+ 1 2) 3}"),
-                ["{", "let", "a", "(", "*", "(", "+", 1, 2, ")", 3, ")", "}"]);
+    describe("stringify let", function () {
+        it("stringify {let a (+ 1 2)}", function () {
+            assert.deepStrictEqual(Parser.stringify( parser.parse("{let a (+ 1 2)}") ),
+                "(let a (+ 1 2))");
         });
     });
 
@@ -176,7 +172,10 @@ describe('Parser', function () {
                 ["fac", 5]
             ];
 
+            const ilText = `((function fac (n) (if (= n 0) 1 (* (fac (- n 1)) n))) (fac 5))`;
+
             assert.deepStrictEqual(parser.parse(codeText), ilCode);
+            assert.deepStrictEqual( Parser.stringify( parser.parse(codeText) ), ilText);
         });
 
         it("char [", function () {
@@ -195,7 +194,7 @@ describe('Parser', function () {
                 ]);
         });
 
-        it("case", function () {
+        it("case match [", function () {
             assert.deepStrictEqual(parser.parse(`
                   {case "["
                        {["["] 3} }`),

@@ -1,6 +1,84 @@
 "use strict";
 
 class Parser {
+    public static stringify(input: any[] | any): string {
+        const isOpenParen  = (c: string) => ["{", "[", "("].indexOf(c) >= 0;
+
+        const text:string[] = [""];
+        let prevToken = "";
+        let prevChar = "";
+
+        function printClosure(closure: any[]): void {
+            text.push("lambda (" + closure[1].join(" ") + ") (");
+            prevChar = "(";
+
+            loop(closure[2]);
+
+            text.push(")");
+            prevChar = ")";
+        }
+
+        function loop(lst: any[]) {
+
+            if (lst.length === 0) {
+                text.push(")");
+                prevChar = ")";
+                return;
+            }
+            const element = lst[0];
+
+            if (element === "closure") {
+                printClosure(lst);
+                return;
+            }
+
+            const delimiter = (prevToken.length === 0 || isOpenParen(prevChar))
+                ? ""
+                : " ";
+
+            if ( Array.isArray(element) ) {
+                text.push(delimiter + "(");
+                prevChar = "(";
+                loop(element);
+            } else {
+                const elementText = String(element);
+                text.push(delimiter + elementText);
+                prevToken = elementText;
+                prevChar = elementText[elementText.length - 1];
+            }
+
+            loop(lst.slice(1));
+        }
+
+        const type = typeof input;
+        if (input === null || type === "boolean" || type === "number") {
+            return String(input);
+        }
+        if (type === "string") {
+            return input;
+        }
+
+        if ( Array.isArray(input) ) {
+
+            if (input.length === 0) {
+                return "()";
+            }
+
+            if (input.length === 1) {
+                loop(input);
+                text.pop();
+            } else {
+                text.push("(");
+                prevChar = "(";
+                loop(input);
+            }
+
+            return text.join("");
+        }
+
+        return JSON.stringify(input);
+    }
+
     private numberRegExp: RegExp        = /^[-+]?\d+(?:-\d\d\d)*(?:\.\d+)*$/;
     private openParenChars: string[]    = ["(", "[", "{"];
     private closeParenChars: string[]   = [")", "]", "}"];
@@ -22,8 +100,9 @@ class Parser {
 
     public tokenize(code: string): any[] {
         const lexList: any[] = [];
-        let dollar    = 0;
-        let openParen = 0;
+        let isInQuote       = false;
+        let isInFullQuote   = false;
+        let openParenQuote  = 0;
 
         const pushSymbol = (symbol: string): void => {
             if (symbol === "") return;
@@ -38,6 +117,7 @@ class Parser {
         for (let i = 0, symbol = ""; i < code.length; i++) {
             const ch = code[i];
 
+            // Detect a string and bound it in (string str)
             if (ch === '"') {
                 const charList: string[] = [];
                 for (i++; i < code.length; i++) {
@@ -57,6 +137,7 @@ class Parser {
                 continue;
             }
 
+            // Detect line comment
             if (this.isLineComment(ch)) {
                 for (; i < code.length; i++) {
                     const c = code[i];
@@ -67,51 +148,110 @@ class Parser {
                 continue;
             }
 
-            if (this.isParen(ch)) {
-                pushSymbol(symbol);
-                symbol = "";
-
-                if (dollar > 0) {
-                    if (ch === "(" || ch === "{") {
-                        openParen++;
-                    }
-
-                    if (ch === ")" || ch === "}") {
-                        if (openParen === 0) {
-                            for (let i: number = 0; i < dollar; i++) {
-                                lexList.push(")");
-                            }
-                            dollar = 0;
-                        } else {
-                            openParen--;
-                        }
+            // Detect multiline comment #| ... |#
+            if (ch === "#" && code[i + 1] === "|") {
+                i = i + 2;
+                for (; i < code.length; i++) {
+                    if (code[i] === "|" && code[i + 1] === "#") {
+                        i++;
+                        break;
                     }
                 }
+                continue;
+            }
 
+            if (this.isParen(ch)) {
+                pushSymbol(symbol);
+
+                // Expand quote abbreviation for a single symbol
+                if (isInQuote && !isInFullQuote && openParenQuote === 0 && code[i - 1] !== "'") {
+                    lexList.push("}");
+                    isInQuote = false;
+                    openParenQuote = 0;
+                }
+
+                if (!isInQuote && symbol === "quote") {
+                    isInQuote     = true;
+                    isInFullQuote = true;
+                    openParenQuote++;
+                }
+
+                symbol = "";
                 lexList.push(ch);
 
                 if (ch === "[") {
                     lexList.push("list"); // [1 2 3] -> [list 1 2 3]
                 }
+
+                // Expand quote abbreviation for quoted lists or applications
+                if (isInQuote && !isInFullQuote) {
+                    if (this.isOpenParen(ch)) {
+                        openParenQuote++;
+                    }
+                    if (this.isCloseParen(ch)) {
+                        openParenQuote--;
+                    }
+                    if (openParenQuote === 0) {
+                        lexList.push("}");
+                        isInQuote = false;
+                    }
+                }
+
+                // Detect close of full quote
+                if (isInFullQuote) {
+                    if (this.isOpenParen(ch)) {
+                        openParenQuote++;
+                    }
+                    if (this.isCloseParen(ch)) {
+                        openParenQuote--;
+                    }
+                    if (openParenQuote === 0 ) {
+                        isInQuote = false;
+                        isInFullQuote = false;
+                    }
+                }
+
                 continue;
             }
 
             if (this.isWhiteSpace(ch)) {
                 pushSymbol(symbol);
+
+                if (!isInQuote && symbol === "quote") {
+                    isInQuote     = true;
+                    isInFullQuote = true;
+                }
+
                 symbol = "";
+
+                // Expand quote
+                if (isInQuote && !isInFullQuote) {
+                    if (openParenQuote === 0 && symbol === "") {
+                        lexList.push("}");
+                        isInQuote = false;
+                    }
+                }
+
                 continue;
             }
 
-            if (ch === "$") {
-                lexList.push("(");
-                dollar++;
+            // Start expanding ' quote
+            if (!isInQuote && ch === "'" && symbol.length === 0) {
+                lexList.push("{", "quote");
+                isInQuote = true;
+
                 continue;
             }
 
             symbol += ch;
+
             if (i === code.length - 1) {
                 pushSymbol(symbol);
                 symbol = "";
+
+                if (isInQuote) {
+                    lexList.push("}");
+                }
             }
         }
 

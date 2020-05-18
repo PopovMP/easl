@@ -30,10 +30,10 @@ describe('problems', function () {
                     {function loop (lst i)
                         {if (= i length)
                             lst
-                            (loop (list.add lst $ next $ list.last lst) $ + i 1) }}
+                            (loop (list.add lst (next (list.last lst))) (+ i 1)) }}
                     (loop [start] 1) }
             
-              {make-sequence 3 10 {λ (cur) $ * cur 3} )
+              {make-sequence 3 10 {λ (cur) (* cur 3)} )
             `),
             [3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049]);
     });
@@ -41,8 +41,8 @@ describe('problems', function () {
     it('Swap elements of a list', function () {
         assert.deepStrictEqual(easl.evaluate(`   
             {function swap (lst i1 i2)
-                {let temp $ list.get lst i1}
-                (list.set lst i1 $ list.get lst i2)
+                {let temp (list.get lst i1)}
+                (list.set lst i1 (list.get lst i2))
                 (list.set lst i2 temp) }
 
             (swap [1 2 3 4] 0 3)
@@ -55,10 +55,10 @@ describe('problems', function () {
             
               {function loop (lst max)
                 {if lst
-                    (loop (list.rest lst) $ math.max max $ list.first lst)
+                    (loop (list.rest lst) (math.max max (list.first lst)))
                     max }}
             
-              (loop lst $ list.first lst) }
+              (loop lst (list.first lst)) }
             
             (list-max [42 34 12 5 62 2])
                                                              `), 62);

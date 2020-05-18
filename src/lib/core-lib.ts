@@ -222,49 +222,6 @@ class CoreLib implements ILib {
         return number !== number ? null : number;
     }
 
-    private evalToString(expr: any[], env: any[]): string {
-        function bodyToString(body: any): string {
-            return Array.isArray(body)
-                ? (body[0] === "#body#" ? body.slice(1) : body).map(e => String(e)).join(" ")
-                : String(body);
-        }
-
-        function getText(entity: any): string {
-            const type = typeof entity;
-            if (entity === null) {
-                return "null";
-            }
-
-            if (type === "string") {
-                return entity;
-            }
-
-            if (type === "boolean" || type === "number") {
-                return String(entity);
-            }
-
-            if (Array.isArray(entity)) {
-                if (entity[0] === "closure") {
-                    return "{lambda (" + entity[1].join(" ") + ") (" + bodyToString(entity[2]) + ")}";
-                }
-
-                return entity.join(" ");
-            }
-
-            return JSON.stringify(entity);
-        }
-
-        if (expr.length === 2) {
-            return getText(this.inter.evalExpr(expr[1], env));
-        }
-
-        if (expr.length > 2) {
-            return getText(this.inter.mapExprLst(expr.slice(1), env));
-        }
-
-        return "";
-    }
-
     private evalParse(expr: any[], env: any[]): any[] {
         const codeText: string = this.inter.evalExpr(expr[1], env);
         const parser: Parser = new Parser();
@@ -279,9 +236,25 @@ class CoreLib implements ILib {
     }
 
     private evalPrint(expr: any[], env: any[]): any {
-        const text = this.evalToString(expr, env);
-        this.inter.options.printer(text);
+        if (expr.length === 2) {
+            const text = this.evalToString(expr, env);
+            this.inter.options.printer(text);
+        } else {
+            const text = this.inter.mapExprLst(expr.slice(1), env)
+                .map((e: any) => Parser.stringify(e))
+                .join(" ")
+            this.inter.options.printer(text);
+        }
 
         return null;
+    }
+
+    private evalToString(expr: any[], env: any[]): string {
+        if (expr.length !== 2) {
+            throw "Error: 'to-string' requires 1 argument. Given: " + (expr.length - 1);
+        }
+
+        const res = this.inter.evalExpr(expr[1], env);
+        return Parser.stringify(res);
     }
 }

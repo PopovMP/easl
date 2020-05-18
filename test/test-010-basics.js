@@ -6,18 +6,18 @@ const Easl = require("../bin/easl.js").Easl;
 
 const easl = new Easl();
 
-describe('Eval basics', function () {
-    describe('Built in constants', function () {
-        it('digits: 1 → 1', function () {
+describe("Eval basics", function () {
+    describe("Built in constants", function () {
+        it("digits: 1 → 1", function () {
             assert.strictEqual(easl.evaluate("1"), 1);
         });
-        it('null: null → null', function () {
+        it("null: null → null", function () {
             assert.strictEqual(easl.evaluate("null"), null);
         });
-        it('boolean: true → true', function () {
+        it("boolean: true → true", function () {
             assert.strictEqual(easl.evaluate("true"), true);
         });
-        it('boolean: false → false', function () {
+        it("boolean: false → false", function () {
             assert.strictEqual(easl.evaluate("false"), false);
         });
         it('string: "John" → "John"', function () {
@@ -25,7 +25,7 @@ describe('Eval basics', function () {
         });
     });
 
-    describe('String constructor', function () {
+    describe("String constructor", function () {
         it('empty string: (string) → ""', function () {
             assert.strictEqual(easl.evaluate("(string)"), "");
         });
@@ -37,32 +37,32 @@ describe('Eval basics', function () {
         });
     });
 
-    describe('Number operators', function () {
-        it('add: (+ 1 2) → 3', function () {
+    describe("Number operators", function () {
+        it("add: (+ 1 2) → 3", function () {
             assert.strictEqual(easl.evaluate("(+ 1 2)"), 3);
         });
-        it('add: (+ (+ 1 2) 3) → 6', function () {
+        it("add: (+ (+ 1 2) 3) → 6", function () {
             assert.strictEqual(easl.evaluate("(+ (+ 1 2) 3)"), 6);
         });
-        it('subtract: (- 3 1) → 2', function () {
+        it("subtract: (- 3 1) → 2", function () {
             assert.strictEqual(easl.evaluate("(- 3 1)"), 2);
         });
-        it('subtract: (- (+ 3 2) 1) → 4', function () {
+        it("subtract: (- (+ 3 2) 1) → 4", function () {
             assert.strictEqual(easl.evaluate("(- (+ 3 2) 1)"), 4);
         });
-        it('modulo: (% 13 2) → 1', function () {
+        it("modulo: (% 13 2) → 1", function () {
             assert.strictEqual(easl.evaluate("(% 13 2)"), 1);
         });
-        it('modulo: (% 14 2) → 0', function () {
+        it("modulo: (% 14 2) → 0", function () {
             assert.strictEqual(easl.evaluate("(% 14 2)"), 0);
         });
     });
 
-    describe('Eval multiple expressions', function () {
-        it('1 2 → 2', function () {
+    describe("Eval multiple expressions", function () {
+        it("1 2 → 2", function () {
             assert.strictEqual(easl.evaluate("1 2"), 2);
         });
-        it('3 (+ 1 1) → 2', function () {
+        it("3 (+ 1 1) → 2", function () {
             assert.strictEqual(easl.evaluate("3 (+ 1 1)"), 2);
         });
     });
