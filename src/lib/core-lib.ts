@@ -22,11 +22,11 @@ class CoreLib implements ILib {
             case "/"          : return this.evalDivide(expr, env);
             case "%"          : return this.evalModulo(expr, env);
             case "="          : return this.evalEqual(expr, env);
-            case ">"          : return this.inter.evalExpr(expr[1], env) >   this.inter.evalExpr(expr[2], env);
-            case "<"          : return this.inter.evalExpr(expr[1], env) <   this.inter.evalExpr(expr[2], env);
-            case "!="         : return this.inter.evalExpr(expr[1], env) !== this.inter.evalExpr(expr[2], env);
-            case ">="         : return this.inter.evalExpr(expr[1], env) >=  this.inter.evalExpr(expr[2], env);
-            case "<="         : return this.inter.evalExpr(expr[1], env) <=  this.inter.evalExpr(expr[2], env);
+            case "!="         : return this.evalNotEqual(expr, env);
+            case ">"          : return this.evalGreater(expr, env);
+            case ">="         : return this.evalGreaterOrEqual(expr, env);
+            case "<"          : return this.evalLower(expr, env);
+            case "<="         : return this.evalLowerOrEqual(expr, env);
             case "not"        : return this.evalNot(expr, env);
             case "type-of"    : return this.evalTypeOf(expr, env);
             case "to-string"  : return this.evalToString(expr, env);
@@ -42,6 +42,7 @@ class CoreLib implements ILib {
         throw "Error: Not found in 'core-lib': " + expr[0];
     }
 
+    // [+, obj1, ob2, ..., obj_n]
     private evalPlus(expr: any[], env: any[]): any {
         if (expr.length === 1) {
             return 0;
@@ -82,6 +83,7 @@ class CoreLib implements ILib {
         return a + this.evalPlus(expr.slice(1), env);
     }
 
+    // [-, num1, num2]
     private evalSubtract(expr: any[], env: any[]): any {
         if (expr.length === 2) {
             return -this.inter.evalExpr(expr[1], env);
@@ -94,6 +96,7 @@ class CoreLib implements ILib {
         throw "Error: '-' requires 2 arguments. Given: " + (expr.length - 1);
     }
 
+    // [*, num1, num2, ..., num_n]
     private evalMultiply(expr: any[], env: any[]): any {
         if (expr.length === 1) {
             return 0;
@@ -125,6 +128,7 @@ class CoreLib implements ILib {
         return a * this.evalMultiply(expr.slice(1), env);
     }
 
+    // [/, num1, num2]
     private evalDivide(expr: any[], env: any[]): any {
         if (expr.length !== 3) {
             throw "Error: '/' requires 2 arguments. Given: " + (expr.length - 1);
@@ -147,6 +151,7 @@ class CoreLib implements ILib {
         return this.inter.evalExpr(expr[1], env) % this.inter.evalExpr(expr[2], env);
     }
 
+    // [=, obj1, obj2, ...]
     private evalEqual(expr: any[], env: any[]): any {
         if (expr.length === 3) {
             return this.inter.evalExpr(expr[1], env) === this.inter.evalExpr(expr[2], env);
@@ -167,6 +172,52 @@ class CoreLib implements ILib {
         throw "Error: '=' requires 2 or more arguments. Given: " + (expr.length - 1);
     }
 
+    // [>, obj1, obj2]
+    private evalGreater(expr: any[], env: any[]): any {
+        if (expr.length !== 3) {
+            throw "Error: '>' requires 2 arguments. Given: " + (expr.length - 1);
+        }
+
+        return this.inter.evalExpr(expr[1], env) > this.inter.evalExpr(expr[2], env);
+    }
+
+    // [<, obj1, obj2]
+    private evalLower(expr: any[], env: any[]): any {
+        if (expr.length !== 3) {
+            throw "Error: '<' requires 2 arguments. Given: " + (expr.length - 1);
+        }
+
+        return this.inter.evalExpr(expr[1], env) < this.inter.evalExpr(expr[2], env);
+    }
+
+    // [!=, obj1, obj2]
+    private evalNotEqual(expr: any[], env: any[]): any {
+        if (expr.length !== 3) {
+            throw "Error: '!=' requires 2 arguments. Given: " + (expr.length - 1);
+        }
+
+        return this.inter.evalExpr(expr[1], env) !== this.inter.evalExpr(expr[2], env);
+    }
+
+    // [>=, obj1, obj2]
+    private evalGreaterOrEqual(expr: any[], env: any[]): any {
+        if (expr.length !== 3) {
+            throw "Error: '>=' requires 2 arguments. Given: " + (expr.length - 1);
+        }
+
+        return this.inter.evalExpr(expr[1], env) >= this.inter.evalExpr(expr[2], env);
+    }
+
+    // [<=, obj1, obj2]
+    private evalLowerOrEqual(expr: any[], env: any[]): any {
+        if (expr.length !== 3) {
+            throw "Error: '<=' requires 2 arguments. Given: " + (expr.length - 1);
+        }
+
+        return this.inter.evalExpr(expr[1], env) <= this.inter.evalExpr(expr[2], env);
+    }
+
+    // [not, obj]
     private evalNot(expr: any[], env: any[]): boolean {
         if (expr.length !== 2) {
             throw "Error: 'not' requires 1 argument. Given: " + (expr.length - 1);
@@ -177,7 +228,8 @@ class CoreLib implements ILib {
         return (Array.isArray(entity) && entity.length === 0) || !entity;
     }
 
-    private evalTypeOf(expr: any[], env: any[]): string {
+    // [type-of, obj]
+   private evalTypeOf(expr: any[], env: any[]): string {
         if (expr.length !== 2) {
             throw "Error: 'type-of' requires 1 argument. Given: " + (expr.length - 1);
         }
@@ -217,6 +269,7 @@ class CoreLib implements ILib {
         return typeof value;
     }
 
+    // [to-boolean, obj]
     private evalToBoolean(expr: any[], env: any[]): boolean {
         if (expr.length !== 2) {
             throw "Error: 'to-boolean' requires 1 argument. Given: " + (expr.length - 1);
@@ -225,6 +278,7 @@ class CoreLib implements ILib {
         return !this.evalNot(expr, env);
     }
 
+    // [to-number, obj]
     private evalToNumber(expr: any[], env: any[]): number | null {
         if (expr.length !== 2) {
             throw "Error: 'to-number' requires 1 argument. Given: " + (expr.length - 1);
@@ -236,8 +290,9 @@ class CoreLib implements ILib {
         return number !== number ? null : number;
     }
 
+    // [parse, src]
     private evalParse(expr: any[], env: any[]): any[] {
-        if (expr.length !== 3) {
+        if (expr.length !== 2) {
             throw "Error: 'parse' requires 2 arguments. Given: " + (expr.length - 1);
         }
 
@@ -247,6 +302,7 @@ class CoreLib implements ILib {
         return parser.parse(codeText);
     }
 
+    // [eval, src]
     private evalEval(expr: any[], env: any[]): any[] {
         if (expr.length !== 2) {
             throw "Error: 'eval' requires 1 argument. Given: " + (expr.length - 1);
