@@ -322,8 +322,8 @@ const examplesList = [
         code: `;; Higher order functions for Lists
 
 ; The source code of the list HOF is at the link below
-; https://github.com/PopovMP/easl-libs/blob/master/list-hof-lib.easl
-{import "https://raw.githubusercontent.com/PopovMP/easl-libs/master/list-hof-lib.easl"}
+; https://github.com/PopovMP/easl/blob/master/public/easl/list-hof.easl
+{import "https://raw.githubusercontent.com/PopovMP/easl/master/public/easl/list-hof.easl"}
 
 {let lst [1 2 3 4 5]}
 
@@ -554,7 +554,8 @@ const examplesList = [
         name: "Unit testing with 'assert-lib'",
         code: `;; Unit tests
 
-{import "https://raw.githubusercontent.com/PopovMP/easl-libs/master/assert-lib.easl"}
+; Assert lib: https://github.com/PopovMP/easl/blob/master/public/easl/assert.easl
+{import "https://raw.githubusercontent.com/PopovMP/easl/master/public/easl/assert.easl"}
 
 (assert.equal (+ 2 3) 5 "Sum two numbers")
 
