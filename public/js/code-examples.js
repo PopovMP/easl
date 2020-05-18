@@ -1061,8 +1061,8 @@ exit :
     {let command []}
     {for par-txt non-empty-parts
         {let param (parse-param par-txt)}
-        {if {or (type-of param "string")
-                (type-of param "number") }
+        {if {or (= (type-of param) "string")
+                (= (type-of param) "number")}
             (list.add command param) }}
 
     command }
@@ -1108,3 +1108,7 @@ exit :
 
 `   },
 ];
+
+if (typeof module === "object") {
+    module.exports.codeExamples = examplesList;
+}
