@@ -101,10 +101,11 @@ function document_keydown(event) {
         insertTextInEditor("λ");
     }
 
-    // "Ctrl" + "R" run
-    else if (event.ctrlKey && event.keyCode === 82) {
+    // "Ctrl" + "R" run or F5
+    else if (event.ctrlKey && event.keyCode === 82 ||
+             event.keyCode === 116) {
         event.preventDefault();
-        var code = app.editor.getDoc().getValue();
+        const code = app.editor.getDoc().getValue();
         runCode(code);
     }
 
