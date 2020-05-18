@@ -3,7 +3,7 @@
 class CoreLib implements ILib {
     private readonly inter: Interpreter;
     public readonly builtinFunc = ["!=", "%", "*", "+", "-", "/", "<", "<=", "=", ">", ">=", "eval", "not",
-        "parse", "print", "to-boolean", "to-number", "to-string", "type-of"];
+        "parse", "print", "to-boolean", "to-number", "to-string", "type-of", "display", "newline"];
     public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
@@ -22,11 +22,11 @@ class CoreLib implements ILib {
             case "/"          : return this.evalDivide(expr, env);
             case "%"          : return this.evalModulo(expr, env);
             case "="          : return this.evalEqual(expr, env);
-            case ">"          : return this.inter.evalExpr(expr[1], env) > this.inter.evalExpr(expr[2], env);
-            case "<"          : return this.inter.evalExpr(expr[1], env) < this.inter.evalExpr(expr[2], env);
+            case ">"          : return this.inter.evalExpr(expr[1], env) >   this.inter.evalExpr(expr[2], env);
+            case "<"          : return this.inter.evalExpr(expr[1], env) <   this.inter.evalExpr(expr[2], env);
             case "!="         : return this.inter.evalExpr(expr[1], env) !== this.inter.evalExpr(expr[2], env);
-            case ">="         : return this.inter.evalExpr(expr[1], env) >= this.inter.evalExpr(expr[2], env);
-            case "<="         : return this.inter.evalExpr(expr[1], env) <= this.inter.evalExpr(expr[2], env);
+            case ">="         : return this.inter.evalExpr(expr[1], env) >=  this.inter.evalExpr(expr[2], env);
+            case "<="         : return this.inter.evalExpr(expr[1], env) <=  this.inter.evalExpr(expr[2], env);
             case "not"        : return this.evalNot(this.inter.evalExpr(expr[1], env));
             case "type-of"    : return this.evalTypeOf(expr, env);
             case "to-string"  : return this.evalToString(expr, env);
@@ -35,6 +35,8 @@ class CoreLib implements ILib {
             case "parse"      : return this.evalParse(expr, env);
             case "eval"       : return this.evalEval(expr, env);
             case "print"      : return this.evalPrint(expr, env);
+            case "display"    : return this.evalDisplay(expr, env);
+            case "newline"    : return this.evalNewline(expr);
         }
 
         throw "Error: Not found in 'core-lib': " + expr[0];
@@ -89,7 +91,7 @@ class CoreLib implements ILib {
             return this.inter.evalExpr(expr[1], env) - this.inter.evalExpr(expr[2], env);
         }
 
-        throw Error("Wrong number of arguments: " + "-");
+        throw "Error: '-' requires 2 arguments. Given: " + (expr.length - 1);
     }
 
     private evalMultiply(expr: any[], env: any[]): any {
@@ -125,13 +127,13 @@ class CoreLib implements ILib {
 
     private evalDivide(expr: any[], env: any[]): any {
         if (expr.length !== 3) {
-            throw Error("Wrong number of arguments: " + "/");
+            throw "Error: '/' requires 2 arguments. Given: " + (expr.length - 1);
         }
 
         const divisor = this.inter.evalExpr(expr[2], env);
 
         if (divisor === 0) {
-            throw Error("Division by zero");
+            throw Error("Error: '/' - division by zero");
         }
 
         return this.inter.evalExpr(expr[1], env) / divisor;
@@ -139,7 +141,7 @@ class CoreLib implements ILib {
 
     private evalModulo(expr: any[], env: any[]): any {
         if (expr.length !== 3) {
-            throw Error("Wrong number of arguments: " + "%");
+            throw "Error: '%' requires 2 arguments. Given: " + (expr.length - 1);
         }
 
         return this.inter.evalExpr(expr[1], env) % this.inter.evalExpr(expr[2], env);
@@ -162,7 +164,7 @@ class CoreLib implements ILib {
             return true
         }
 
-        throw Error("Wrong number of arguments: " + "=");
+        throw "Error: '=' requires 2 or more arguments. Given: " + (expr.length - 1);
     }
 
     private evalNot(a: any): boolean {
@@ -235,16 +237,39 @@ class CoreLib implements ILib {
         return this.inter.evalCodeTree(codeTree, this.inter.options);
     }
 
-    private evalPrint(expr: any[], env: any[]): any {
-        if (expr.length === 2) {
+    private evalPrint(expr: any[], env: any[]): null {
+        if (expr.length === 1) {
+            this.inter.options.printer("\r\n");
+        } else if (expr.length === 2) {
             const text = this.evalToString(expr, env);
-            this.inter.options.printer(text);
+            this.inter.options.printer(text + "\r\n");
         } else {
             const text = this.inter.mapExprLst(expr.slice(1), env)
-                .map((e: any) => Parser.stringify(e))
+                .map((e: any | any[]) => Printer.stringify(e))
                 .join(" ")
-            this.inter.options.printer(text);
+            this.inter.options.printer(text + "\r\n");
         }
+
+        return null;
+    }
+
+    private evalDisplay(expr: any[], env: any[]): null {
+        if (expr.length !== 2) {
+            throw "Error: 'display' requires 1 argument. Given: " + (expr.length - 1);
+        }
+
+        const text = this.evalToString(expr, env);
+        this.inter.options.printer(text);
+
+        return null;
+    }
+
+    private evalNewline(expr: any[]): null {
+        if (expr.length !== 1) {
+            throw "Error: 'newline' requires 0 arguments. Given: " + (expr.length - 1);
+        }
+
+        this.inter.options.printer("\r\n");
 
         return null;
     }
@@ -254,7 +279,7 @@ class CoreLib implements ILib {
             throw "Error: 'to-string' requires 1 argument. Given: " + (expr.length - 1);
         }
 
-        const res = this.inter.evalExpr(expr[1], env);
-        return Parser.stringify(res);
+        const res: any | any[] = this.inter.evalExpr(expr[1], env);
+        return Printer.stringify(res);
     }
 }

@@ -2,7 +2,7 @@
 
 const assert = require("assert");
 const {describe, it} = require("mocha");
-const Parser = require("../bin/easl.js").Parser;
+const {Parser, Printer} = require("../bin/easl.js");
 
 const parser = new Parser();
 
@@ -114,7 +114,7 @@ describe('Parser', function () {
 
     describe("stringify let", function () {
         it("stringify {let a (+ 1 2)}", function () {
-            assert.deepStrictEqual(Parser.stringify( parser.parse("{let a (+ 1 2)}") ),
+            assert.deepStrictEqual(Printer.stringify( parser.parse("{let a (+ 1 2)}") ),
                 "(let a (+ 1 2))");
         });
     });
@@ -175,7 +175,7 @@ describe('Parser', function () {
             const ilText = `((function fac (n) (if (= n 0) 1 (* (fac (- n 1)) n))) (fac 5))`;
 
             assert.deepStrictEqual(parser.parse(codeText), ilCode);
-            assert.deepStrictEqual( Parser.stringify( parser.parse(codeText) ), ilText);
+            assert.deepStrictEqual( Printer.stringify( parser.parse(codeText) ), ilText);
         });
 
         it("char [", function () {
