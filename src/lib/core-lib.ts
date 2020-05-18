@@ -27,7 +27,7 @@ class CoreLib implements ILib {
             case "!="         : return this.inter.evalExpr(expr[1], env) !== this.inter.evalExpr(expr[2], env);
             case ">="         : return this.inter.evalExpr(expr[1], env) >=  this.inter.evalExpr(expr[2], env);
             case "<="         : return this.inter.evalExpr(expr[1], env) <=  this.inter.evalExpr(expr[2], env);
-            case "not"        : return this.evalNot(this.inter.evalExpr(expr[1], env));
+            case "not"        : return this.evalNot(expr, env);
             case "type-of"    : return this.evalTypeOf(expr, env);
             case "to-string"  : return this.evalToString(expr, env);
             case "to-number"  : return this.evalToNumber(expr, env);
@@ -167,13 +167,19 @@ class CoreLib implements ILib {
         throw "Error: '=' requires 2 or more arguments. Given: " + (expr.length - 1);
     }
 
-    private evalNot(a: any): boolean {
-        return (Array.isArray(a) && a.length === 0) || !a;
+    private evalNot(expr: any[], env: any[]): boolean {
+        if (expr.length !== 2) {
+            throw "Error: 'not' requires 1 argument. Given: " + (expr.length - 1);
+        }
+
+        const entity = this.inter.evalExpr(expr[1], env);
+
+        return (Array.isArray(entity) && entity.length === 0) || !entity;
     }
 
     private evalTypeOf(expr: any[], env: any[]): string {
-        if (expr.length === 1) {
-            return "null";
+        if (expr.length !== 2) {
+            throw "Error: 'type-of' requires 1 argument. Given: " + (expr.length - 1);
         }
 
         const entity = expr[1];
@@ -212,12 +218,18 @@ class CoreLib implements ILib {
     }
 
     private evalToBoolean(expr: any[], env: any[]): boolean {
-        const entity = this.inter.evalExpr(expr[1], env);
+        if (expr.length !== 2) {
+            throw "Error: 'to-boolean' requires 1 argument. Given: " + (expr.length - 1);
+        }
 
-        return !this.evalNot(entity);
+        return !this.evalNot(expr, env);
     }
 
     private evalToNumber(expr: any[], env: any[]): number | null {
+        if (expr.length !== 2) {
+            throw "Error: 'to-number' requires 1 argument. Given: " + (expr.length - 1);
+        }
+
         const entity = this.inter.evalExpr(expr[1], env);
         const number = Number(entity);
 
@@ -225,6 +237,10 @@ class CoreLib implements ILib {
     }
 
     private evalParse(expr: any[], env: any[]): any[] {
+        if (expr.length !== 3) {
+            throw "Error: 'parse' requires 2 arguments. Given: " + (expr.length - 1);
+        }
+
         const codeText: string = this.inter.evalExpr(expr[1], env);
         const parser: Parser = new Parser();
 
@@ -232,6 +248,10 @@ class CoreLib implements ILib {
     }
 
     private evalEval(expr: any[], env: any[]): any[] {
+        if (expr.length !== 2) {
+            throw "Error: 'eval' requires 1 argument. Given: " + (expr.length - 1);
+        }
+
         const codeTree: any[] = this.inter.evalExpr(expr[1], env);
 
         return this.inter.evalCodeTree(codeTree, this.inter.options);

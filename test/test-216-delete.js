@@ -11,21 +11,24 @@ describe('delete', function () {
         assert.strictEqual(easl.evaluate(`
             {let a 1}
             {delete a}
-            a                           `), 'Error: Unbound identifier: a');
+            a                           `),
+            'Error: Unbound identifier: a');
     });
 
     it('delete lambda', function () {
         assert.strictEqual(easl.evaluate(`
             {let a {lambda () 1 }}
             {delete a}
-            (a)                         `), 'Error: Unbound identifier: a');
+            (a)                         `),
+            'Error: Unbound identifier: a');
     });
 
     it('delete function', function () {
         assert.strictEqual(easl.evaluate(`
             {function foo () 1}
             {delete foo}
-            foo                         `), 'Error: Unbound identifier: foo');
+            foo                         `),
+            'Error: Unbound identifier: foo');
     });
 
     it('delete correct function', function () {
@@ -44,6 +47,13 @@ describe('delete', function () {
 
     it('delete unbound identifier', function () {
         assert.strictEqual(easl.evaluate(`
-            {delete a 1}                 `), "Error: Unbound identifier: a");
+            {delete a}                 `),
+            "Error: Unbound identifier: a");
+    });
+
+    it('delete unbound identifier', function () {
+        assert.strictEqual(easl.evaluate(`
+            {delete a 1}                 `),
+            "Error: 'delete' requires 1 argument. Given: 2");
     });
 });

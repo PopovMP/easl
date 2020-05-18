@@ -33,6 +33,14 @@ describe('let', function () {
         it('{let m 2} ({lambda (a) (* m a)}  2) → 4', function () {
             assert.strictEqual(easl.evaluate(`    {let m 2} ({lambda (a) (* m a)}  2) `), 4);
         });
+        it('{let} → error', function () {
+            assert.strictEqual(easl.evaluate(`    {let}     `),
+                "Error: 'let' requires 1 or 2 arguments. Given: 0");
+        });
+        it("{let a 'b 'c} → error", function () {
+            assert.strictEqual(easl.evaluate(`    {let a 'b 'c}     `),
+                "Error: 'let' requires 1 or 2 arguments. Given: 3");
+        });
     });
 
 

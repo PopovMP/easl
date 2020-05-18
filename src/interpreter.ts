@@ -216,6 +216,10 @@ class Interpreter {
 
     // [let, symbol, expr]
     private evalLet(expr: any[], env: any[]): any {
+        if (expr.length === 1 || expr.length > 3) {
+            throw "Error: 'let' requires 1 or 2 arguments. Given: " + (expr.length - 1);
+        }
+
         const symbol: string = expr[1];
         this.throwOnExistingDef(symbol, env);
         const value: any = expr.length === 3
@@ -229,6 +233,10 @@ class Interpreter {
 
     // [set, symbol, expr]
     private evalSet(expr: any[], env: any[]): any {
+        if (expr.length !== 3) {
+            throw "Error: 'set' requires 2 arguments. Given: " + (expr.length - 1);
+        }
+
         const value: any = this.evalLetValue(expr, env);
 
         this.setInEnv(expr[1], value, env);
@@ -238,6 +246,10 @@ class Interpreter {
 
     // [delete, symbol]
     private evalDelete(expr: any[], env: any[]): any {
+        if (expr.length !== 2) {
+            throw "Error: 'delete' requires 1 argument. Given: " + (expr.length - 1);
+        }
+
         const symbol: string = expr[1];
 
         for (let i = env.length - 1; i > -1; i--) {
@@ -255,6 +267,10 @@ class Interpreter {
 
     // [inc, symbol, inc]
     private evalIncrement(expr: any[], env: any[]): any {
+        if (expr.length === 1 || expr.length > 3) {
+            throw "Error: 'inc' requires 1 or 2 arguments. Given: " + (expr.length - 1);
+        }
+
         const inc: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
         const value: number = this.evalExpr(expr[1], env) + inc;
 
@@ -265,6 +281,10 @@ class Interpreter {
 
     // [dec, symbol, dec]
     private evalDecrement(expr: any[], env: any[]): any {
+        if (expr.length === 1 || expr.length > 3) {
+            throw "Error: 'dec' requires 1 or 2 arguments. Given: " + (expr.length - 1);
+        }
+
         const dec: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
         const value: number = this.evalExpr(expr[1], env) - dec;
 
@@ -334,6 +354,10 @@ class Interpreter {
 
     // [if, test-expr, then-expr, else-expr]
     private evalIf(expr: any[], env: any[]): any {
+        if (expr.length < 3 || expr.length > 4) {
+            throw "Error: 'if' requires 2 or 3 arguments. Given: " + (expr.length - 1);
+        }
+
         return this.isTruthy(this.evalExpr(expr[1], env))
             ? this.evalExpr(expr[2], env)
             : expr.length === 4
@@ -343,6 +367,10 @@ class Interpreter {
 
     // [unless, test-expr, when-not-expr, else-expr]
     private evalUnless(expr: any[], env: any[]): any {
+        if (expr.length < 3 || expr.length > 4) {
+            throw "Error: 'unless' requires 2 or 3 arguments. Given: " + (expr.length - 1);
+        }
+
         return this.isFaulty(this.evalExpr(expr[1], env))
             ? this.evalExpr(expr[2], env)
             : expr.length === 4
