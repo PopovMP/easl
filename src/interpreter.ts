@@ -229,7 +229,7 @@ class Interpreter {
 
         env.push([symbol, value]);
 
-        return value;
+        return null;
     }
 
     // [set, symbol, expr]
@@ -242,7 +242,7 @@ class Interpreter {
 
         this.setInEnv(expr[1], value, env);
 
-        return value;
+        return null;
     }
 
     // [delete, symbol]
@@ -339,7 +339,7 @@ class Interpreter {
 
         env.push([symbol, closure]);
 
-        return closure;
+        return null;
     }
 
     // [lambda, [par1, par2, ...], expr1, expr2, ...]

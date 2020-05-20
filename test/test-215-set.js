@@ -39,7 +39,7 @@ describe("set", function () {
     it("set returns the value", function () {
         assert.strictEqual(easl.evaluate(`
             {let a 5}
-            {set a 6}                 `), 6);
+            {set a 6}                 `), null);
     });
 
     it("set unbound identifier", function () {

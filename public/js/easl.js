@@ -209,7 +209,7 @@ class Interpreter {
             ? this.evalLetValue(expr, env)
             : null;
         env.push([symbol, value]);
-        return value;
+        return null;
     }
     evalSet(expr, env) {
         if (expr.length !== 3) {
@@ -217,7 +217,7 @@ class Interpreter {
         }
         const value = this.evalLetValue(expr, env);
         this.setInEnv(expr[1], value, env);
-        return value;
+        return null;
     }
     evalDelete(expr, env) {
         if (expr.length !== 2) {
@@ -287,7 +287,7 @@ class Interpreter {
         const body = expr.length === 4 ? expr[3] : ["block", ...expr.slice(3)];
         const closure = ["closure", expr[2], body, env];
         env.push([symbol, closure]);
-        return closure;
+        return null;
     }
     evalLambda(expr, env) {
         if (expr.length < 3)

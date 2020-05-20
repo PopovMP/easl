@@ -15,8 +15,8 @@ describe('let', function () {
         it('{let a} a → null', function () {
             assert.strictEqual(easl.evaluate(`    {let a} a   `), null);
         });
-        it('{let a 2} → 2', function () {
-            assert.strictEqual(easl.evaluate(`    {let a 2}   `), 2);
+        it('{let a 2} → null', function () {
+            assert.strictEqual(easl.evaluate(`    {let a 2}   `), null);
         });
         it('{let a 2} a → 2', function () {
             assert.strictEqual(easl.evaluate(`    {let a 2} a `), 2);
@@ -96,15 +96,11 @@ describe('let', function () {
                     {let sum {lambda (a b) (+ a b)}}
                     (sum 2 3)                               `), 5);
         });
-        it('let returns the lambda', function () {
+        it('let does not return the lambda', function () {
             assert.strictEqual(easl.evaluate(`    
-                    ({let sum {lambda (a b) (+ a b)}} 2 3)  `), 5);
+                    ({let sum {lambda (a b) (+ a b)}} 2 3)  `), 'Error: Improper function: null');
         });
-        it('let sets the value even in an execution context', function () {
-            assert.strictEqual(easl.evaluate(`    
-                    ({let sum {lambda (a b) (+ a b)}} 2 3)
-                    (sum 4 5)                               `), 9);
-        });
+
         it('let with lambda with multiple expressions', function () {
             assert.strictEqual(easl.evaluate(`    
                     {let get-list {lambda () {let a 1} {set a 2} a}}

@@ -526,7 +526,7 @@ const examplesList = [
 
 {function Person (name age)
    {λ (f)
-      (f name age {function grow ()
+      (f name age {λ ()
                      {inc age} }) }}
 
 {function name (name) name }

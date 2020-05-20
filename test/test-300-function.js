@@ -29,9 +29,9 @@ describe("function", function () {
               {function foo () 1}
               {function foo () 2}               `), "Error: Identifier already defined: foo");
         });
-        it("func definition returns the function", function () {
+        it("func definition returns null", function () {
             assert.strictEqual(easl.evaluate(`
-              ({function sum (a b) (+ a b)}  2 3) `), 5);
+              {function sum (a b) (+ a b)} `),  null);
         });
     });
 
