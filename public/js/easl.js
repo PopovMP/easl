@@ -156,7 +156,7 @@ class Interpreter {
     callProc(expr, env) {
         const proc = expr[0];
         const isNamed = typeof proc === "string";
-        const funcName = isNamed ? proc : "lambda";
+        const funcName = isNamed ? proc : proc[0];
         const closure = isNamed ? this.lookup(proc, env) : this.evalExpr(proc, env);
         if (typeof closure === "string") {
             const newExpr = expr.slice();
@@ -165,6 +165,9 @@ class Interpreter {
         }
         if (!Array.isArray(closure)) {
             throw `Error: Improper function: ${closure}`;
+        }
+        if (closure[0] !== "closure") {
+            throw `Error: Improper function application`;
         }
         return this.callClosure(expr, env, closure, funcName);
     }
