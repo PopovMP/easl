@@ -7,11 +7,11 @@ const Easl = require("../public/js/easl.js").Easl;
 const easl = new Easl();
 
 describe("List declaration", function () {
-    it("empty list: [] → []", function () {
-        assert.deepStrictEqual(easl.evaluate("[]"), []);
+    it("empty list: '() → '()", function () {
+        assert.deepStrictEqual(easl.evaluate("'()"), []);
     });
 
-    it("empty list: (list) → []", function () {
+    it("empty list: (list) → '()", function () {
         assert.deepStrictEqual(easl.evaluate("(list)"), []);
     });
 
@@ -23,11 +23,11 @@ describe("List declaration", function () {
         assert.deepStrictEqual(easl.evaluate(` (list "1" "2" "3") `), ["1", "2", "3"]);
     });
 
-    it("non empty list: [1 2 3] → [1 2 3]", function () {
-        assert.deepStrictEqual(easl.evaluate("[1 2 3]"), [1, 2, 3]);
+    it("non empty list: '(1 2 3) → '(1 2 3)", function () {
+        assert.deepStrictEqual(easl.evaluate("'(1 2 3)"), [1, 2, 3]);
     });
 
     it("non empty list with string expr", function () {
-        assert.deepStrictEqual(easl.evaluate(`["a" (+ "a" "b") "b"]`), ["a", "ab", "b"]);
+        assert.deepStrictEqual(easl.evaluate(`(list "a" (+ "a" "b") "b")`), ["a", "ab", "b"]);
     });
 });

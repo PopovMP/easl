@@ -87,7 +87,7 @@ class Parser {
 
                 // Expand quote abbreviation for a single symbol
                 if (isInQuote && !isInFullQuote && openParenQuote === 0 && code[i - 1] !== "'") {
-                    lexList.push("}");
+                    lexList.push(")");
                     isInQuote = false;
                     openParenQuote = 0;
                 }
@@ -101,10 +101,6 @@ class Parser {
                 symbol = "";
                 lexList.push(ch);
 
-                if (ch === "[") {
-                    lexList.push("list"); // [1 2 3] -> [list 1 2 3]
-                }
-
                 // Expand quote abbreviation for quoted lists or applications
                 if (isInQuote && !isInFullQuote) {
                     if (this.isOpenParen(ch)) {
@@ -114,7 +110,7 @@ class Parser {
                         openParenQuote--;
                     }
                     if (openParenQuote === 0) {
-                        lexList.push("}");
+                        lexList.push(")");
                         isInQuote = false;
                     }
                 }
@@ -149,7 +145,7 @@ class Parser {
                 // Expand quote
                 if (isInQuote && !isInFullQuote) {
                     if (openParenQuote === 0 && symbol === "") {
-                        lexList.push("}");
+                        lexList.push(")");
                         isInQuote = false;
                     }
                 }
@@ -159,7 +155,7 @@ class Parser {
 
             // Start expanding ' quote
             if (!isInQuote && ch === "'" && symbol.length === 0) {
-                lexList.push("{", "quote");
+                lexList.push("(", "quote");
                 isInQuote = true;
 
                 continue;
@@ -172,7 +168,7 @@ class Parser {
                 symbol = "";
 
                 if (isInQuote) {
-                    lexList.push("}");
+                    lexList.push(")");
                 }
             }
         }

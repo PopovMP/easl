@@ -17,7 +17,7 @@ describe('let lambda - recursive', function () {
                                (count (list.rest lst)
                                       (+ cnt 1) )}}}
 
-            (count [1 2 3 4 5] 0)
+            (count '(1 2 3 4 5) 0)
                                                     `), 5);
     });
 

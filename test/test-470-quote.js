@@ -20,7 +20,7 @@ describe("quote", function () {
     });
 
     it("{quote [a 1]} -> (list a 1)", function () {
-        assert.deepStrictEqual(easl.evaluate(` {quote [a 1]} `), ["list", "a", 1]);
+        assert.deepStrictEqual(easl.evaluate(` {quote (list a 1)} `), ["list", "a", 1]);
     });
 });
 
@@ -57,8 +57,8 @@ describe("' quote abbreviation", function () {
         assert.deepStrictEqual(easl.evaluate(` '(a 'b 1) `), ["a", "'b", 1]);
     });
 
-    it(" '[a b] -> (a b)", function () {
-        assert.deepStrictEqual(easl.evaluate(` '[a b] `), ["list", "a", "b"]);
+    it(" '(list a b) -> (a b)", function () {
+        assert.deepStrictEqual(easl.evaluate(` '(list a b) `), ["list", "a", "b"]);
     });
 });
 
@@ -72,9 +72,9 @@ describe("(to-string (quote code))", function () {
                 cur
                 (loop (+ i 1) cur (+ prev cur)) }}
         {case n
-            {[1 2] 1} 
+            {'(1 2) 1} 
             {else (loop 2 1 1)} }} )
         `),
-            "(function fibo (n) (function loop (i prev cur) (if (= i n) cur (loop (+ i 1) cur (+ prev cur)))) (case n ((list 1 2) 1) (else (loop 2 1 1))))");
+            "(function fibo (n) (function loop (i prev cur) (if (= i n) cur (loop (+ i 1) cur (+ prev cur)))) (case n (' (1 2) 1) (else (loop 2 1 1))))");
     });
 });

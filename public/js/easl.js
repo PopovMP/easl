@@ -806,7 +806,7 @@ class Parser {
             if (this.isParen(ch)) {
                 pushSymbol(symbol);
                 if (isInQuote && !isInFullQuote && openParenQuote === 0 && code[i - 1] !== "'") {
-                    lexList.push("}");
+                    lexList.push(")");
                     isInQuote = false;
                     openParenQuote = 0;
                 }
@@ -817,9 +817,6 @@ class Parser {
                 }
                 symbol = "";
                 lexList.push(ch);
-                if (ch === "[") {
-                    lexList.push("list");
-                }
                 if (isInQuote && !isInFullQuote) {
                     if (this.isOpenParen(ch)) {
                         openParenQuote++;
@@ -828,7 +825,7 @@ class Parser {
                         openParenQuote--;
                     }
                     if (openParenQuote === 0) {
-                        lexList.push("}");
+                        lexList.push(")");
                         isInQuote = false;
                     }
                 }
@@ -855,14 +852,14 @@ class Parser {
                 symbol = "";
                 if (isInQuote && !isInFullQuote) {
                     if (openParenQuote === 0 && symbol === "") {
-                        lexList.push("}");
+                        lexList.push(")");
                         isInQuote = false;
                     }
                 }
                 continue;
             }
             if (!isInQuote && ch === "'" && symbol.length === 0) {
-                lexList.push("{", "quote");
+                lexList.push("(", "quote");
                 isInQuote = true;
                 continue;
             }
@@ -871,7 +868,7 @@ class Parser {
                 pushSymbol(symbol);
                 symbol = "";
                 if (isInQuote) {
-                    lexList.push("}");
+                    lexList.push(")");
                 }
             }
         }

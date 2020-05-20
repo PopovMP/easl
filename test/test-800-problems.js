@@ -31,7 +31,7 @@ describe('problems', function () {
                         {if (= i length)
                             lst
                             (loop (list.add lst (next (list.last lst))) (+ i 1)) }}
-                    (loop [start] 1) }
+                    (loop (list start) 1) }
             
               {make-sequence 3 10 {λ (cur) (* cur 3)} )
             `),
@@ -45,7 +45,7 @@ describe('problems', function () {
                 (list.set lst i1 (list.get lst i2))
                 (list.set lst i2 temp) }
 
-            (swap [1 2 3 4] 0 3)
+            (swap '(1 2 3 4) 0 3)
                                                              `), [4, 2, 3, 1]);
     });
 
@@ -60,7 +60,7 @@ describe('problems', function () {
             
               (loop lst (list.first lst)) }
             
-            (list-max [42 34 12 5 62 2])
+            (list-max '(42 34 12 5 62 2))
                                                              `), 62);
     });
 

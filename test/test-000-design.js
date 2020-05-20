@@ -31,7 +31,7 @@ describe('EASL design', function () {
             assert.strictEqual(easl.evaluate(`(if 500 1 0)`), 1);
         });
         it("non empty list", function () {
-            assert.strictEqual(easl.evaluate(`(if [1 2 3] 1 0)`), 1);
+            assert.strictEqual(easl.evaluate(`(if '(1 2 3) 1 0)`), 1);
         });
     });
 
@@ -46,7 +46,7 @@ describe('EASL design', function () {
             assert.strictEqual(easl.evaluate(`(if 0 1 0)`), 0);
         });
         it("empty list", function () {
-            assert.strictEqual(easl.evaluate(`(if [] 1 0)`), 0);
+            assert.strictEqual(easl.evaluate(`(if '() 1 0)`), 0);
         });
         it("null", function () {
             assert.strictEqual(easl.evaluate(`(if null 1 0)`), 0);
@@ -87,7 +87,7 @@ b"                                                   `), "\na\nb");
                                                     is-good                 `), true);
         });
         it("list", function () {
-            assert.deepStrictEqual(easl.evaluate(`  {let lst [1 2 3]}
+            assert.deepStrictEqual(easl.evaluate(`  {let lst '(1 2 3)}
                                                     lst                     `), [1, 2, 3]);
         });
         it("from calculation", function () {
@@ -95,7 +95,7 @@ b"                                                   `), "\na\nb");
                                                     num                     `), 5);
         });
         it("from function call", function () {
-            assert.strictEqual(easl.evaluate(`      {let len (list.length [4 5 6])}
+            assert.strictEqual(easl.evaluate(`      {let len (list.length '(4 5 6))}
                                                     len                     `), 3);
         });
         it("cannot define variable twice", function () {

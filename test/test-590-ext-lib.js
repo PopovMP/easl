@@ -161,11 +161,11 @@ describe('ext library', function () {
         });
 
         it('[]', function () {
-            assert.strictEqual(easl.evaluate(`  (ext.typeof [])  `, options), "object");
+            assert.strictEqual(easl.evaluate(`  (ext.typeof '())  `, options), "object");
         });
 
         it('[1]', function () {
-            assert.strictEqual(easl.evaluate(`  (ext.typeof [1])  `, options), "object");
+            assert.strictEqual(easl.evaluate(`  (ext.typeof '(1))  `, options), "object");
         });
     });
 
@@ -231,7 +231,7 @@ describe('ext library', function () {
         it('give list as external function param', function () {
             let list = [];
             const options = {extContext: this, extFunctions: {"ext.setList": lst => {list = lst;}}};
-            easl.evaluate(`  (ext.setList [1 "a" true false null []])    `, options);
+            easl.evaluate(`  (ext.setList (list 1 "a" true false null '()))    `, options);
 
             assert.deepStrictEqual(list, [1, "a", true, false, null, []]);
         });
@@ -239,7 +239,7 @@ describe('ext library', function () {
         it('give list as external function param from var', function () {
             let list = [];
             const options = {extContext: this, extFunctions: {"ext.setList": lst => {list = lst;}}};
-            easl.evaluate(` {let lst [1 "a" true false null []]}
+            easl.evaluate(` {let lst (list 1 "a" true false null '())}
                             (ext.setList lst)                           `, options);
 
             assert.deepStrictEqual(list, [1, "a", true, false, null, []]);

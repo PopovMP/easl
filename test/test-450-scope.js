@@ -126,7 +126,7 @@ describe('scope', function () {
     it("'case' is a scope", function () {
         assert.strictEqual(easl.evaluate(`
             {case 5
-                {[5] {let a 1}} }
+                {'(5) {let a 1}} }
             a                 `), "Error: Unbound identifier: a");
     });
 });

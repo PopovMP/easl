@@ -14,7 +14,7 @@ const examplesList = [
     {
         name: "Working with lists",
         code: `;; We define a list in square brackets.
-{let lst [0 1 2 3]}
+{let lst (list 0 1 2 3)}
 
 (print "A list of numbers         :" lst)
 (print "The list length           :" (list.length lst))
@@ -54,8 +54,8 @@ const examplesList = [
 
 ; Checks which list of options contains the value of 'n' and returns the text.
 {let type {case n
-             {[0 2 4 6 8] "even"}
-             {[1 3 5 7 9] "odd" } }}
+             {'(0 2 4 6 8) "even"}
+             {'(1 3 5 7 9) "odd" } }}
 
 (print n "is" type)
 `   },
@@ -139,7 +139,7 @@ const examplesList = [
         name: "Swap list elements",
         code: `;; Swap list elements
 
-{let lst [1 2 3 4]}
+{let lst (list 1 2 3 4)}
 
 {function swap (lst i1 i2)
     {let temp (list.get lst i1)}
@@ -212,7 +212,7 @@ const examplesList = [
             cur
             (loop (+ i 1) cur (+ prev cur)) }}
     {case n
-        {[1 2] 1}
+        {'(1 2) 1}
         {else (loop 2 1 1)} }}
 
 ;; Print
@@ -295,7 +295,7 @@ const examplesList = [
 
   (loop lst (list.first lst)) }
 
-(let lst [42 34 12 5 62 2])
+(let lst '(42 34 12 5 62 2))
 (print "List   : " lst)
 (print "Maximum: " (list-max lst))
 `   },
@@ -312,9 +312,9 @@ const examplesList = [
                  (loop (list.rest rest)
                        (list.add acc (list.first rest))) }
              acc }}
-    (loop (list.rest lst) [(list.first lst)]) }
+    (loop (list.rest lst) (list (list.first lst))) }
 
-(print (clean [0 1 1 2 3 4 5 5 5 6 7 7 8 8 8 9 9 9]))
+(print (clean '(0 1 1 2 3 4 5 5 5 6 7 7 8 8 8 9 9 9)))
 `   },
 
     {
@@ -325,7 +325,7 @@ const examplesList = [
 ; https://github.com/PopovMP/easl/blob/master/public/easl/list-hof.easl
 {import "https://raw.githubusercontent.com/PopovMP/easl/master/public/easl/list-hof.easl"}
 
-{let lst [1 2 3 4 5]}
+{let lst '(1 2 3 4 5)}
 
 ; (list.reduce lst {λ (element accumulator index) (...)} initial-value) 
 {let sum (list.reduce lst {λ (e acc) (+ e acc)}  0) }
@@ -422,11 +422,11 @@ const examplesList = [
         {if (< i length)
             (loop (+ i 1) (list.add res (next (list.last res))))
             res }}
-    (loop 1 [first]) }
+    (loop 1 (list first)) }
 
 ;; Iteration style
 {function make-sequence-iter (first length next)
- 	{let res [first]}
+ 	{let res (list first)}
     {repeat (- length 1)
     	(list.add res (next (list.last res))) }
     res }
@@ -453,7 +453,7 @@ const examplesList = [
         name: "EASL interprets EASL",
         code: `;; EASL source code in a string
 {let src "
-    {let lst [1 2 3 4 5 6 7]}
+    {let lst '(1 2 3 4 5 6 7)}
     {let len (list.length lst)}
     (* 6 len)
 " }
@@ -471,7 +471,7 @@ const examplesList = [
 {enum .fname .lname .age}
 
 {function person.new (fname lname age)
-     [fname lname age] }
+     (list fname lname age) }
 
 {function person.clone (person) (list.slice person) }
 {function person.grow  (person) (list.set person .age (+ (list.get person .age) 1)) }
@@ -559,7 +559,7 @@ const examplesList = [
 
 (assert.equal (+ 2 3) 5 "Sum two numbers")
 
-(assert.true? [1 2 3] "A non empty list is true.")
+(assert.true? '(1 2 3) "A non empty list is true.")
 
 (assert.equal {if true  4 5} 4
               "When the condition is true, 'if' returns the first expression")
@@ -686,9 +686,9 @@ const examplesList = [
 
 {let input-text "34"}
 
-{let code-list []}
+{let code-list '()}
 {for ch (str.split code-text)
-   {if (list.has ["+" "-" ">" "<" "," "." "[" "]"] ch)
+   {if (list.has (list "+" "-" ">" "<" "," "." "[" "]") ch)
        (list.add code-list ch) }}
 
 {let code-index  0}
@@ -697,7 +697,7 @@ const examplesList = [
 {let input-index 0}
 {let input-list (str.split input-text)}
 
-{let buffer [0]}
+{let buffer '(0)}
 {let pointer  0}
 {let command ""}
 {let output  ""}
@@ -838,8 +838,8 @@ exit :
 
 {let IP 0} ; Instruction Pointer
 
-{let var-names  []} ; Custom variables and labels names
-{let var-values []} ; Custom variables and labels values
+{let var-names  '()} ; Custom variables and labels names
+{let var-values '()} ; Custom variables and labels values
 
 {function set-var (name val)
    {let index (list.index var-names name)}
@@ -856,20 +856,20 @@ exit :
 
 {function set-val (name val)
     {case name
-        {["EAX" "AH" "AL" "AX"] {set AX val}}
-        {["EBX" "BH" "BL" "BX"] {set BX val}}
-        {["ECX" "CH" "CL" "CX"] {set CX val}}
-        {["EDX" "DH" "DL" "DX"] {set DX val}}
+        {'(EAX AH AL AX) {set AX val}}
+        {'(EBX BH BL BX) {set BX val}}
+        {'(ECX CH CL CX) {set CX val}}
+        {'(EDX DH DL DX) {set DX val}}
         {else (set-var name val)} }}
 
 {function get-val (ref)
     {if (= (type-of ref) "number")
         ref
         {case ref
-            {["EAX" "AH" "AL" "AX"] AX}
-            {["EBX" "BH" "BL" "BX"] BX}
-            {["ECX" "CH" "CL" "CX"] CX}
-            {["EDX" "DH" "DL" "DX"] DX}
+            {'(EAX AH AL AX) AX}
+            {'(EBX BH BL BX) BX}
+            {'(ECX CH CL CX) CX}
+            {'(EDX DH DL DX) DX}
             {else (get-var ref)} }}}
 
 {function set-ZF (val)
@@ -1009,7 +1009,7 @@ exit :
 
 {function eval-op (command p q)
     {case p
-        {["DS" "DW" "DD" "DQ" "DT"] (DD command q)}
+        {'(DS DW DD DQ DT) (DD command q)}
         {"EQU" (EQU command q)}
         {":" }                     ; Ignore labels
         {else {case command
@@ -1053,7 +1053,7 @@ exit :
 {function parse-code-line (code-line)
     ; Parse a command line
     {let split-parts (str.split code-line " ")}
-    {let non-empty-parts []}
+    {let non-empty-parts '()}
     {for element split-parts
         {unless (= element "")
                 (list.add non-empty-parts element) }}
