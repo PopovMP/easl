@@ -35,7 +35,7 @@ const examplesList = [
         name: "Random numbers in a list",
         code: `;; Random numbers in a list
 
-{let lst []}                            ; make an empty list
+{let lst '()}                            ; make an empty list
 
 {repeat 10                              ; cycle 10 times
     {let random  (* (math.random) 100)} ; generate a random number between 0 and 100
@@ -103,7 +103,7 @@ const examplesList = [
 {function map (func lst)
     {let i    0}    
     {let len (list.length lst)}
-    {let res []}
+    {let res '()}
 
     {while (< i len)
          (list.add res (func (list.get lst i)))
@@ -160,7 +160,7 @@ const examplesList = [
         1
         (* n (fac (- n 1))) }} 
 
-(fac 5)
+(print (fac 5))
 `
     },
 
@@ -196,7 +196,7 @@ const examplesList = [
                   (list.add res
                             (get-fizz-buzz n)))
             res }}
-    (loop 1 []) }
+    (loop 1 '()) }
 
 (print (FizzBuzz 100))
 `
@@ -212,7 +212,7 @@ const examplesList = [
             cur
             (loop (+ i 1) cur (+ prev cur)) }}
     {case n
-        {'(1 2) 1}
+        {(1 2) 1}
         {else (loop 2 1 1)} }}
 
 ;; Print
@@ -386,7 +386,7 @@ const examplesList = [
 
 {let add2 (make-adder 2)}
 
-(add2 3)
+(print (add2 3))
 `   },
 
     {
@@ -493,11 +493,14 @@ const examplesList = [
 ;; Person factory
 {function make-person (first-name last-name)
     {lambda (action value)
-        {case action
-            {.first-name {if value (make-person value  last-name) first-name}}
-            {.last-name  {if value (make-person first-name value) last-name }}
-            {.clone      (make-person first-name last-name)                  }
-            {else        (+ "I am " first-name " " last-name "!")            } }}}
+        {cond
+            {(= action .first-name) 
+                  {if value (make-person value  last-name) first-name}}
+            {(= action .last-name)
+                  {if value (make-person first-name value) last-name }}
+            {(= action .clone)
+                  (make-person first-name last-name)                  }
+            {else (+ "I am " first-name " " last-name "!")            } }}}
 
 ;; Create a person: John Smith
 {let john-smith (make-person "John" "Smith")}
@@ -711,29 +714,29 @@ const examplesList = [
  
     {case command
         ;; Increment the pointer.
-        {">" {inc pointer}
+        {(">") {inc pointer}
              {if (= (list.length buffer) pointer)
                  (list.add buffer 0) }}
 
         ;; Decrement the pointer.
-        {"<" {if (> pointer 0)
+        {("<") {if (> pointer 0)
                  {dec pointer}
                  (print "Error: pointer < 0")}}
 
         ;; Increment the byte at the pointer.
-        {"+" (list.set buffer pointer
+        {("+") (list.set buffer pointer
                      (+ (list.get buffer pointer) 1) )}
 
         ;; Decrement the byte at the pointer.
-        {"-" (list.set buffer pointer
+        {("-") (list.set buffer pointer
                      (- (list.get buffer pointer) 1) )}
 
         ;; Output the byte at the pointer.
-        {"." {set output (+ output
+        {(".") {set output (+ output
                             (str.from-char-code (list.get buffer pointer))) }}
 
         ;; Input a byte and store it in the byte at the pointer.
-        {"," {let input (list.get input-list input-index)}
+        {(",") {let input (list.get input-list input-index)}
              {inc input-index}
              (list.set buffer pointer
                      {if (= (type-of input) "string")
@@ -838,8 +841,8 @@ exit :
 
 {let IP 0} ; Instruction Pointer
 
-{let var-names  '()} ; Custom variables and labels names
-{let var-values '()} ; Custom variables and labels values
+{let var-names  (list)} ; Custom variables and labels names
+{let var-values (list)} ; Custom variables and labels values
 
 {function set-var (name val)
    {let index (list.index var-names name)}
@@ -856,20 +859,20 @@ exit :
 
 {function set-val (name val)
     {case name
-        {'(EAX AH AL AX) {set AX val}}
-        {'(EBX BH BL BX) {set BX val}}
-        {'(ECX CH CL CX) {set CX val}}
-        {'(EDX DH DL DX) {set DX val}}
+        {(EAX AH AL AX) {set AX val}}
+        {(EBX BH BL BX) {set BX val}}
+        {(ECX CH CL CX) {set CX val}}
+        {(EDX DH DL DX) {set DX val}}
         {else (set-var name val)} }}
 
 {function get-val (ref)
     {if (= (type-of ref) "number")
         ref
         {case ref
-            {'(EAX AH AL AX) AX}
-            {'(EBX BH BL BX) BX}
-            {'(ECX CH CL CX) CX}
-            {'(EDX DH DL DX) DX}
+            {(EAX AH AL AX) AX}
+            {(EBX BH BL BX) BX}
+            {(ECX CH CL CX) CX}
+            {(EDX DH DL DX) DX}
             {else (get-var ref)} }}}
 
 {function set-ZF (val)
@@ -1009,35 +1012,35 @@ exit :
 
 {function eval-op (command p q)
     {case p
-        {'(DS DW DD DQ DT) (DD command q)}
-        {"EQU" (EQU command q)}
-        {":" }                     ; Ignore labels
+        {(DS DW DD DQ DT) (DD command q)}
+        {(EQU) (EQU command q)}
+        {(":") null}  ; Ignore labels
         {else {case command
-                  {"EQU"   (EQU  p q)}
-                  {"MOV"   (MOV  p q)}
-                  {"INC"   (INC  p)}
-                  {"DEC"   (DEC  p)}
-                  {"ADD"   (ADD  p q)}
-                  {"SUB"   (SUB  p q)}
-                  {"MUL"   (MUL  p)}
-                  {"DIV"   (DIV  p)}
-                  {"MOD"   (MOD  p)}
-                  {"AND"   (AND  p q)}
-                  {"OR"    (OR   p q)}
-                  {"TEST"  (TEST p q)}
-                  {"NOT"   (NOT  p)}
-                  {"CMP"   (CMP  p q)}
-                  {"JMP"   (JMP  p)}
-                  {"JE"    (JE   p)}
-                  {"JNE"   (JNE  p)}
-                  {"JL"    (JL   p)}
-                  {"JLE"   (JLE  p)}
-                  {"JG"    (JG   p)}
-                  {"JGE"   (JGE  p)}
-                  {"JZ"    (JZ   p)}
-                  {"JNZ"   (JNZ  p)}
-                  {"OUT"   (OUT  p)}
-                  {"DEBUG" (show-state)}
+                  {(EQU)   (EQU  p q)}
+                  {(MOV)   (MOV  p q)}
+                  {(INC)   (INC  p)}
+                  {(DEC)   (DEC  p)}
+                  {(ADD)   (ADD  p q)}
+                  {(SUB)   (SUB  p q)}
+                  {(MUL)   (MUL  p)}
+                  {(DIV)   (DIV  p)}
+                  {(MOD)   (MOD  p)}
+                  {(AND)   (AND  p q)}
+                  {(OR)    (OR   p q)}
+                  {(TEST)  (TEST p q)}
+                  {(NOT)   (NOT  p)}
+                  {(CMP)   (CMP  p q)}
+                  {(JMP)   (JMP  p)}
+                  {(JE)    (JE   p)}
+                  {(JNE)   (JNE  p)}
+                  {(JL)    (JL   p)}
+                  {(JLE)   (JLE  p)}
+                  {(JG)    (JG   p)}
+                  {(JGE)   (JGE  p)}
+                  {(JZ)    (JZ   p)}
+                  {(JNZ)   (JNZ  p)}
+                  {(OUT)   (OUT  p)}
+                  {(DEBUG) (show-state)}
                   {else {throw (+ "Wrong command: " command " at IP: " IP)}}   }}}}
 
 {function eval-label (label command)
@@ -1053,12 +1056,12 @@ exit :
 {function parse-code-line (code-line)
     ; Parse a command line
     {let split-parts (str.split code-line " ")}
-    {let non-empty-parts '()}
+    {let non-empty-parts (list)}
     {for element split-parts
         {unless (= element "")
                 (list.add non-empty-parts element) }}
 
-    {let command []}
+    {let command (list)}
     {for par-txt non-empty-parts
         {let param (parse-param par-txt)}
         {if {or (= (type-of param) "string")
@@ -1069,7 +1072,7 @@ exit :
 
 {function parse-code (code-txt)
     {let src-list (str.split code-txt "\\n")}
-    {let command-list []}
+    {let command-list '()}
 
     {for code-line src-list
         {let comment-index (str.index-of code-line ";")}
@@ -1085,7 +1088,7 @@ exit :
     command-list }
 
 {function eval-asm (code-txt)
-    {let lst-commands (parse-code code-txt)}
+    {let lst-commands     (parse-code code-txt)}
     {let lst-commands-len (list.length lst-commands)}
 
     {set IP 0}

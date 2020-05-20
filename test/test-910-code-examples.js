@@ -26,9 +26,11 @@ function eval_ready(output) {
 function showOutput(text) {
     if (text === null) return;
 
-    if (text.match(/^Error:/)) {
-        throw Error(text);
+    const output = String(text);
+
+    if (output.match(/^Error:/)) {
+        throw Error(output);
     } else {
-        console.log( text.trimEnd() );
+        console.log( output.trimEnd() );
     }
 }

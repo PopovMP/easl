@@ -351,24 +351,27 @@ class Interpreter {
         return null;
     }
     evalCase(expr, env) {
-        const val = this.evalExpr(expr[1], env);
+        const key = this.evalExpr(expr[1], env);
         const clauses = expr.slice(2);
-        env.push(["#scope", "case"]);
         for (const clause of clauses) {
-            const target = clause[0];
-            const targetArray = Array.isArray(target);
-            if (target === "else" ||
-                (!targetArray && this.evalExpr(target, env) === val) ||
-                (targetArray && this.evalExpr(target, env).indexOf(val) > -1)) {
-                const res = clause.length === 1 ? null
-                    : clause.length === 2
-                        ? this.evalExpr(clause[1], env)
-                        : this.evalExprLst(clause.slice(1), env);
+            const datum = clause[0];
+            if (!Array.isArray(datum) && datum !== "else") {
+                throw `Error: 'case' requires datum to be in a list. Given: ${Printer.stringify(datum)}`;
+            }
+            if (clause.length <= 1) {
+                throw `Error: 'case' requires a clause with one or more expressions.`;
+            }
+            const isMatch = datum === "else" ||
+                datum.some((e) => e === key || (e[0] === "string" && e[1] === key));
+            if (isMatch) {
+                env.push(["#scope", "case"]);
+                const res = clause.length === 2
+                    ? this.evalExpr(clause[1], env)
+                    : this.evalExprLst(clause.slice(1), env);
                 this.clearEnv("#scope", env);
                 return res;
             }
         }
-        this.clearEnv("#scope", env);
         return null;
     }
     evalFor(expr, env) {
