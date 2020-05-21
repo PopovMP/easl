@@ -15,9 +15,6 @@ describe('EASL design', function () {
         it("3.14 -> 3.14", function () {
             assert.strictEqual(easl.evaluate(`  3.14  `), 3.14);
         });
-        it("1-000-000.42 -> 1000000.42", function () {
-            assert.strictEqual(easl.evaluate(`  1-000-000.42  `), 1000000.42);
-        });
     });
 
     describe("boolean truthy", function () {

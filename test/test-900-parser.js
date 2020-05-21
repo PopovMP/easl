@@ -23,7 +23,7 @@ describe('Parser', function () {
 
         it("let - quote", function () {
             assert.deepStrictEqual(parser.tokenize("{let lst '(1 2 3)}"),
-                ["{", "let", "lst", "(", "quote", "(", 1, 2, 3, ")", ")", "}"]);
+                ["{", "let", "lst", "'", "(", 1, 2, 3, ")", "}"]);
         });
 
         it("code in parenthesis", function () {

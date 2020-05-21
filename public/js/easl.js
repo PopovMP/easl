@@ -733,149 +733,136 @@ class Options {
 }
 class Parser {
     constructor() {
-        this.numberRegExp = /^[-+]?\d+(?:-\d\d\d)*(?:\.\d+)*$/;
-        this.openParenChars = ["(", "[", "{"];
-        this.closeParenChars = [")", "]", "}"];
-        this.whiteSpaceChars = [" ", "\t"];
-        this.endOfLineChars = ["\r", "\n"];
-        this.commentStartChars = [";"];
+        this.isParen = (ch) => this.isOpenParen(ch) || this.isCloseParen(ch);
+        this.isOpenParen = (ch) => ["(", "[", "{"].includes(ch);
+        this.isCloseParen = (ch) => [")", "]", "}"].includes(ch);
+        this.isQuoteAbbrev = (ch) => ch === "'";
+        this.isWhiteSpace = (ch) => [" ", "\t", "\r", "\n"].includes(ch);
+        this.isLineComment = (ch) => ch === ";";
+    }
+    isTextNumber(text) {
+        return /^[-+]?\d+(?:\.\d+)*$/.test(text);
     }
     parse(codeText) {
         const fixedText = codeText
             .replace(/λ/g, "lambda")
-            .replace(/\(string\)/g, '""')
-            .replace(/\\n/g, '\n')
-            .replace(/\\t/g, '\t')
+            .replace(/'\([ \t\r\n]*\)/g, "(list)")
+            .replace(/\(string[ \t\r\n]*\)/g, '""')
+            .replace(/\\n/g, "\n")
+            .replace(/\\t/g, "\t")
             .replace(/\\"/g, '""');
         const codeTree = this.tokenize(fixedText);
-        const ilTree = this.nest(codeTree);
+        const expandedQSymbols = this.expandQuotedSymbol(codeTree);
+        const expandedQLists = this.expandQuotedList(expandedQSymbols);
+        const ilTree = this.nest(expandedQLists);
         return ilTree;
     }
     tokenize(code) {
+        const isInFile = (i) => i < code.length;
+        const isInLine = (i) => code[i] !== "\n" && code[i] !== undefined;
+        const isOpenRangeComment = (i) => code[i] + code[i + 1] === "#|";
+        const isCloseRangeComment = (i) => code[i - 1] + code[i] === "|#";
+        const isStringChar = (ch) => ch === "\"";
         const lexList = [];
-        let isInQuote = false;
-        let isInFullQuote = false;
-        let openParenQuote = 0;
-        const pushSymbol = (symbol) => {
-            if (symbol === "")
+        const pushToken = (token) => {
+            if (token === "")
                 return;
-            if (this.isTextNumber(symbol)) {
-                const number = this.parseNumber(symbol);
-                lexList.push(number);
-            }
-            else {
-                lexList.push(symbol);
-            }
+            lexList.push(this.isTextNumber(token) ? Number(token) : token);
         };
-        for (let i = 0, symbol = ""; i < code.length; i++) {
+        for (let i = 0, token = ""; i < code.length; i++) {
             const ch = code[i];
-            if (ch === '"') {
-                const charList = [];
-                for (i++; i < code.length; i++) {
-                    const c = code[i];
-                    if (c === '"') {
-                        if (i < code.length - 1 && code[i + 1] === '"') {
-                            charList.push('"');
+            if (isStringChar(ch)) {
+                const chars = [];
+                for (i++; isInFile(i); i++) {
+                    if (isStringChar(code[i])) {
+                        if (isStringChar(code[i + 1])) {
+                            chars.push('"');
                             i++;
                             continue;
                         }
                         break;
                     }
-                    charList.push(c);
+                    chars.push(code[i]);
                 }
-                const str = charList.join("");
-                lexList.push("(", "string", str, ")");
+                lexList.push("(", "string", chars.join(""), ")");
                 continue;
             }
             if (this.isLineComment(ch)) {
-                for (; i < code.length; i++) {
-                    const c = code[i];
-                    if (this.isEndOfLine(c)) {
-                        break;
-                    }
-                }
+                do {
+                    i++;
+                } while (isInFile(i) && isInLine(i));
                 continue;
             }
-            if (ch === "#" && code[i + 1] === "|") {
-                i = i + 2;
-                for (; i < code.length; i++) {
-                    if (code[i] === "|" && code[i + 1] === "#") {
-                        i++;
-                        break;
-                    }
-                }
-                continue;
-            }
-            if (this.isParen(ch)) {
-                pushSymbol(symbol);
-                if (isInQuote && !isInFullQuote && openParenQuote === 0 && code[i - 1] !== "'") {
-                    lexList.push(")");
-                    isInQuote = false;
-                    openParenQuote = 0;
-                }
-                if (!isInQuote && symbol === "quote") {
-                    isInQuote = true;
-                    isInFullQuote = true;
-                    openParenQuote++;
-                }
-                symbol = "";
-                lexList.push(ch);
-                if (isInQuote && !isInFullQuote) {
-                    if (this.isOpenParen(ch)) {
-                        openParenQuote++;
-                    }
-                    if (this.isCloseParen(ch)) {
-                        openParenQuote--;
-                    }
-                    if (openParenQuote === 0) {
-                        lexList.push(")");
-                        isInQuote = false;
-                    }
-                }
-                if (isInFullQuote) {
-                    if (this.isOpenParen(ch)) {
-                        openParenQuote++;
-                    }
-                    if (this.isCloseParen(ch)) {
-                        openParenQuote--;
-                    }
-                    if (openParenQuote === 0) {
-                        isInQuote = false;
-                        isInFullQuote = false;
-                    }
-                }
+            if (isOpenRangeComment(i)) {
+                do {
+                    i++;
+                } while (!isCloseRangeComment(i));
                 continue;
             }
             if (this.isWhiteSpace(ch)) {
-                pushSymbol(symbol);
-                if (!isInQuote && symbol === "quote") {
-                    isInQuote = true;
-                    isInFullQuote = true;
-                }
-                symbol = "";
-                if (isInQuote && !isInFullQuote) {
-                    if (openParenQuote === 0 && symbol === "") {
-                        lexList.push(")");
-                        isInQuote = false;
-                    }
-                }
+                pushToken(token);
+                token = "";
                 continue;
             }
-            if (!isInQuote && ch === "'" && symbol.length === 0) {
-                lexList.push("(", "quote");
-                isInQuote = true;
+            if (this.isParen(ch) || this.isQuoteAbbrev(ch)) {
+                pushToken(token);
+                token = "";
+                lexList.push(ch);
                 continue;
             }
-            symbol += ch;
+            token += ch;
             if (i === code.length - 1) {
-                pushSymbol(symbol);
-                symbol = "";
-                if (isInQuote) {
-                    lexList.push(")");
-                }
+                pushToken(token);
+                token = "";
             }
         }
         return lexList;
+    }
+    expandQuotedSymbol(tree) {
+        const tokens = [];
+        for (let i = 0; i < tree.length; i++) {
+            const token = tree[i];
+            const next = tree[i + 1];
+            if (this.isQuoteAbbrev(token) &&
+                !(this.isOpenParen(next) || this.isCloseParen(next) || this.isQuoteAbbrev(next))) {
+                tokens.push("(", "quote", next, ")");
+                i++;
+            }
+            else {
+                tokens.push(token);
+            }
+        }
+        return tokens;
+    }
+    expandQuotedList(tree) {
+        const tokens = [];
+        const getParenDelta = (index, depth) => depth > 0
+            ? this.isOpenParen(tree[index])
+                ? 1
+                : this.isCloseParen(tree[index])
+                    ? -1
+                    : 0
+            : 0;
+        const loop = (i, depth, paren) => {
+            if (depth === 0 && this.isQuoteAbbrev(tree[i]) && this.isOpenParen(tree[i + 1])) {
+                tokens.push("(", "quote");
+                return loop(i + 1, 1, 0);
+            }
+            const newParen = paren + getParenDelta(i, depth);
+            if (depth === 1 && newParen === 0) {
+                tokens.push(tree[i]);
+                tokens.push(")");
+                return loop(i + 1, 0, 0);
+            }
+            if (i < tree.length) {
+                tokens.push(tree[i]);
+                return loop(i + 1, depth, newParen);
+            }
+        };
+        loop(0, 0, 0);
+        return tokens.length > tree.length
+            ? this.expandQuotedList(tokens)
+            : tokens;
     }
     nest(tree) {
         let i = -1;
@@ -883,12 +870,12 @@ class Parser {
             if (++i === tree.length)
                 return list;
             const token = tree[i];
-            if (["{", "[", "("].indexOf(token) > -1) {
+            if (["{", "[", "("].includes(token)) {
                 if (i === 0 || i > 0 && tree[i - 1] !== "string") {
                     return list.concat([pass([])]).concat(pass([]));
                 }
             }
-            if ([")", "]", "}"].indexOf(token) > -1) {
+            if ([")", "]", "}"].includes(token)) {
                 if (i === 0 ||
                     (i > 1 && tree[i - 1] === "string" && tree[i - 2] !== "(") ||
                     (i > 0 && tree[i - 1] !== "string")) {
@@ -898,34 +885,6 @@ class Parser {
             return pass(list.concat(token));
         }
         return pass([]);
-    }
-    isParen(ch) {
-        return this.isOpenParen(ch) || this.isCloseParen(ch);
-    }
-    isOpenParen(ch) {
-        return this.openParenChars.indexOf(ch) > -1;
-    }
-    isCloseParen(ch) {
-        return this.closeParenChars.indexOf(ch) > -1;
-    }
-    isWhiteSpace(ch) {
-        return this.whiteSpaceChars.indexOf(ch) > -1 || this.endOfLineChars.indexOf(ch) > -1;
-    }
-    isLineComment(ch) {
-        return this.commentStartChars.indexOf(ch) > -1;
-    }
-    isEndOfLine(ch) {
-        return this.endOfLineChars.indexOf(ch) > -1;
-    }
-    isTextNumber(text) {
-        return this.numberRegExp.test(text);
-    }
-    parseNumber(numberText) {
-        const isNegative = numberText[0] === "-";
-        const cleanedNumbText = numberText.replace(/-/g, "");
-        const parsedNumber = Number(cleanedNumbText);
-        const number = isNegative ? -parsedNumber : parsedNumber;
-        return number;
     }
 }
 if (typeof module === "object") {
