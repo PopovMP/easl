@@ -811,8 +811,7 @@ class Parser {
         for (let i = 0; i < input.length; i++) {
             const curr = input[i];
             const next = input[i + 1];
-            if (this.isQuoteAbbrev(curr) &&
-                !(this.isOpenParen(next) || this.isCloseParen(next) || this.isQuoteAbbrev(next))) {
+            if (this.isQuoteAbbrev(curr) && !this.isOpenParen(next) && !this.isQuoteAbbrev(next)) {
                 output.push("(", "quote", next, ")");
                 i++;
             }
@@ -824,30 +823,26 @@ class Parser {
     }
     expandQuotedList(input) {
         const output = [];
-        const getParenDelta = (index, depth) => depth > 0
-            ? this.isOpenParen(input[index])
-                ? 1
-                : this.isCloseParen(input[index])
-                    ? -1
-                    : 0
-            : 0;
-        const loop = (i, depth, paren) => {
-            if (depth === 0 && this.isQuoteAbbrev(input[i]) && this.isOpenParen(input[i + 1])) {
+        for (let i = 0, paren = 0, flag = false; i < input.length; i++) {
+            const curr = input[i];
+            const next = input[i + 1];
+            if (!flag && this.isQuoteAbbrev(curr) && this.isOpenParen(next)) {
                 output.push("(", "quote");
-                return loop(i + 1, 1, 0);
+                flag = true;
+                continue;
             }
-            const newParen = paren + getParenDelta(i, depth);
-            if (depth === 1 && newParen === 0) {
-                output.push(input[i]);
+            output.push(curr);
+            if (flag && this.isOpenParen(curr)) {
+                paren++;
+            }
+            if (flag && this.isCloseParen(curr)) {
+                paren--;
+            }
+            if (flag && paren === 0) {
                 output.push(")");
-                return loop(i + 1, 0, 0);
+                flag = false;
             }
-            if (i < input.length) {
-                output.push(input[i]);
-                return loop(i + 1, depth, newParen);
-            }
-        };
-        loop(0, 0, 0);
+        }
         return output.length > input.length
             ? this.expandQuotedList(output)
             : output;
