@@ -62,7 +62,7 @@ class Interpreter {
         // Constructors
         switch (expr[0]) {
             case "list"     : return this.mapExprLst(expr.slice(1), env);
-            case "string"   : return this.evalStringConstructor(expr);
+            case "string"   : return this.evalString(expr);
         }
 
         // Loop controls
@@ -204,15 +204,13 @@ class Interpreter {
         return closureEnv;
     }
 
-    // [string, str1, str2, ...]
-    private evalStringConstructor(expr: string[]): string {
-        if (expr.length === 1) {
-            return "";
-        } else if (expr.length === 2) {
-            return expr[1].toString();
-        } else {
-            return expr.slice(1).join(" ");
+    // [string, text]
+    private evalString(expr: string[]): string {
+        if (expr.length !== 2) {
+            throw "Error: 'string' requires 1 argument. Given: " + (expr.length - 1);
         }
+
+        return expr[1];
     }
 
     // [let, symbol, expr]
@@ -570,14 +568,14 @@ class Interpreter {
 
     // [call, symbol, [arg1, arg2, ...] | expr]
     private evalCall(expr: any[], env: any[]): any {
-        const symbol: string = expr[1];
+        const procId: string = expr[1];
         const callArgs: any[] = Array.isArray(expr[2]) && expr[2][0] === "list"
             ? expr[2].slice(1)
             : this.evalExpr(expr[2], env);
 
         for (let i: number = 0; i < callArgs.length; i++) {
             const elm: any = callArgs[i];
-            if (typeof elm === "string" && ["true", "false", "null"].indexOf(elm) === -1) {
+            if (typeof elm === "string" && !["true", "false", "null"].includes(elm) ) {
                 callArgs[i] = ["string", elm];
             } else if (elm === true) {
                 callArgs[i] = "true";
@@ -588,15 +586,12 @@ class Interpreter {
             }
         }
 
-        const proc: any[] = callArgs.length === 0
-            ? [symbol]
-            : callArgs.length === 1
-                ? [symbol, callArgs[0]]
-                : [symbol, ...callArgs];
-
-        return this.evalExpr(proc, env);
+        return this.evalExpr([procId, ...callArgs], env);
     }
 
+    // [and] => true
+    // [and, expr] => expr
+    // [and, expr1, expr2, ...] => the first faulty or the last one
     private evalAnd(expr: any[], env: any[]): boolean {
         if (expr.length === 1) {
             return true;

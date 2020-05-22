@@ -69,7 +69,7 @@ class Interpreter {
         }
         switch (expr[0]) {
             case "list": return this.mapExprLst(expr.slice(1), env);
-            case "string": return this.evalStringConstructor(expr);
+            case "string": return this.evalString(expr);
         }
         switch (expr[0]) {
             case "break": return "break";
@@ -188,16 +188,11 @@ class Interpreter {
         }
         return closureEnv;
     }
-    evalStringConstructor(expr) {
-        if (expr.length === 1) {
-            return "";
+    evalString(expr) {
+        if (expr.length !== 2) {
+            throw "Error: 'string' requires 1 argument. Given: " + (expr.length - 1);
         }
-        else if (expr.length === 2) {
-            return expr[1].toString();
-        }
-        else {
-            return expr.slice(1).join(" ");
-        }
+        return expr[1];
     }
     evalLet(expr, env) {
         if (expr.length === 1 || expr.length > 3) {
@@ -463,13 +458,13 @@ class Interpreter {
         return null;
     }
     evalCall(expr, env) {
-        const symbol = expr[1];
+        const procId = expr[1];
         const callArgs = Array.isArray(expr[2]) && expr[2][0] === "list"
             ? expr[2].slice(1)
             : this.evalExpr(expr[2], env);
         for (let i = 0; i < callArgs.length; i++) {
             const elm = callArgs[i];
-            if (typeof elm === "string" && ["true", "false", "null"].indexOf(elm) === -1) {
+            if (typeof elm === "string" && !["true", "false", "null"].includes(elm)) {
                 callArgs[i] = ["string", elm];
             }
             else if (elm === true) {
@@ -482,12 +477,7 @@ class Interpreter {
                 callArgs[i] = "null";
             }
         }
-        const proc = callArgs.length === 0
-            ? [symbol]
-            : callArgs.length === 1
-                ? [symbol, callArgs[0]]
-                : [symbol, ...callArgs];
-        return this.evalExpr(proc, env);
+        return this.evalExpr([procId, ...callArgs], env);
     }
     evalAnd(expr, env) {
         if (expr.length === 1) {

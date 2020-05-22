@@ -32,9 +32,6 @@ describe("Eval basics", function () {
         it('one string: (string Hello) → "Hello"', function () {
             assert.strictEqual(easl.evaluate("(string Hello)"), "Hello");
         });
-        it('multiple strings: (string Hello World!) → "Hello World!"', function () {
-            assert.strictEqual(easl.evaluate("(string Hello World!)"), "Hello World!");
-        });
     });
 
     describe("Number operators", function () {
