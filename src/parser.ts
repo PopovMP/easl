@@ -7,11 +7,7 @@ class Parser {
     private isQuoteAbbrev = (ch: string): boolean => ch === "'";
     private isWhiteSpace  = (ch: string): boolean => [" ", "\t", "\r", "\n"].includes(ch);
     private isLineComment = (ch: string): boolean => ch === ";";
-
-    private isTextNumber(text: string): boolean {
-        return /^[-+]?\d+(?:\.\d+)*$/.test(text);
-    }
-
+    private isTextNumber  = (tx: string): boolean => /^[-+]?\d+(?:\.\d+)*$/.test(tx);
 
     public parse(codeText: string): any[] {
         const fixedText = codeText
@@ -22,8 +18,8 @@ class Parser {
             .replace(/\\t/g,                  "\t")
             .replace(/\\"/g,                  '""');
 
-        const codeTree: any[]         = this.tokenize(fixedText);
-        const expandedQSymbols: any[] = this.expandQuotedSymbol(codeTree);
+        const codeList: any[]         = this.tokenize(fixedText);
+        const expandedQSymbols: any[] = this.expandQuotedSymbol(codeList);
         const expandedQLists: any[]   = this.expandQuotedList(expandedQSymbols);
         const ilTree: any[]           = this.nest(expandedQLists);
 
@@ -37,14 +33,14 @@ class Parser {
         const isCloseRangeComment = (i: number): boolean => code[i - 1] + code[i] === "|#";
         const isStringChar        = (ch: string): boolean => ch === "\"";
 
-        const lexList: any[] = [];
+        const output: any[] = [];
 
-        const pushToken = (token: string): void => {
-            if (token === "") return;
-            lexList.push( this.isTextNumber(token) ? Number(token) : token );
+        const pushLexeme = (lexeme: string): void => {
+            if (lexeme === "") return;
+            output.push( this.isTextNumber(lexeme) ? Number(lexeme) : lexeme );
         };
 
-        for (let i = 0, token = ""; i < code.length; i++) {
+        for (let i = 0, lexeme = ""; i < code.length; i++) {
             const ch = code[i];
 
             // Detect a string and bound it in (string str)
@@ -65,7 +61,7 @@ class Parser {
                     chars.push(code[i]);
                 }
 
-                lexList.push("(", "string", chars.join(""), ")");
+                output.push("(", "string", chars.join(""), ")");
                 continue;
             }
 
@@ -82,107 +78,104 @@ class Parser {
             }
 
             if ( this.isWhiteSpace(ch) ) {
-                pushToken(token);
-                token = "";
+                pushLexeme(lexeme);
+                lexeme = "";
                 continue;
             }
 
             if ( this.isParen(ch) || this.isQuoteAbbrev(ch) ) {
-                pushToken(token);
-                token = "";
-                lexList.push(ch);
+                pushLexeme(lexeme);
+                lexeme = "";
+                output.push(ch);
                 continue;
             }
 
-            token += ch;
+            lexeme += ch;
 
             if (i === code.length - 1) {
-                pushToken(token);
-                token = "";
+                pushLexeme(lexeme);
+                lexeme = "";
             }
         }
 
-        return lexList;
+        return output;
     }
 
-    public expandQuotedSymbol(tree: any[]): any[] {
-        const tokens: any[] = [];
+    public expandQuotedSymbol(input: any[]): any[] {
+        const output: any[] = [];
 
-        for (let i = 0; i < tree.length; i++) {
-            const token: string = tree[i];
-            const next: string  = tree[i + 1];
+        for (let i = 0; i < input.length; i++) {
+            const curr: string = input[i];
+            const next: string  = input[i + 1];
 
-            if (this.isQuoteAbbrev(token) &&
+            if (this.isQuoteAbbrev(curr) &&
                 !(this.isOpenParen(next) || this.isCloseParen(next) || this.isQuoteAbbrev(next)) ) {
-                tokens.push("(", "quote", next, ")");
+                output.push("(", "quote", next, ")");
                 i++;
             } else {
-                tokens.push(token);
+                output.push(curr);
             }
         }
 
-        return tokens;
+        return output;
     }
 
-    public expandQuotedList(tree: any[]): any[] {
-        const tokens: any[] = [];
+    public expandQuotedList(input: any[]): any[] {
+        const output: any[] = [];
 
         const getParenDelta = (index: number, depth: number) => depth > 0
-            ? this.isOpenParen(tree[index])
+            ? this.isOpenParen(input[index])
                 ? 1
-                : this.isCloseParen(tree[index])
+                : this.isCloseParen(input[index])
                     ? -1
                     : 0
             : 0;
 
         const loop = (i: number, depth: number, paren: number): void => {
-            if (depth === 0 && this.isQuoteAbbrev(tree[i]) && this.isOpenParen(tree[i + 1])) {
-                tokens.push("(", "quote");
+            if (depth === 0 && this.isQuoteAbbrev(input[i]) && this.isOpenParen(input[i + 1])) {
+                output.push("(", "quote");
                 return loop(i + 1, 1, 0);
             }
 
             const newParen = paren + getParenDelta(i, depth);
             if (depth === 1 && newParen === 0) {
-                tokens.push(tree[i]);
-                tokens.push(")");
+                output.push(input[i]);
+                output.push(")");
                 return loop(i + 1, 0, 0);
             }
 
-            if (i < tree.length) {
-                tokens.push(tree[i]);
+            if (i < input.length) {
+                output.push(input[i]);
                 return loop(i + 1, depth, newParen);
             }
         }
 
         loop(0, 0, 0);
 
-        return tokens.length > tree.length
-            ? this.expandQuotedList(tokens)
-            : tokens;
+        return output.length > input.length
+            ? this.expandQuotedList(output)
+            : output;
     }
 
-    public nest(tree: any[]): any[] {
+    public nest(input: any[]): any[] {
         let i: number = -1;
 
         function pass(list: any[]): any[] {
-            if (++i === tree.length) return list;
-            const token: string = tree[i];
+            if (++i === input.length) return list;
+            const curr: string = input[i];
+            const prev: string = input[i - 1];
 
-            if ( ["{", "[", "("].includes(token) ) {
-                if (i === 0 || i > 0 && tree[i - 1] !== "string") {
-                    return list.concat([pass([])]).concat(pass([]));
-                }
+            if ( ["{", "[", "("].includes(curr) && prev !== "string") {
+                return list.concat([pass([])]).concat(pass([]));
             }
 
-            if ( [")", "]", "}"].includes(token) ) {
-                if (i === 0 ||
-                    (i > 1 && tree[i - 1] === "string" && tree[i - 2] !== "(") ||
-                    (i > 0 && tree[i - 1] !== "string")) {
+            if ( [")", "]", "}"].includes(curr) ) {
+                if (prev === "string" && input[i - 2] !== "(" || prev !== "string") {
                     return list;
                 }
             }
 
-            return pass(list.concat(token));
+            return pass(list.concat(curr));
         }
 
         return pass([]);
