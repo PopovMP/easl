@@ -157,7 +157,10 @@ class Parser {
         let i: number = -1;
 
         function pass(list: any[]): any[] {
-            if (++i === input.length) return list;
+            if (++i === input.length) {
+                return list;
+            }
+
             const curr: string = input[i];
             const prev: string = input[i - 1];
 

@@ -7,24 +7,30 @@ const Easl = require("../public/js/easl.js").Easl;
 const easl = new Easl();
 
 describe("Validate application", function () {
-    it('((list)) -> error', function () {
+
+    it("() -> error", function () {
         assert.strictEqual(easl.evaluate(` 
-                ((list) )              `), 'Error: Improper function application');
+                ()              `), "Error: Improper function application. Probably: ()");
+    });
+
+    it("((list)) -> error", function () {
+        assert.strictEqual(easl.evaluate(` 
+                ((list) )              `), "Error: Improper function application");
     });
 
     it("((list 1)) -> error", function () {
         assert.strictEqual(easl.evaluate(` 
-                ((list 1) )              `), 'Error: Improper function application');
+                ((list 1) )              `), "Error: Improper function application");
     });
 
     it("((list 'a)) -> error", function () {
         assert.strictEqual(easl.evaluate(` 
-                ((list 'a) )              `), 'Error: Improper function application');
+                ((list 'a) )              `), "Error: Improper function application");
     });
 
     it("((list + 1)) -> error", function () {
         assert.strictEqual(easl.evaluate(` 
-                ((list + 1) )              `), 'Error: Improper function application');
+                ((list + 1) )              `), "Error: Improper function application");
     });
 
 });

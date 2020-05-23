@@ -6,9 +6,9 @@ const Easl = require("../public/js/easl.js").Easl;
 
 const easl = new Easl();
 
-describe('EASL design', function () {
+describe("EASL design", function () {
 
-    describe('numbers', function () {
+    describe("numbers", function () {
         it("42 -> 42", function () {
             assert.strictEqual(easl.evaluate(`  42  `), 42);
         });
@@ -72,32 +72,32 @@ b"                                                   `), "\na\nb");
 
     describe("variable definition", function () {
         it("number", function () {
-            assert.strictEqual(easl.evaluate(`      {let answer 42}
+            assert.strictEqual(easl.evaluate(`      (let answer 42)
                                                     answer                  `), 42);
         });
         it("string", function () {
-            assert.strictEqual(easl.evaluate(`      {let name "John"}
+            assert.strictEqual(easl.evaluate(`      (let name "John")
                                                     name                    `), "John");
         });
         it("boolean", function () {
-            assert.strictEqual(easl.evaluate(`      {let is-good true}
+            assert.strictEqual(easl.evaluate(`      (let is-good true)
                                                     is-good                 `), true);
         });
         it("list", function () {
-            assert.deepStrictEqual(easl.evaluate(`  {let lst '(1 2 3)}
+            assert.deepStrictEqual(easl.evaluate(`  (let lst '(1 2 3))
                                                     lst                     `), [1, 2, 3]);
         });
         it("from calculation", function () {
-            assert.strictEqual(easl.evaluate(`      {let num (+ 2 3)}
+            assert.strictEqual(easl.evaluate(`      (let num (+ 2 3))
                                                     num                     `), 5);
         });
         it("from function call", function () {
-            assert.strictEqual(easl.evaluate(`      {let len (list.length '(4 5 6))}
+            assert.strictEqual(easl.evaluate(`      (let len (list.length '(4 5 6)))
                                                     len                     `), 3);
         });
         it("cannot define variable twice", function () {
-            assert.strictEqual(easl.evaluate(`      {let a 1}
-                                                    {let a 2}               `),
+            assert.strictEqual(easl.evaluate(`      (let a 1)
+                                                    (let a 2)               `),
                                                     "Error: Identifier already defined: a");
         });
     });

@@ -59,6 +59,10 @@ class Interpreter {
             case "string"   : return this.lookup(expr, env);
         }
 
+        if (expr[0] === undefined) {
+            throw "Error: Improper function application. Probably: ()";
+        }
+
         // Constructors
         switch (expr[0]) {
             case "list"     : return this.mapExprLst(expr.slice(1), env);

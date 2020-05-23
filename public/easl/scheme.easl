@@ -1,73 +1,84 @@
 ;; Scheme lib v3
 
-{let #t  true}
-{let #f  false}
+(let #t  true)
+(let #f  false)
+
+(let #true  true)
+(let #false false)
 
 ;; Predicates
-{let boolean? {λ (obj) (= (type-of obj) "boolean") }}
-{let number?  {λ (obj) (= (type-of obj) "number" ) }}
-{let string?  {λ (obj) (= (type-of obj) "string" ) }}
-{let list?    {λ (obj) (= (type-of obj) "list"   ) }}
-{let null?    {λ (obj) {or (= obj null)
-                           {and (= (type-of     obj) "list")
-                                (= (list.length obj) 0     ) }}}}
+(let boolean?   (λ (obj) (= (type-of obj) "boolean") ))
+(let number?    (λ (obj) (= (type-of obj) "number" ) ))
+(let string?    (λ (obj) (= (type-of obj) "string" ) ))
+(let list?      (λ (obj) (= (type-of obj) "list"   ) ))
+(let procedure? (λ (obj) (= (type-of obj) "function") ))
+(let null?      (λ (obj) (or (= obj null)
+                             (and (= (type-of     obj) "list")
+                                  (= (list.length obj) 0) ))))
+(let char?      (λ (obj) (and (string? obj)
+                              (= (str.length obj) 0) )))
 
-{let pair? {λ (obj) {and (= (type-of     obj) "list")
-                         (> (list.length obj) 1     ) }}}
+(let pair? (λ (obj) (and (= (type-of     obj) "list")
+                         (> (list.length obj) 1) )))
 
-{let atom? {λ (obj) {or (number?  obj)
+(let atom? (λ (obj) (or (number?  obj)
                         (boolean? obj)
                         (string?  obj)
-                        (null?    obj) }}}
+                        (null?    obj) )))
 
-{let empty?   {λ (obj) (= (list.length a) 0) }}
-{let length   {λ (lst) (list.length lst) }}
 
-{let eq?    {λ (a b) (= a b) }}
-{let eqv?   {λ (a b) (= a b) }}
-{let equal? {λ (a b) {or (= a b)
-                         {and (null? a)
-                              (null? b) }}}}
+(let length   (λ (lst) (list.length lst) ))
+(let empty?   (λ (lst) (= (list.length lst) 0) ))
+
+(let eq?    (λ (a b) (= a b) ))
+(let eqv?   (λ (a b) (= a b) ))
+(let equal? (λ (a b) (or (= a b)
+                         (and (null? a)
+                              (null? b))
+                         (and (list? a)
+                              (list? b)
+                              (!= (to-string a)
+                                  (to-string b))) )))
 
 ;; Pair procedures
 
-{let cons  {λ (a b)  {if (null? b)
-                         {list a}
-                         {if (list? b)
-                             {list.push b a}
-                             {list a b} }}}}
+(let cons  (λ (a b)  (if (null? b)
+                         (list a)
+                         (if (list? b)
+                             (list.push b a)
+                             (list a b) ))))
 
-{let car   {λ (pair) (list.first pair)}}
-{let cdr   {λ (pair) (list.rest  pair)}}
+(let car   (λ (pair) (list.first pair)))
+(let cdr   (λ (pair) (list.rest  pair)))
 
-{let caar  {λ (pair) (car (car pair))}}
-{let cadr  {λ (pair) (car (cdr pair))}}
-{let cdar  {λ (pair) (cdr (car pair))}}
-{let cddr  {λ (pair) (cdr (cdr pair))}}
+(let caar  (λ (pair) (car (car pair))))
+(let cadr  (λ (pair) (car (cdr pair))))
+(let cdar  (λ (pair) (cdr (car pair))))
+(let cddr  (λ (pair) (cdr (cdr pair))))
 
-{let caaar {λ (pair) (car (car (car pair)))}}
-{let caadr {λ (pair) (car (car (cdr pair)))}}
-{let cadar {λ (pair) (car (cdr (car pair)))}}
-{let caddr {λ (pair) (car (cdr (cdr pair)))}}
-{let cdaar {λ (pair) (cdr (car (car pair)))}}
-{let cdadr {λ (pair) (cdr (car (cdr pair)))}}
-{let cddar {λ (pair) (cdr (cdr (car pair)))}}
-{let cdddr {λ (pair) (cdr (cdr (cdr pair)))}}
+(let caaar (λ (pair) (car (car (car pair)))))
+(let caadr (λ (pair) (car (car (cdr pair)))))
+(let cadar (λ (pair) (car (cdr (car pair)))))
+(let caddr (λ (pair) (car (cdr (cdr pair)))))
+(let cdaar (λ (pair) (cdr (car (car pair)))))
+(let cdadr (λ (pair) (cdr (car (cdr pair)))))
+(let cddar (λ (pair) (cdr (cdr (car pair)))))
+(let cdddr (λ (pair) (cdr (cdr (cdr pair)))))
 
-{let caaaar {λ (pair) (car (car (car (car pair))))}}
-{let caaadr {λ (pair) (car (car (car (cdr pair))))}}
-{let caadar {λ (pair) (car (car (cdr (car pair))))}}
-{let caaddr {λ (pair) (car (car (cdr (cdr pair))))}}
-{let cadaar {λ (pair) (car (cdr (car (car pair))))}}
-{let cadadr {λ (pair) (car (cdr (car (cdr pair))))}}
-{let caddar {λ (pair) (car (cdr (cdr (car pair))))}}
-{let cadddr {λ (pair) (car (cdr (cdr (cdr pair))))}}
-{let cdaaar {λ (pair) (cdr (car (car (car pair))))}}
-{let cdaadr {λ (pair) (cdr (car (car (cdr pair))))}}
-{let cdadar {λ (pair) (cdr (car (cdr (car pair))))}}
-{let cdaddr {λ (pair) (cdr (car (cdr (cdr pair))))}}
-{let cddaar {λ (pair) (cdr (cdr (car (car pair))))}}
-{let cddadr {λ (pair) (cdr (cdr (car (cdr pair))))}}
-{let cdddar {λ (pair) (cdr (cdr (cdr (car pair))))}}
-{let cddddr {λ (pair) (cdr (cdr (cdr (cdr pair))))}}
+(let caaaar (λ (pair) (car (car (car (car pair))))))
+(let caaadr (λ (pair) (car (car (car (cdr pair))))))
+(let caadar (λ (pair) (car (car (cdr (car pair))))))
+(let caaddr (λ (pair) (car (car (cdr (cdr pair))))))
+(let cadaar (λ (pair) (car (cdr (car (car pair))))))
+(let cadadr (λ (pair) (car (cdr (car (cdr pair))))))
+(let caddar (λ (pair) (car (cdr (cdr (car pair))))))
+(let cadddr (λ (pair) (car (cdr (cdr (cdr pair))))))
+(let cdaaar (λ (pair) (cdr (car (car (car pair))))))
+(let cdaadr (λ (pair) (cdr (car (car (cdr pair))))))
+(let cdadar (λ (pair) (cdr (car (cdr (car pair))))))
+(let cdaddr (λ (pair) (cdr (car (cdr (cdr pair))))))
+(let cddaar (λ (pair) (cdr (cdr (car (car pair))))))
+(let cddadr (λ (pair) (cdr (cdr (car (cdr pair))))))
+(let cdddar (λ (pair) (cdr (cdr (cdr (car pair))))))
+(let cddddr (λ (pair) (cdr (cdr (cdr (cdr pair))))))
 

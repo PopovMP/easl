@@ -67,6 +67,9 @@ class Interpreter {
             case "number": return expr;
             case "string": return this.lookup(expr, env);
         }
+        if (expr[0] === undefined) {
+            throw "Error: Improper function application. Probably: ()";
+        }
         switch (expr[0]) {
             case "list": return this.mapExprLst(expr.slice(1), env);
             case "string": return this.evalString(expr);
@@ -850,8 +853,9 @@ class Parser {
     nest(input) {
         let i = -1;
         function pass(list) {
-            if (++i === input.length)
+            if (++i === input.length) {
                 return list;
+            }
             const curr = input[i];
             const prev = input[i - 1];
             if (["{", "[", "("].includes(curr) && prev !== "string") {
