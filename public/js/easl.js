@@ -879,7 +879,7 @@ class Printer {
         const text = [];
         const isOpenParen = (c) => ["{", "[", "("].indexOf(c) >= 0;
         const lastChar = () => text[text.length - 1][text[text.length - 1].length - 1];
-        const delimiter = () => text[text.length - 1].length === 0 || isOpenParen(lastChar()) ? "" : " ";
+        const space = () => text[text.length - 1].length === 0 || isOpenParen(lastChar()) ? "" : " ";
         function printClosure(closure) {
             text.push("lambda (" + closure[1].join(" ") + ") (");
             loop(closure[2]);
@@ -896,11 +896,16 @@ class Printer {
                 return;
             }
             if (Array.isArray(element)) {
-                text.push(delimiter() + "(");
+                if (element[0] === "string") {
+                    text.push(space() + '"' + element[1] + '"');
+                    loop(lst.slice(1));
+                    return;
+                }
+                text.push(space() + "(");
                 loop(element);
             }
             else {
-                text.push(delimiter() + String(element));
+                text.push(space() + String(element));
             }
             loop(lst.slice(1));
         }
