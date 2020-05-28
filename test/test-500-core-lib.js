@@ -189,7 +189,7 @@ describe('core-lib', function () {
 
         it('type-of function', function () {
             assert.strictEqual(easl.evaluate(` 
-             {function sum (a b) (+ a b)}
+             {let sum (a b) (+ a b)}
              (type-of sum)                           `), "function");
         });
 
@@ -245,12 +245,12 @@ describe('core-lib', function () {
         });
         it('function', function () {
             assert.strictEqual(easl.evaluate(` 
-              {function sum (a b) (+ a b)}
+              {let sum (a b) (+ a b)}
               (to-string sum)  `), "(lambda (a b) (+ a b))");
         });
         it('function two expressions', function () {
             assert.strictEqual(easl.evaluate(` 
-              {function sum (a) {let b 1} (+ a b)}
+              {let sum (a) {let b 1} (+ a b)}
               (to-string sum)  `), "(lambda (a) (block (let b 1) (+ a b)))");
         });
     });

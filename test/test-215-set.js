@@ -23,15 +23,15 @@ describe("set", function () {
 
     it("set function to var", function () {
         assert.strictEqual(easl.evaluate(`
-            {function foo () 1}
+            {let foo () 1}
             {set foo 2}
             foo                         `), 2);
     });
 
     it("set function to function", function () {
         assert.strictEqual(easl.evaluate(`
-            {function foo () 1}
-            {function bar () (+ 1 2)}
+            {let foo () 1}
+            {let bar () (+ 1 2)}
             {set foo bar}
             (foo)                       `), 3);
     });

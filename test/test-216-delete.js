@@ -25,7 +25,7 @@ describe('delete', function () {
 
     it('delete function', function () {
         assert.strictEqual(easl.evaluate(`
-            {function foo () 1}
+            {let foo () 1}
             {delete foo}
             foo                         `),
             'Error: Unbound identifier: foo');
@@ -33,8 +33,8 @@ describe('delete', function () {
 
     it('delete correct function', function () {
         assert.strictEqual(easl.evaluate(`
-            {function foo () 1}
-            {function bar () (+ 1 2)}
+            {let foo () 1}
+            {let bar () (+ 1 2)}
             {delete foo}
             (bar)                       `), 3);
     });

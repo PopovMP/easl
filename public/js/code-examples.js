@@ -90,7 +90,7 @@ const examplesList = [
         name: "Function with default parameters",
         code: `;; Function with default parameters
 
-(function sum (a b)
+(let sum (a b)
    (unless a (set a 0))
    (unless b (set b 0))
    (+ a b) )
@@ -106,7 +106,7 @@ const examplesList = [
         name: "Implementation of 'map'",
         code: `;; Implementation of 'map' in EASL
 
-(function map (func lst)
+(let map (func lst)
     (let i    0)    
     (let len (list.length lst))
     (let res '())
@@ -127,7 +127,7 @@ const examplesList = [
         name: "Implementation of 'for-each'",
         code: `;; Implementation of 'for-each' in EASL
 
-(function for-each (func lst)
+(let for-each (func lst)
     (let len (list.length lst))
     (let i   0)
 
@@ -149,7 +149,7 @@ const examplesList = [
 
 (let lst (list 1 2 3 4))
 
-(function swap (lst i1 i2)
+(let swap (lst i1 i2)
     (let temp (list.get lst i1))
     (list.set lst i1 (list.get lst i2))
     (list.set lst i2 temp) )
@@ -163,7 +163,7 @@ const examplesList = [
         name: "Factorial",
         code: `;; Factorial
 
-(function fac (n)
+(let fac (n)
     (if (= n 0)
         1
         (* n (fac (- n 1))) )) 
@@ -189,15 +189,15 @@ const examplesList = [
         name: "FizzBuzz recursive style",
         code: `;; FizzBuzz recursive style
 
-(function get-fizz-buzz (n)
+(let get-fizz-buzz (n)
     (cond
         ((not (% n 15)) "FizzBuzz")
         ((not (% n  3)) "Fizz"    )
         ((not (% n  5)) "Buzz"    )
         (else n) ))
 
-(function FizzBuzz (max)
-    (function loop (n res)
+(let FizzBuzz (max)
+    (let loop (n res)
         (if (<= n max)
             (loop (+ n 1)
                   (list.add res
@@ -212,8 +212,8 @@ const examplesList = [
         name: "Fibonacci - tail optimized",
         code: `;; Fibonacci - tail optimized
 
-(function fibo (n)
-    (function loop (i prev cur)
+(let fibo (n)
+    (let loop (i prev cur)
         (if (= i n)
             cur
             (loop (+ i 1) cur (+ prev cur)) ))
@@ -230,11 +230,11 @@ const examplesList = [
         name: "Mutual recursion",
         code: `;; Mutual recursion
 
-(function is-even (n)
+(let is-even (n)
     (or (= n 0)
         (is-odd (- n 1)) ))
 
-(function is-odd (n)
+(let is-odd (n)
     (and (!= n 0)
          (is-even (- n 1)) ))
 
@@ -250,19 +250,19 @@ const examplesList = [
 ;; Calculate the sum of a list by using three different methods
 
 ;; Use "for" loop over the given list
-(function sum-list-for (lst)
+(let sum-list-for (lst)
     (let sum 0)
     (for n lst
         (inc sum n) )
     sum )
 
 ;; Call "+" on each elements of the list
-(function sum-list-call (lst)
+(let sum-list-call (lst)
     (call + lst) )
 
 ;; Tail optimised recursion
-(function sum-list-rec (lst)
-    (function loop (acc rest)
+(let sum-list-rec (lst)
+    (let loop (acc rest)
         (if rest
             (loop (+ acc (list.first rest))
                   (list.rest rest))
@@ -270,7 +270,7 @@ const examplesList = [
     (loop 0 lst) )
 
 ;; Benchmark function
-(function benchmark (func lst times method)
+(let benchmark (func lst times method)
     (let start-time (date.now))
 
     (repeat times (func lst))
@@ -294,9 +294,9 @@ const examplesList = [
         name: "Find the maximum of a list",
         code: `;; Find the maximum of a list recursively
 
-(function list-max (lst)
+(let list-max (lst)
 
-  (function loop (lst max)
+  (let loop (lst max)
     (if lst
         (loop (list.rest lst) (math.max max (list.first lst)))
         max ))
@@ -313,8 +313,8 @@ const examplesList = [
         name: "Eliminate consecutive duplicates",
         code: `;; Eliminate consecutive duplicates
 
-(function clean (lst)
-    (function loop (rest acc)
+(let clean (lst)
+    (let loop (rest acc)
          (if rest
              (if (= (list.first rest) (list.last acc))
                  (loop (list.rest rest) acc)
@@ -375,10 +375,10 @@ const examplesList = [
         name: "Hanoi tower",
         code: `;; Hanoi tower
 
-(function move (from to)
+(let move (from to)
     (print "Move disk from" from "to" to) )
 
-(function solve (n from to through)
+(let solve (n from to through)
     (when (> n 0)
           (solve (- n 1) from through to)
           (move from to)
@@ -393,7 +393,7 @@ const examplesList = [
         name: "Closure adder",
         code: `;; Closure adder
 
-(function make-adder (a)
+(let make-adder (a)
     (λ (b) (+ a b) ))
 
 (let add2 (make-adder 2))
@@ -406,7 +406,7 @@ const examplesList = [
         name: "Closure counter",
         code: `;; Closure counter
 
-(function make-counter (value delta)
+(let make-counter (value delta)
     (set value (or value 0))   ; sets a default initial value
     (set delta (or delta 1))   ; sets a default delta 
     (dec value delta)          ; applies an opposite delta to guarantee the same initial value
@@ -430,15 +430,15 @@ const examplesList = [
 (let curr (λ (prev) (* prev 3)))
 
 ;; Recursive style
-(function make-sequence-rec (first length next)
-    (function loop (i res)
+(let make-sequence-rec (first length next)
+    (let loop (i res)
         (if (< i length)
             (loop (+ i 1) (list.add res (next (list.last res))))
             res ))
     (loop 1 (list first)) )
 
 ;; Iteration style
-(function make-sequence-iter (first length next)
+(let make-sequence-iter (first length next)
  	(let res (list first))
     (repeat (- length 1)
     	(list.add res (next (list.last res))) )
@@ -485,12 +485,12 @@ const examplesList = [
 
 (enum .fname .lname .age)
 
-(function person.new (fname lname age)
+(let person.new (fname lname age)
      (list fname lname age) )
 
-(function person.clone (person) (list.slice person) )
-(function person.grow  (person) (list.set person .age (+ (list.get person .age) 1)) )
-(function person.name  (person) (+ (list.get person .fname) " " (list.get person .lname)) )
+(let person.clone (person) (list.slice person) )
+(let person.grow  (person) (list.set person .age (+ (list.get person .age) 1)) )
+(let person.name  (person) (+ (list.get person .fname) " " (list.get person .lname)) )
 
 (let john (person.new "John" "Doe" 33))
 (print john)
@@ -507,7 +507,7 @@ const examplesList = [
 (enum .first-name .last-name .clone)
 
 ;; Person factory
-(function make-person (first-name last-name)
+(let make-person (first-name last-name)
     (lambda (action value)
         (cond
             ((= action .first-name) 
@@ -543,26 +543,26 @@ const examplesList = [
         name: "OOP - Lambda Calculus style",
         code: `;; OOP - Lambda Calculus style
 
-(function Person (name age)
+(let Person (name age)
    (λ (f)
       (f name age (λ ()
                      (inc age) )) ))
 
-(function name (name) name )
-(function age  (name age) age )
-(function who  (name age) (print name age))
-(function grow (name age grow) (grow))
+(let name (name) name )
+(let age  (name age) age )
+(let who  (name age) (print name age))
+(let grow (name age grow) (grow))
 
 (let john (Person "John" 33))
 (john grow)
 ; (john who)
 
-(function Singer (person)
+(let Singer (person)
    (λ (f)
       (f person (λ (song) (print "🎵" song))) ))
 
-(function person (person) person)
-(function sing   (person sing) sing)
+(let person (person) person)
+(let sing   (person sing) sing)
 
 (let johnSinger (Singer john))
 ((johnSinger person) who)
@@ -579,7 +579,7 @@ const examplesList = [
 
 (assert.equal (+ 2 3) 5 "Sum two numbers")
 
-(assert.true? '(1 2 3) "A non empty list is true.")
+(assert.true '(1 2 3) "A non empty list is true.")
 
 (assert.equal (if true  4 5) 4
               "When the condition is true, 'if' returns the first expression")
@@ -593,7 +593,7 @@ const examplesList = [
 
 ;; The function is closed in 'lambda' to prevent pollution of the global scope
 ((lambda ()
-	(function sum (a b) (+ a b))
+	(let sum (a b) (+ a b))
     (assert.equal (sum 2 3) 5 "Call a function with two args.") ))
 
 (assert.equal 13 42 "The answer to Life, the Universe, and Everything!")
@@ -863,20 +863,20 @@ exit :
 (let var-names  (list)) ; Custom variables and labels names
 (let var-values (list)) ; Custom variables and labels values
 
-(function set-var (name val)
+(let set-var (name val)
    (let index (list.index var-names name))
    (if (>= index 0)
        (list.set var-values index val)
        (block (list.add var-names  name)
               (list.add var-values val) )))
 
-(function get-var (name)
+(let get-var (name)
    (let index (list.index var-names name))
    (if (>= index 0)
        (list.get var-values index)
        (throw (str.concat "Variable not defined: " name)) ))
 
-(function set-val (name val)
+(let set-val (name val)
     (case name
         ((EAX AH AL AX) (set AX val))
         ((EBX BH BL BX) (set BX val))
@@ -884,7 +884,7 @@ exit :
         ((EDX DH DL DX) (set DX val))
         (else (set-var name val)) ))
 
-(function get-val (ref)
+(let get-val (ref)
     (if (= (type-of ref) "number")
         ref
         (case ref
@@ -894,128 +894,128 @@ exit :
             ((EDX DH DL DX) DX)
             (else (get-var ref)) )))
 
-(function set-ZF (val)
+(let set-ZF (val)
     (set ZF (if (= val 0) 1 0)) )
 
-(function set-SF (val)
+(let set-SF (val)
     (set SF (if (< val 0) 1 0)) )
 
-(function DD (name val)
+(let DD (name val)
     (set-var name val) )
 
-(function EQU (name val)
+(let EQU (name val)
     (set-var name val) )
 
-(function MOV (p q)
+(let MOV (p q)
     (let val (get-val q))
     (set-val p val) )
 
-(function INC (p)
+(let INC (p)
     (let res (+ (get-val p) 1))
     (set-val p res)
     (set-ZF res)
     (set-SF res) )
 
-(function DEC (p)
+(let DEC (p)
     (let res (- (get-val p) 1))
     (set-val p res)
     (set-ZF res)
     (set-SF res) )
 
-(function ADD (p q)
+(let ADD (p q)
     (let res (+ (get-val p) (get-val q)))
     (set-val p res)
     (set-ZF res)
     (set-SF res) )
 
-(function SUB (p q)
+(let SUB (p q)
     (let res (- (get-val p) (get-val q)))
     (set-val p res)
     (set-ZF res)
     (set-SF res) )
 
-(function MUL (p)
+(let MUL (p)
     (let res (* (get-val "AX") (get-val p)))
     (set-val "AX" res)
     (set-ZF res)
     (set-SF res) )
 
-(function DIV (p)
+(let DIV (p)
     (let res (/ (get-val "AX") (get-val p)))
     (set-val "AX" res)
     (set-ZF res)
     (set-SF res) )
 
-(function MOD (p)
+(let MOD (p)
     (let res (% (get-val "AX") (get-val p)))
     (set-val "AX" res)
     (set-ZF res)
     (set-SF res) )
 
-(function AND (p q)
+(let AND (p q)
     (let res (and (get-val p) (get-val q)))
     (set-val p res)
     (set-ZF res) )
 
-(function OR (p q)
+(let OR (p q)
     (let res (or (get-val p) (get-val q)))
     (set-val p res)
     (set-ZF res) )
 
-(function TEST (p q)
+(let TEST (p q)
     (let res (and (get-val p) (get-val q)))
     (set-ZF res) )
 
-(function NOT (p)
+(let NOT (p)
     (let res (if (get-val p) 0 1))
     (set-val p res)
     (set-ZF res) )
 
-(function CMP (p q)
+(let CMP (p q)
     (let res (- (get-val p) (get-val q)))
     (set-ZF res)
     (set-SF res) )
 
-(function jump (label)
+(let jump (label)
     (set IP (get-val label)) )
 
-(function JMP (label)
+(let JMP (label)
     (jump label) )
 
-(function JE (label)
+(let JE (label)
     (if ZF (jump label)) )
 
-(function JNE (label)
+(let JNE (label)
     (unless ZF (jump label)) )
 
-(function JL (label)
+(let JL (label)
     (if (and (not ZF) SF)
         (jump label) ))
 
-(function JLE (label)
+(let JLE (label)
     (if (or (and (not ZF) SF) ZF)
         (jump label) ))
 
-(function JG (label)
+(let JG (label)
     (if (and (not ZF) (not SF))
         (jump label) ))
 
-(function JGE (label)
+(let JGE (label)
     (if (or (and (not ZF) (not SF)) ZF)
         (jump label) ))
 
-(function JZ (label)
+(let JZ (label)
     (if ZF
         (jump label)) )
 
-(function JNZ (label)
+(let JNZ (label)
     (if (not ZF)
         (jump label)) )
 
-(function OUT (ref)
+(let OUT (ref)
     (print (get-val ref)) )
 
-(function show-state ()
+(let show-state ()
     (let i 0)
     (for var-name var-names
         (print var-name ":" (var-values i))
@@ -1029,7 +1029,7 @@ exit :
     (print "SF :" SF)
     (print "IP :" IP) )
 
-(function eval-op (command p q)
+(let eval-op (command p q)
     (case p
         ((DS DW DD DQ DT) (DD command q))
         ((EQU) (EQU command q))
@@ -1062,17 +1062,17 @@ exit :
                   ((DEBUG) (show-state))
                   (else (throw (+ "Wrong command: " command " at IP: " IP)))   ))))
 
-(function eval-label (label command)
+(let eval-label (label command)
     (if (= command ":")
         (set-var label IP) ))
 
-(function parse-param (par-txt)
+(let parse-param (par-txt)
     (let num-param (to-number par-txt))
     (if (= (type-of num-param) "number")
         num-param
         par-txt ))
 
-(function parse-code-line (code-line)
+(let parse-code-line (code-line)
     ; Parse a command line
     (let split-parts (str.split code-line " "))
     (let non-empty-parts (list))
@@ -1089,7 +1089,7 @@ exit :
 
     command )
 
-(function parse-code (code-txt)
+(let parse-code (code-txt)
     (let src-list (str.split code-txt "\\n"))
     (let command-list '())
 
@@ -1106,7 +1106,7 @@ exit :
 
     command-list )
 
-(function eval-asm (code-txt)
+(let eval-asm (code-txt)
     (let lst-commands     (parse-code code-txt))
     (let lst-commands-len (list.length lst-commands))
 

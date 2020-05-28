@@ -52,9 +52,9 @@ describe('when', function () {
                        (+ a b) }}}  `), 11);
     });
 
-    it('when in function', function () {
+    it('when in proc', function () {
         assert.strictEqual(easl.evaluate(`
-            {function f ()
+            {let f ()
                 {when true
                     {let a 5}
                     {let b 6}
@@ -62,10 +62,10 @@ describe('when', function () {
             (f)                     `), 11);
     });
 
-    it('function in when', function () {
+    it('proc in when', function () {
         assert.strictEqual(easl.evaluate(`
             {when true
-                {function sum (a b) (+ a b)}
+                {let sum (a b) (+ a b)}
                 (sum 2 3) }         `), 5);
     });
 

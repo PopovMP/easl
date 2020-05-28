@@ -9,11 +9,8 @@ const easl = new Easl();
 describe('let', function () {
 
     describe('let with numbers', function () {
-        it('{let a} → null', function () {
-            assert.strictEqual(easl.evaluate(`    {let a}     `), null);
-        });
-        it('{let a} a → null', function () {
-            assert.strictEqual(easl.evaluate(`    {let a} a   `), null);
+        it('{let a} → Error', function () {
+            assert.strictEqual(easl.evaluate(`    {let a}     `), "Error: 'let' requires a symbol and a value.");
         });
         it('{let a 2} → null', function () {
             assert.strictEqual(easl.evaluate(`    {let a 2}   `), null);
@@ -35,11 +32,7 @@ describe('let', function () {
         });
         it('{let} → error', function () {
             assert.strictEqual(easl.evaluate(`    {let}     `),
-                "Error: 'let' requires 1 or 2 arguments. Given: 0");
-        });
-        it("{let a 'b 'c} → error", function () {
-            assert.strictEqual(easl.evaluate(`    {let a 'b 'c}     `),
-                "Error: 'let' requires 1 or 2 arguments. Given: 3");
+                "Error: 'let' requires a symbol and a value.");
         });
     });
 
@@ -105,6 +98,37 @@ describe('let', function () {
             assert.strictEqual(easl.evaluate(`    
                     {let get-list {lambda () {let a 1} {set a 2} a}}
                     (get-list)                               `), 2);
+        });
+    });
+
+    describe('let with procedure', function () {
+        it('no arguments', function () {
+            assert.strictEqual(easl.evaluate(` 
+                    (let answer () 42)
+                    (answer)                                `), 42);
+        });
+
+        it('one argument', function () {
+            assert.strictEqual(easl.evaluate(` 
+                    (let double (a) (* 2 a))
+                    (double 2)                              `), 4);
+        });
+
+        it('two arguments', function () {
+            assert.strictEqual(easl.evaluate(`    
+                    (let sum (a b) (+ a b))
+                    (sum 2 3)                               `), 5);
+        });
+
+        it('let does not return the proc', function () {
+            assert.strictEqual(easl.evaluate(`    
+                    ((let sum (a b) (+ a b)) 2 3)  `), 'Error: Improper function: null');
+        });
+
+        it('let with proc with multiple expressions', function () {
+            assert.strictEqual(easl.evaluate(`    
+                    (let get-two () (let a 1) (set a 2) a)
+                    (get-two)                               `), 2);
         });
     });
 });

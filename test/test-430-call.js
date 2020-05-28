@@ -40,25 +40,25 @@ describe('call', function () {
 
     it('call function with empty list of args', function () {
         assert.strictEqual(easl.evaluate(`
-            {function f () 5}
+            {let f () 5}
             {call f '()}                             `), 5);
     });
 
     it('call function with one arg - number', function () {
         assert.strictEqual(easl.evaluate(`
-            {function double (n) (* 2 n)}
+            {let double (n) (* 2 n)}
             {call double '(2)}                       `), 4);
     });
 
     it('call function with one arg - string', function () {
         assert.strictEqual(easl.evaluate(`
-            {function id (a) a}
+            {let id (a) a}
             {call id '("hello")}               `), "hello");
     });
 
     it('call function with list of args', function () {
         assert.strictEqual(easl.evaluate(`
-            {function sum (a b) (+ a b)}
+            {let sum (a b) (+ a b)}
             {call sum '(2 3)}                        `), 5);
     });
 

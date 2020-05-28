@@ -93,7 +93,6 @@ class Interpreter {
             case "do"       : return this.evalDo(expr, env);
             case "enum"     : return this.evalEnum(expr, env);
             case "for"      : return this.evalFor(expr, env);
-            case "function" : return this.evalFunction(expr, env);
             case "if"       : return this.evalIf(expr, env);
             case "inc"      : return this.evalIncrement(expr, env);
             case "lambda"   : return this.evalLambda(expr, env);
@@ -218,20 +217,34 @@ class Interpreter {
     }
 
     // [let, symbol, expr]
+    // [let, symbol, [par1, par2, ...], expr1, expr2, ...]
     private evalLet(expr: any[], env: any[]): any {
-        if (expr.length === 1 || expr.length > 3) {
-            throw "Error: 'let' requires 1 or 2 arguments. Given: " + (expr.length - 1);
-        }
-
         const symbol: string = expr[1];
         this.throwOnExistingDef(symbol, env);
+
+        if ( !Array.isArray(expr[2])  && expr.length !== 3 ) {
+            throw "Error: 'let' requires a symbol and a value.";
+        }
+
         const value: any = expr.length === 3
             ? this.evalLetValue(expr, env)
-            : null;
+            : this.evalLetValue(["let", symbol, ["lambda", expr[2], ...expr.slice(3)]], env);
 
         env.push([symbol, value]);
 
         return null;
+    }
+
+    // [let, symbol, expr]
+    // [let, symbol, [lambda, [par1, par2, ...], expr1, expr2, ...]]
+    private evalLetValue(expr: any[], env: any[]): any {
+        const letExpr: any = expr[2];
+
+        const res: any = (Array.isArray(letExpr) && letExpr[0] === "lambda")
+            ? this.evalLambda(letExpr, env)
+            : this.evalExpr(letExpr, env);
+
+        return res;
     }
 
     // [set, symbol, expr]
@@ -296,18 +309,6 @@ class Interpreter {
         return value;
     }
 
-    // [let, symbol, expr]
-    // [let, symbol, [lambda, [par1, par2, ...], expr1, expr2, ...]]
-    private evalLetValue(expr: any[], env: any[]): any {
-        const letExpr: any = expr[2];
-
-        const res: any = (Array.isArray(letExpr) && letExpr[0] === "lambda")
-            ? this.evalLambda(letExpr, env)
-            : this.evalExpr(letExpr, env);
-
-        return res;
-    }
-
     // [block, expr1, expr2, ...]
     private evalBlock(expr: any[], env: any[]): any {
         if (expr.length === 1) throw "Error: Empty block";
@@ -326,22 +327,6 @@ class Interpreter {
         do {
             cell = env.pop();
         } while (cell[0] !== tag);
-    }
-
-    // [function, symbol, [par1, par2, ...], expr1, expr2, ...]
-    private evalFunction(expr: any[], env: any[]): any {
-        const symbol: string = expr[1];
-
-        if (expr.length < 4) throw `Error: Improper function: ${symbol}`;
-        if (!Array.isArray(expr[2])) throw `Error: Improper function parameters: ${symbol}`;
-        this.throwOnExistingDef(symbol, env);
-
-        const body:    any[] = expr.length === 4 ? expr[3] : ["block", ... expr.slice(3)];
-        const closure: any[] = ["closure", expr[2], body, env];
-
-        env.push([symbol, closure]);
-
-        return null;
     }
 
     // [lambda, [par1, par2, ...], expr1, expr2, ...]

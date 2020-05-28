@@ -10,13 +10,13 @@ describe('scope', function () {
     it("function accesses vars defined before the function definition", function () {
         assert.strictEqual(easl.evaluate(`
             {let a 1}
-            {function fun () a}
+            {let fun () a}
             (fun)               `), 1);
     });
 
     it("function accesses vars defined after the function definition but before the call", function () {
         assert.strictEqual(easl.evaluate(`
-            {function fun () a}
+            {let fun () a}
             {let a 1}
             (fun)                `), 1);
     });
@@ -24,7 +24,7 @@ describe('scope', function () {
     it("The vars defined in the function body doesn't override vars defined before the function", function () {
         assert.strictEqual(easl.evaluate(`
             {let a 1}
-            {function fun ()
+            {let fun ()
                {let a 2}
                {let b a} }
             (fun) 
@@ -33,7 +33,7 @@ describe('scope', function () {
 
     it("The vars defined in the function body doesn't override vars defined after the function", function () {
         assert.strictEqual(easl.evaluate(`
-            {function fun ()
+            {let fun ()
                {let a 2}
                {let b a} }
             {let a 1}
@@ -43,8 +43,8 @@ describe('scope', function () {
 
     it("Function in a function see vars from outer scope", function () {
         assert.strictEqual(easl.evaluate(`
-            {function foo ()
-               {function bar () a}
+            {let foo ()
+               {let bar () a}
                {let a 1}
                (bar) }
             
@@ -53,14 +53,14 @@ describe('scope', function () {
 
     it("function doesn't access global vars defined after the function call", function () {
         assert.strictEqual(easl.evaluate(`
-            {function fun () a}
+            {let fun () a}
             (fun) 
             {let a 1}            `), "Error: Unbound identifier: a");
     });
 
     it("The var defined in a function body are not accessed from outside the function", function () {
         assert.strictEqual(easl.evaluate(`
-            {function fun ()
+            {let fun ()
                {let a 1}
                a }
             (fun) 
@@ -69,10 +69,10 @@ describe('scope', function () {
 
     it("Function from outer scope doesn't see vars from the scope before its call.", function () {
         assert.strictEqual(easl.evaluate(`
-            {function foo ()
+            {let foo ()
                {let a 1}
                (bar) }
-            {function bar () a}
+            {let bar () a}
             (foo)                `), "Error: Unbound identifier: a");
     });
 

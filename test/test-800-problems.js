@@ -10,11 +10,11 @@ describe('problems', function () {
 
     it("Lambda calculus Tuple", function () {
         const actual = easl.evaluate(`   
-            {function Tuple (a b)
+            {let Tuple (a b)
                {λ (f) (f a b)} }
 
-            {function first  (a b) a }
-            {function second (a b) b }
+            {let first  (a b) a }
+            {let second (a b) b }
 
             {let tuple (Tuple 1 2)}
 
@@ -26,8 +26,8 @@ describe('problems', function () {
 
     it('Sequence generator', function () {
         assert.deepStrictEqual(easl.evaluate(`   
-            {function make-sequence (start length next)
-                    {function loop (lst i)
+            {let make-sequence (start length next)
+                    {let loop (lst i)
                         {if (= i length)
                             lst
                             (loop (list.add lst (next (list.last lst))) (+ i 1)) }}
@@ -40,7 +40,7 @@ describe('problems', function () {
 
     it('Swap elements of a list', function () {
         assert.deepStrictEqual(easl.evaluate(`   
-            {function swap (lst i1 i2)
+            {let swap (lst i1 i2)
                 {let temp (list.get lst i1)}
                 (list.set lst i1 (list.get lst i2))
                 (list.set lst i2 temp) }
@@ -51,9 +51,9 @@ describe('problems', function () {
 
     it('"Find the maximum of a list', function () {
         assert.strictEqual(easl.evaluate(`   
-            {function list-max (lst)
+            {let list-max (lst)
             
-              {function loop (lst max)
+              {let loop (lst max)
                 {if lst
                     (loop (list.rest lst) (math.max max (list.first lst)))
                     max }}

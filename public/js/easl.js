@@ -94,7 +94,6 @@ class Interpreter {
             case "do": return this.evalDo(expr, env);
             case "enum": return this.evalEnum(expr, env);
             case "for": return this.evalFor(expr, env);
-            case "function": return this.evalFunction(expr, env);
             case "if": return this.evalIf(expr, env);
             case "inc": return this.evalIncrement(expr, env);
             case "lambda": return this.evalLambda(expr, env);
@@ -198,16 +197,23 @@ class Interpreter {
         return expr[1];
     }
     evalLet(expr, env) {
-        if (expr.length === 1 || expr.length > 3) {
-            throw "Error: 'let' requires 1 or 2 arguments. Given: " + (expr.length - 1);
-        }
         const symbol = expr[1];
         this.throwOnExistingDef(symbol, env);
+        if (!Array.isArray(expr[2]) && expr.length !== 3) {
+            throw "Error: 'let' requires a symbol and a value.";
+        }
         const value = expr.length === 3
             ? this.evalLetValue(expr, env)
-            : null;
+            : this.evalLetValue(["let", symbol, ["lambda", expr[2], ...expr.slice(3)]], env);
         env.push([symbol, value]);
         return null;
+    }
+    evalLetValue(expr, env) {
+        const letExpr = expr[2];
+        const res = (Array.isArray(letExpr) && letExpr[0] === "lambda")
+            ? this.evalLambda(letExpr, env)
+            : this.evalExpr(letExpr, env);
+        return res;
     }
     evalSet(expr, env) {
         if (expr.length !== 3) {
@@ -252,13 +258,6 @@ class Interpreter {
         this.setInEnv(expr[1], value, env);
         return value;
     }
-    evalLetValue(expr, env) {
-        const letExpr = expr[2];
-        const res = (Array.isArray(letExpr) && letExpr[0] === "lambda")
-            ? this.evalLambda(letExpr, env)
-            : this.evalExpr(letExpr, env);
-        return res;
-    }
     evalBlock(expr, env) {
         if (expr.length === 1)
             throw "Error: Empty block";
@@ -274,18 +273,6 @@ class Interpreter {
         do {
             cell = env.pop();
         } while (cell[0] !== tag);
-    }
-    evalFunction(expr, env) {
-        const symbol = expr[1];
-        if (expr.length < 4)
-            throw `Error: Improper function: ${symbol}`;
-        if (!Array.isArray(expr[2]))
-            throw `Error: Improper function parameters: ${symbol}`;
-        this.throwOnExistingDef(symbol, env);
-        const body = expr.length === 4 ? expr[3] : ["block", ...expr.slice(3)];
-        const closure = ["closure", expr[2], body, env];
-        env.push([symbol, closure]);
-        return null;
     }
     evalLambda(expr, env) {
         if (expr.length < 3)

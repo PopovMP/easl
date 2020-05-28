@@ -83,7 +83,7 @@ Truthy values are:
     number   - 0, 42, 3.14
     string   - "Hello World!"
     null     - the "null" keyword
-    function - a function
+    lambda   - a function
     list     - a list of values in square brackets: [1 2 3] , ["white", "red", "green"]
 
 We can check the type with the predicates:
@@ -135,13 +135,14 @@ There are three possible syntax:
 
 ## Named function
 
-Definition: `{function func-id (par1 par2 ...) (expression) }`
+Definition: `(let func-id (par1 par2 ...) expression, ... )`
 
 A function returns the value of the last expression.
 
 We call functions with: `(func-id par1 par2)`
 
-    {function sum (a b) (+ a b)}
+    (let sum (a b)
+        (+ a b))
     (sum 2 3) ;; → 5
 
 ### Lambda
@@ -159,14 +160,14 @@ You can call a `lambda` directly by enclosing it in parenthesis:
     
 You can use a `lambda` as a function argument:
 
-    {function calc (operation a b)
+    {let calc (operation a b)
         (operation a b)}
 
     (calc {lambda (a b) (+ a b)} 2 3)   ;; → 5
 
 A function can return a `lambda`:
 
-    {function make-identity ()
+    {let make-identity ()
         {lambda (a) (a)}}
 
     (let identity (make-identity))

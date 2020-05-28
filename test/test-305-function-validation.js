@@ -9,7 +9,7 @@ const easl = new Easl();
 describe('function validation', function () {
     it('valid args with unless', function () {
         assert.strictEqual(easl.evaluate(` 
-            {function double (a)
+            {let double (a)
                 {unless (= (type-of a) "number") {throw "Wrong parameter type"}}
                 (* a 2)}
 
@@ -19,7 +19,7 @@ describe('function validation', function () {
 
     it('invalid args with unless', function () {
         assert.strictEqual(easl.evaluate(` 
-            {function double (a)
+            {let double (a)
                 {unless (= (type-of a) "number") {throw "Wrong parameter type"}}
                 (* a 2)}
 

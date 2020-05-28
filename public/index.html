@@ -185,7 +185,7 @@ Builtin proc:  typeof
 
 <p>We call functions with: <code>(func-id par1 par2)</code></p>
 
-<pre>{function sum (a b) (+ a b)}
+<pre>{let sum (a b) (+ a b)}
 (sum 2 3) ;; → 5
 </pre>
 
@@ -206,7 +206,7 @@ Builtin proc:  typeof
 
 <p>You can use a <code>lambda</code> as a function argument:</p>
 
-<pre>{function calc (operation a b)
+<pre>{let calc (operation a b)
     (operation a b)}
 
 (calc {lambda (a b) (+ a b)} 2 3)   ;; → 5
@@ -402,8 +402,8 @@ Builtin proc:  typeof
 <p><code>math.zero</code></p>
 
 
-<script src="js/easl.js?v=26"></script>
-<script src="js/code-examples.js?v=17"></script>
+<script src="js/easl.js?v=30"></script>
+<script src="js/code-examples.js?v=30"></script>
 <script src="js/index.js?v=06"></script>
 
 <script src="codemirror/codemirror.js?v=01"></script>

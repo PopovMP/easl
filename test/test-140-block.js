@@ -54,19 +54,19 @@ describe('block', function () {
 
     it('block in function', function () {
         assert.strictEqual(easl.evaluate(`
-            {function f ()
-                {block
-                    {let a 5}
-                    {let b 6}
-                    (+ a b) }}
+            (let f ()
+                (block
+                    (let a 5)
+                    (let b 6)
+                    (+ a b) ))
             (f)                     `), 11);
     });
 
     it('function in block', function () {
         assert.strictEqual(easl.evaluate(`
-            {block
-                {function sum (a b) (+ a b)}
-                (sum 2 3) }         `), 5);
+            (block
+                (let sum (a b) (+ a b))
+                (sum 2 3) )         `), 5);
     });
 
 });
