@@ -876,18 +876,32 @@ if (typeof module === "object") {
 }
 class Printer {
     static stringify(input) {
-        const text = [];
-        const isOpenParen = (c) => ["{", "[", "("].indexOf(c) >= 0;
-        const lastChar = () => text[text.length - 1][text[text.length - 1].length - 1];
-        const space = () => text[text.length - 1].length === 0 || isOpenParen(lastChar()) ? "" : " ";
+        const texts = [];
+        const isOpenParen = (c) => ["{", "[", "("].includes(c);
+        const isQuoteAbbrev = (c) => c === "'";
+        const lastChar = () => texts[texts.length - 1][texts[texts.length - 1].length - 1];
+        const space = () => texts[texts.length - 1].length === 0 ||
+            isOpenParen(lastChar()) ||
+            isQuoteAbbrev(lastChar())
+            ? ""
+            : " ";
         function printClosure(closure) {
-            text.push("lambda (" + closure[1].join(" ") + ") (");
+            texts.push("lambda (" + closure[1].join(" ") + ") (");
             loop(closure[2]);
-            text.push(")");
+            texts.push(")");
+        }
+        function printQuote(obj) {
+            if (Array.isArray(obj)) {
+                texts.push(space() + "'(");
+                loop(obj);
+                texts.push(")");
+            }
+            else {
+                texts.push(space() + "'" + obj);
+            }
         }
         function loop(lst) {
             if (lst.length === 0) {
-                text.push(")");
                 return;
             }
             const element = lst[0];
@@ -897,15 +911,19 @@ class Printer {
             }
             if (Array.isArray(element)) {
                 if (element[0] === "string") {
-                    text.push(space() + '"' + element[1] + '"');
-                    loop(lst.slice(1));
-                    return;
+                    texts.push(space() + '"' + element[1] + '"');
                 }
-                text.push(space() + "(");
-                loop(element);
+                else if (element[0] === "quote") {
+                    printQuote(element[1]);
+                }
+                else {
+                    texts.push(space() + "(");
+                    loop(element);
+                    texts.push(")");
+                }
             }
             else {
-                text.push(space() + String(element));
+                texts.push(space() + String(element));
             }
             loop(lst.slice(1));
         }
@@ -920,9 +938,10 @@ class Printer {
             if (input.length === 0) {
                 return "()";
             }
-            text.push("(");
+            texts.push("(");
             loop(input);
-            return text.join("");
+            texts.push(")");
+            return texts.join("");
         }
         return JSON.stringify(input);
     }

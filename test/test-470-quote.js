@@ -24,8 +24,12 @@ describe("quote", function () {
         assert.deepStrictEqual(easl.evaluate(` {quote (list a 1)} `), ["list", "a", 1]);
     });
 
-    it("(quote ((quote (1)) 2)) -> (list a 1)", function () {
-        assert.deepStrictEqual(easl.evaluate(` (to-string (quote ((quote (1)) 2)) )`), '((quote (1)) 2)');
+    it("(quote ((quote a) 2))", function () {
+        assert.deepStrictEqual(easl.evaluate(` (to-string (quote ((quote a) 2)) )`), "('a 2)");
+    });
+
+    it("(quote ((quote (a b)) 2))", function () {
+        assert.deepStrictEqual(easl.evaluate(` (to-string (quote ((quote (a b)) 2)) )`), "('(a b) 2)");
     });
 });
 
@@ -108,8 +112,24 @@ describe("nested quote abbrev", function () {
     });
 });
 
+describe("to-string quote", function () {
 
-describe("(to-string (quote code))", function () {
+    it("'a", function () {
+        assert.strictEqual(easl.evaluate("(to-string 'a)"), "a");
+    });
+
+    it("''a", function () {
+        assert.strictEqual(easl.evaluate("(to-string ''a)"), "(quote a)");
+    });
+
+    it("'('a)", function () {
+        assert.strictEqual(easl.evaluate("(to-string '('a))"), "('a)");
+    });
+
+    it("'(''a 'b)", function () {
+        assert.strictEqual(easl.evaluate("(to-string '(''a 'b))"), "('(quote a) 'b)");
+    });
+
     it("fibo", function () {
         assert.strictEqual(easl.evaluate(`
 (to-string 

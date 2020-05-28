@@ -2,22 +2,34 @@
 
 class Printer {
     public static stringify(input: any[] | any): string {
-        const text:string[] = [];
-        const isOpenParen  = (c: string) => ["{", "[", "("].indexOf(c) >= 0;
-        const lastChar     = () => text[text.length - 1][text[text.length - 1].length - 1];
-        const space        = () => text[text.length - 1].length === 0 || isOpenParen(lastChar()) ? "" : " ";
+        const texts:string[] = [];
+        const isOpenParen    = (c: string) => ["{", "[", "("].includes(c);
+        const isQuoteAbbrev  = (c: string) => c === "'";
+        const lastChar       = () => texts[texts.length - 1][texts[texts.length - 1].length - 1];
+        const space          = () => texts[texts.length - 1].length === 0 ||
+                                     isOpenParen(   lastChar() )          ||
+                                     isQuoteAbbrev( lastChar() )
+                                         ? ""
+                                         : " ";
 
         function printClosure(closure: any[]): void {
-            text.push("lambda (" + closure[1].join(" ") + ") (");
-
+            texts.push("lambda (" + closure[1].join(" ") + ") (");
             loop(closure[2]);
+            texts.push(")");
+        }
 
-            text.push(")");
+        function printQuote(obj: any[] | any): void {
+            if ( Array.isArray(obj) ) {
+                texts.push( space() + "'(" );
+                loop(obj);
+                texts.push(")");
+            } else {
+                texts.push( space() + "'" + obj );
+            }
         }
 
         function loop(lst: any[]): void {
             if (lst.length === 0) {
-                text.push(")");
                 return;
             }
 
@@ -29,17 +41,20 @@ class Printer {
             }
 
             if ( Array.isArray(element) ) {
-
                 if (element[0] === "string") {
-                    text.push( space() + '"' + element[1] + '"' );
-                    loop( lst.slice(1) );
-                    return;
+                    texts.push( space() + '"' + element[1] + '"' );
                 }
-
-                text.push( space() + "(" );
-                loop(element);
-            } else {
-                text.push( space() + String(element) );
+                else if (element[0] === "quote") {
+                    printQuote(element[1]);
+                }
+                else {
+                    texts.push( space() + "(" );
+                    loop(element);
+                    texts.push(")");
+                }
+            }
+            else {
+                texts.push( space() + String(element) );
             }
 
             loop(lst.slice(1));
@@ -60,11 +75,11 @@ class Printer {
                 return "()";
             }
 
-            text.push("(");
-
+            texts.push("(");
             loop(input);
+            texts.push(")");
 
-            return text.join("");
+            return texts.join("");
         }
 
         return JSON.stringify(input);
