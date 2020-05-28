@@ -14,7 +14,7 @@
 (let list.map (lst fn)
     (let len (list.length lst))
     (let i   0)
-    (let res [])
+    (let res '())
 
     (while (< i len)
         (list.add res (fn (list.get lst i) i))
@@ -35,7 +35,7 @@
 (let list.filter (lst fn)
     (let len (list.length lst))
     (let i   0)
-    (let res [])
+    (let res '())
 
     (while (< i len)
         (let e (list.get lst i))
