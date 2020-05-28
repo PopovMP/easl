@@ -63,8 +63,8 @@ describe('let', function () {
         it('two lists', function () {
             assert.deepStrictEqual(easl.evaluate(`   
              
-                {let lst1  '(1 2)}
-                {let lst2  '(3 4)} 
+                {let lst1 '(1 2)}
+                {let lst2 '(3 4)} 
         
                 {let new-list (list.concat lst1 lst2)}
         

@@ -203,23 +203,21 @@ class Interpreter {
             throw "Error: 'let' requires a symbol and a value.";
         }
         const value = expr.length === 3
-            ? this.evalLetValue(expr, env)
-            : this.evalLetValue(["let", symbol, ["lambda", expr[2], ...expr.slice(3)]], env);
+            ? this.evalLetValue(expr[2], env)
+            : this.evalLetValue(["lambda", expr[2], ...expr.slice(3)], env);
         env.push([symbol, value]);
         return null;
     }
     evalLetValue(expr, env) {
-        const letExpr = expr[2];
-        const res = (Array.isArray(letExpr) && letExpr[0] === "lambda")
-            ? this.evalLambda(letExpr, env)
-            : this.evalExpr(letExpr, env);
-        return res;
+        return (Array.isArray(expr) && expr[0] === "lambda")
+            ? this.evalLambda(expr, env)
+            : this.evalExpr(expr, env);
     }
     evalSet(expr, env) {
         if (expr.length !== 3) {
             throw "Error: 'set' requires 2 arguments. Given: " + (expr.length - 1);
         }
-        const value = this.evalLetValue(expr, env);
+        const value = this.evalLetValue(expr[2], env);
         this.setInEnv(expr[1], value, env);
         return null;
     }

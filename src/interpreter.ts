@@ -227,24 +227,20 @@ class Interpreter {
         }
 
         const value: any = expr.length === 3
-            ? this.evalLetValue(expr, env)
-            : this.evalLetValue(["let", symbol, ["lambda", expr[2], ...expr.slice(3)]], env);
+            ? this.evalLetValue(expr[2], env)
+            : this.evalLetValue(["lambda", expr[2], ...expr.slice(3)], env);
 
         env.push([symbol, value]);
 
         return null;
     }
 
-    // [let, symbol, expr]
-    // [let, symbol, [lambda, [par1, par2, ...], expr1, expr2, ...]]
+    // [expr]
+    // [lambda, [par1, par2, ...], expr1, expr2, ...]
     private evalLetValue(expr: any[], env: any[]): any {
-        const letExpr: any = expr[2];
-
-        const res: any = (Array.isArray(letExpr) && letExpr[0] === "lambda")
-            ? this.evalLambda(letExpr, env)
-            : this.evalExpr(letExpr, env);
-
-        return res;
+        return (Array.isArray(expr) && expr[0] === "lambda")
+            ? this.evalLambda(expr, env)
+            : this.evalExpr(expr, env);
     }
 
     // [set, symbol, expr]
@@ -253,7 +249,7 @@ class Interpreter {
             throw "Error: 'set' requires 2 arguments. Given: " + (expr.length - 1);
         }
 
-        const value: any = this.evalLetValue(expr, env);
+        const value: any = this.evalLetValue(expr[2], env);
 
         this.setInEnv(expr[1], value, env);
 
