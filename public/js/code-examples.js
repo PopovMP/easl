@@ -87,18 +87,18 @@ const examplesList = [
     },
 
     {
-        name: "Function with default parameters",
-        code: `;; Function with default parameters
+        name: "Function with optional arguments",
+        code: `;; The function's arguments are optional.
+;; If you don't provide an argument,
+;; the corresponding parameter is set to 'null'.
 
 (let sum (a b)
-   (unless a (set a 0))
-   (unless b (set b 0))
-   (+ a b) )
+   (+ (or a 0)
+      (or b 0)))
 
-(print "(sum)         →" (sum))
-(print "(sum 1)       →" (sum 1))
-(print "(sum 1 2)     →" (sum 1 2))
-(print "(+ 1 2 3 4 5) →" (+ 1 2 3 4 5)) ; The EASL way :)
+(print "(sum)     →" (sum))
+(print "(sum 1)   →" (sum 1))
+(print "(sum 1 2) →" (sum 1 2))
 `
     },
 
