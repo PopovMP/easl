@@ -295,17 +295,20 @@ const examplesList = [
         code: `;; Find the maximum of a list recursively
 
 (let list-max (lst)
+    (let len (list.length lst))
 
-  (let loop (lst max)
-    (if lst
-        (loop (list.rest lst) (math.max max (list.first lst)))
-        max ))
+    (let loop (index max)
+        (if (= index len)
+            max
+            (loop (+ index 1)
+                  (math.max max
+                            (list.get lst index)))))
 
-  (loop lst (list.first lst)) )
+    (loop 0 (list.get lst 0)) )
 
 (let lst '(42 34 12 5 62 2))
-(print "List   : " lst)
-(print "Maximum: " (list-max lst))
+(print "List :" lst)
+(print "Max  :" (list-max lst))
 `
     },
 
