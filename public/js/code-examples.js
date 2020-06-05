@@ -507,7 +507,7 @@ const examplesList = [
 
 ;; Person factory
 (let make-person (first-name last-name)
-    (lambda (action value)
+    (lambda ((action null) (value null))
         (cond
             ((= action .first-name) 
                   (if value (make-person value  last-name) first-name))
@@ -649,9 +649,14 @@ const examplesList = [
 
 ;; Examples
 (print "one =" (int one))
-
 (let forty-two ((add ((mult ten) four)) two))
-(print "forty-two =" (int forty-two))
+(print "forty-one   =" (int (pred forty-two)))
+(print "forty-two   =" (int forty-two))
+(print "forty-three =" (int (succ forty-two)))
+(print "zero? 0"  (bool (zero? zero)))
+(print "zero? 1"  (bool (zero?  one)))
+(print "lte? 3 4" (bool ((lte? three)  four)))
+(print "lte? 4 3" (bool ((lte?  four) three)))
 
 ;; Boolean logic
 (print)
@@ -676,17 +681,17 @@ const examplesList = [
 (print)
 
 ;; Factorial
-(let fac (λ (n) ((IF ((((lte? n) one)
+(let fac (λ (n) ((((IF ((lte? n) one))
                      (λ () one))
-                     (λ () ((mult n) (fac (pred n)))) ))) ))
+                     (λ () ((mult n) (fac (pred n))))))))
 
 (print "factorial 5 =" (int (fac five)))
 
 ;; Fibonacci
-(let fib (λ (n) ((IF ((((lte? n) one)
+(let fib (λ (n) ((((IF ((lte? n) one))
                      (λ () one))
                      (λ () ((add (fib ((sub n) one)))
-                                 (fib ((sub n) two)))) ))) ))
+                                 (fib ((sub n) two))))))))
 
 (print "Fibonacci 9 =" (int (fib nine)))
 
@@ -1027,7 +1032,7 @@ exit :
     (print "SF :" SF)
     (print "IP :" IP) )
 
-(let eval-op (command p q)
+(let eval-op (command p (q null))
     (case p
         ((DS DW DD DQ DT) (DD command q))
         ((EQU) (EQU command q))
