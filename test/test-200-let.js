@@ -12,8 +12,8 @@ describe('let', function () {
         it('{let a} → Error', function () {
             assert.strictEqual(easl.evaluate(`    {let a}     `), "Error: 'let' requires a symbol and a value.");
         });
-        it('{let a 2} → null', function () {
-            assert.strictEqual(easl.evaluate(`    {let a 2}   `), null);
+        it('{let a 2} → undefined', function () {
+            assert.strictEqual(easl.evaluate(`    {let a 2}   `), undefined);
         });
         it('{let a 2} a → 2', function () {
             assert.strictEqual(easl.evaluate(`    {let a 2} a `), 2);
@@ -91,7 +91,7 @@ describe('let', function () {
         });
         it('let does not return the lambda', function () {
             assert.strictEqual(easl.evaluate(`    
-                    ({let sum {lambda (a b) (+ a b)}} 2 3)  `), 'Error: Improper function: null');
+                    ({let sum {lambda (a b) (+ a b)}} 2 3)  `), 'Error: Improper function: undefined');
         });
 
         it('let with lambda with multiple expressions', function () {
@@ -122,7 +122,7 @@ describe('let', function () {
 
         it('let does not return the proc', function () {
             assert.strictEqual(easl.evaluate(`    
-                    ((let sum (a b) (+ a b)) 2 3)  `), 'Error: Improper function: null');
+                    ((let sum (a b) (+ a b)) 2 3)  `), 'Error: Improper function: undefined');
         });
 
         it('let with proc with multiple expressions', function () {

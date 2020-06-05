@@ -39,16 +39,16 @@ describe('delete', function () {
             (bar)                       `), 3);
     });
 
-    it('delete returns the value', function () {
+    it('delete returns undefined', function () {
         assert.strictEqual(easl.evaluate(`
             {let a 5}
-            {delete a}                 `), 5);
+            {delete a}                 `), undefined);
     });
 
     it('delete unbound identifier', function () {
         assert.strictEqual(easl.evaluate(`
             {delete a}                 `),
-            "Error: Unbound identifier: a");
+            "Error: 'delete' unbound identifier: a");
     });
 
     it('delete unbound identifier', function () {

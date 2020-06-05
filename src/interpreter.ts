@@ -87,24 +87,28 @@ class Interpreter {
             case "call"     : return this.evalCall(expr, env);
             case "case"     : return this.evalCase(expr, env);
             case "cond"     : return this.evalCond(expr, env);
-            case "debug"    : return this.evalDebug(env);
             case "dec"      : return this.evalDecrement(expr, env);
+            case "if"       : return this.evalIf(expr, env);
+            case "inc"      : return this.evalIncrement(expr, env);
+            case "lambda"   : return this.evalLambda(expr, env);
+            case "or"       : return this.evalOr(expr, env);
+            case "quote"    : return this.evalQuote(expr);
+            case "try"      : return this.evalTry(expr, env);
+        }
+
+        // Special void forms
+        switch (expr[0]) {
+            case "debug"    : return this.evalDebug(env);
             case "delete"   : return this.evalDelete(expr, env);
             case "do"       : return this.evalDo(expr, env);
             case "enum"     : return this.evalEnum(expr, env);
             case "for"      : return this.evalFor(expr, env);
-            case "if"       : return this.evalIf(expr, env);
-            case "inc"      : return this.evalIncrement(expr, env);
-            case "lambda"   : return this.evalLambda(expr, env);
             case "let"      : return this.evalLet(expr, env);
-            case "or"       : return this.evalOr(expr, env);
-            case "quote"    : return this.evalQuote(expr);
             case "repeat"   : return this.evalRepeat(expr, env);
             case "set"      : return this.evalSet(expr, env);
-            case "throw"    : return this.evalThrow(expr, env);
-            case "try"      : return this.evalTry(expr, env);
-            case "unless"   : return this.evalUnless(expr, env);
             case "when"     : return this.evalWhen(expr, env);
+            case "unless"   : return this.evalUnless(expr, env);
+            case "throw"    : return this.evalThrow(expr, env);
             case "while"    : return this.evalWhile(expr, env);
         }
 
@@ -215,10 +219,10 @@ class Interpreter {
     // [let, [arg1, arg2, ...], [par1, par2, ...]]
     // [let, symbol, expr]
     // [let, symbol, [par1, par2, ...], expr1, expr2, ...]
-    private evalLet(expr: any[], env: any[]): null {
+    private evalLet(expr: any[], env: any[]): void {
         if (expr.length === 3 && Array.isArray(expr[1])) {
             this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), env);
-            return null;
+            return;
         }
 
         const symbol: string = expr[1];
@@ -233,8 +237,6 @@ class Interpreter {
             : this.evalLetValue(["lambda", expr[2], ...expr.slice(3)], env);
 
         env.push([symbol, value]);
-
-        return null;
     }
 
     private evalListDestructuring(params: any[], args: any[], env: any[]): void {
@@ -279,7 +281,7 @@ class Interpreter {
     }
 
     // [set, symbol, expr]
-    private evalSet(expr: any[], env: any[]): any {
+    private evalSet(expr: any[], env: any[]): void {
         if (expr.length !== 3) {
             throw "Error: 'set' requires 2 arguments. Given: " + (expr.length - 1);
         }
@@ -287,12 +289,10 @@ class Interpreter {
         const value: any = this.evalLetValue(expr[2], env);
 
         this.setInEnv(expr[1], value, env);
-
-        return null;
     }
 
     // [delete, symbol]
-    private evalDelete(expr: any[], env: any[]): any {
+    private evalDelete(expr: any[], env: any[]): void {
         if (expr.length !== 2) {
             throw "Error: 'delete' requires 1 argument. Given: " + (expr.length - 1);
         }
@@ -301,15 +301,14 @@ class Interpreter {
 
         for (let i = env.length - 1; i > -1; i--) {
             const cellKey = env[i][0];
-            if (cellKey === "#scope") throw `Error: Unbound identifier: ${symbol}`;
+            if (cellKey === "#scope") throw `Error: 'delete' unbound identifier: ${symbol}`;
             if (cellKey === symbol) {
-                const cellValue = env[i][1];
                 env.splice(i, 1);
-                return cellValue;
+                return;
             }
         }
 
-        throw `Error: Unbound identifier: ${symbol}`;
+        throw `Error: 'delete' unbound identifier: ${symbol}`;
     }
 
     // [inc, symbol, inc]
@@ -385,20 +384,32 @@ class Interpreter {
     }
 
     // [unless, test-expr, when-not-expr, else-expr]
-    private evalUnless(expr: any[], env: any[]): any {
-        if (expr.length < 3 || expr.length > 4) {
-            throw "Error: 'unless' requires 2 or 3 arguments. Given: " + (expr.length - 1);
+    private evalUnless(expr: any[], env: any[]): void {
+        if (expr.length === 1) {
+            throw "Error: Empty 'unless'";
         }
 
-        return this.isFaulty(this.evalExpr(expr[1], env))
-            ? this.evalExpr(expr[2], env)
-            : expr.length === 4
-                ? this.evalExpr(expr[3], env)
-                : null;
+        if (expr.length === 2) {
+            throw "Error: Empty 'unless' block";
+        }
+
+        if ( this.isTruthy( this.evalExpr(expr[1], env) )) {
+            return;
+        }
+
+        env.push(["#scope", "unless"]);
+
+        if (expr.length === 3) {
+            this.evalExpr(expr[2], env);
+        } else {
+            this.evalExprLst(expr.slice(2), env);
+        }
+
+        this.clearEnv("#scope", env);
     }
 
     // [when, test-expr, expr1, expr2, ...]
-    private evalWhen(expr: any[], env: any[]): any {
+    private evalWhen(expr: any[], env: any[]): void {
         if (expr.length === 1) {
             throw "Error: Empty 'when'";
         }
@@ -407,18 +418,19 @@ class Interpreter {
             throw "Error: Empty 'when' block";
         }
 
-        if (!this.isTruthy(this.evalExpr(expr[1], env))) {
-            return null;
+        if ( !this.isTruthy( this.evalExpr(expr[1], env) )) {
+            return;
         }
 
         env.push(["#scope", "when"]);
 
-        const res: any = expr.length === 3
-            ? this.evalExpr(expr[2], env)
-            : this.evalExprLst(expr.slice(2), env);
+        if (expr.length === 3) {
+            this.evalExpr(expr[2], env);
+        } else {
+            this.evalExprLst(expr.slice(2), env);
+        }
 
         this.clearEnv("#scope", env);
-        return res;
     }
 
     // [cond,
@@ -477,13 +489,15 @@ class Interpreter {
     }
 
     // [for, symbol, range, exp1 exp2 ...]
-    private evalFor(expr: any[], env: any[]): null {
+    private evalFor(expr: any[], env: any[]): void {
         const symbol: string  = expr[1];
         const range: any[]    = this.evalExpr(expr[2], env);
         const loopBody: any[] = expr.slice(3);
 
         if (!Array.isArray(range))  throw `Error: No range provided in 'for'`;
-        if (range.length === 0) return null;
+        if (range.length === 0) {
+            return;
+        }
 
         for (const elem of range) {
             env.push(["#scope", "for"]);
@@ -494,18 +508,16 @@ class Interpreter {
                 if (res === "continue") break;
                 if (res === "break") {
                     this.clearEnv("#scope", env);
-                    return null;
+                    return;
                 }
             }
 
             this.clearEnv("#scope", env);
         }
-
-        return null;
     }
 
     // [while, test-expr, expr1, expr2, ...]
-    private evalWhile(expr: any[], env: any[]): null {
+    private evalWhile(expr: any[], env: any[]): void {
         const testExpr: any = expr[1];
         const loopBody: any = expr.slice(2);
 
@@ -517,18 +529,16 @@ class Interpreter {
                 if (res === "continue") break;
                 if (res === "break") {
                     this.clearEnv("#scope", env);
-                    return null;
+                    return;
                 }
             }
 
             this.clearEnv("#scope", env);
         }
-
-        return null;
     }
 
     // [do, expr1, expr2, ..., test-expr]
-    private evalDo(expr: any[], env: any[]): null {
+    private evalDo(expr: any[], env: any[]): void {
         const testExpr: any = expr[expr.length - 1];
         const loopBody: any = expr.slice(1, expr.length - 1);
 
@@ -540,29 +550,25 @@ class Interpreter {
                 if (res === "continue") break;
                 if (res === "break") {
                     this.clearEnv("#scope", env);
-                    return null;
+                    return;
                 }
             }
 
             this.clearEnv("#scope", env);
         } while (this.evalExpr(testExpr, env));
-
-        return null;
     }
 
     // [enum, symbol1, symbol2, ...]
-    private evalEnum(expr: any[], env: any[]): null {
+    private evalEnum(expr: any[], env: any[]): void {
         for (let i: number = 1; i < expr.length; i++) {
             const symbol: string = expr[i];
             this.throwOnExistingDef(symbol, env);
             env.push([symbol, i - 1]);
         }
-
-        return null;
     }
 
     // [repeat, count expr1, expr2, ...]
-    private evalRepeat(expr: any[], env: any[]): null {
+    private evalRepeat(expr: any[], env: any[]): void {
         const count: any = this.evalExpr(expr[1], env);
         if (typeof count !== "number")  throw `Error: Wrong count in 'repeat'`;
 
@@ -576,14 +582,12 @@ class Interpreter {
                 if (res === "continue") break;
                 if (res === "break") {
                     this.clearEnv("#scope", env);
-                    return null;
+                    return;
                 }
             }
 
             this.clearEnv("#scope", env);
         }
-
-        return null;
     }
 
     // [call, symbol, [arg1, arg2, ...] | expr]
@@ -713,10 +717,9 @@ class Interpreter {
     }
 
     // [debug]
-    private evalDebug(env: any): null {
+    private evalDebug(env: any): void {
         this.dumpEnvironment(env);
         this.isDebug = true;
-        return null;
     }
 
     private dumpEnvironment(env: any[]): null {

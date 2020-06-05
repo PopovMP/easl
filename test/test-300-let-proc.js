@@ -29,10 +29,6 @@ describe("function", function () {
               {let foo () 1}
               {let foo () 2}               `), "Error: Identifier already defined: foo");
         });
-        it("func definition returns null", function () {
-            assert.strictEqual(easl.evaluate(`
-              {let sum (a b) (+ a b)} `),  null);
-        });
     });
 
     describe("function call", function () {

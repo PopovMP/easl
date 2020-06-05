@@ -36,10 +36,10 @@ describe("set", function () {
             (foo)                       `), 3);
     });
 
-    it("set returns the value", function () {
+    it("set returns undefined", function () {
         assert.strictEqual(easl.evaluate(`
             {let a 5}
-            {set a 6}                 `), null);
+            {set a 6}                 `), undefined);
     });
 
     it("set unbound identifier", function () {
