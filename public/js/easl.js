@@ -183,11 +183,7 @@ class Interpreter {
     }
     makeClosureEnv(name, params, args, env) {
         const closureEnv = env.concat([["#scope", name], ["#args", args], ["#name", name]]);
-        for (let i = 0; i < params.length; i++) {
-            const param = params[i];
-            const arg = i < args.length ? args[i] : null;
-            closureEnv.push([param, arg]);
-        }
+        this.evalListDestructuring(params, args, closureEnv);
         return closureEnv;
     }
     evalString(expr) {
@@ -197,6 +193,10 @@ class Interpreter {
         return expr[1];
     }
     evalLet(expr, env) {
+        if (expr.length === 3 && Array.isArray(expr[1])) {
+            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), env);
+            return null;
+        }
         const symbol = expr[1];
         this.throwOnExistingDef(symbol, env);
         if (!Array.isArray(expr[2]) && expr.length !== 3) {
@@ -207,6 +207,31 @@ class Interpreter {
             : this.evalLetValue(["lambda", expr[2], ...expr.slice(3)], env);
         env.push([symbol, value]);
         return null;
+    }
+    evalListDestructuring(params, args, env) {
+        if (!Array.isArray(args)) {
+            throw "Error: list destructuring requires one iterable argument.";
+        }
+        const restIndex = params.indexOf(".");
+        for (let i = 0; i < params.length && i !== restIndex; i++) {
+            const isParamArray = Array.isArray(params[i]);
+            const param = isParamArray ? params[i][0] : params[i];
+            this.throwOnExistingDef(param, env);
+            const value = typeof args[i] === "undefined" || args[i] === null
+                ? isParamArray
+                    ? this.evalExpr(params[i][1], env)
+                    : null
+                : args[i];
+            env.push([param, value]);
+        }
+        if (restIndex > -1) {
+            const param = params[restIndex + 1];
+            this.throwOnExistingDef(param, env);
+            const value = args.length < restIndex
+                ? []
+                : args.slice(restIndex);
+            env.push([param, value]);
+        }
     }
     evalLetValue(expr, env) {
         return (Array.isArray(expr) && expr[0] === "lambda")

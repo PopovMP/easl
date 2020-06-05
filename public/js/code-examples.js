@@ -227,24 +227,6 @@ const examplesList = [
 `   },
 
     {
-        name: "Mutual recursion",
-        code: `;; Mutual recursion
-
-(let is-even (n)
-    (or (= n 0)
-        (is-odd (- n 1)) ))
-
-(let is-odd (n)
-    (and (!= n 0)
-         (is-even (- n 1)) ))
-
-(let n (math.ceil (* 100 (math.random))))
-(let odd-even (if (is-odd n) "odd" "even"))
-(print n "is" odd-even)
-`
-    },
-
-    {
         name: "Benchmark: for, call, recursion",
         code: `;; Benchmark: for, call, recursion
 ;; Calculate the sum of a list by using three different methods
@@ -392,6 +374,27 @@ const examplesList = [
     },
 
     {
+        name: "Mutual recursive default parameters",
+        code: `;; Mutual recursive default parameters
+
+(let odd-even (n
+               (is-even (λ (n)
+                   (or (= n 0)
+                       (is-odd (- n 1)))))
+               (is-odd (λ (n)
+                   (and (!= n 0)
+                        (is-even (- n 1))))))
+    (if (is-odd n)
+        'odd
+        'even))
+
+(repeat 10
+    (let n (math.ceil (* 100 (math.random))))
+    (print n 'is (odd-even n)))
+`
+    },
+
+    {
         name: "Closure adder",
         code: `;; Closure adder
 
@@ -408,11 +411,9 @@ const examplesList = [
         name: "Closure counter",
         code: `;; Closure counter
 
-(let make-counter (value delta)
-    (set value (or value 0))   ; sets a default initial value
-    (set delta (or delta 1))   ; sets a default delta 
-    (dec value delta)          ; applies an opposite delta to guarantee the same initial value
-    (λ () (inc value delta)) ) ; returns the counter function (closure)
+(let make-counter ((value 0) (delta 1))
+    (dec value delta)
+    (λ () (inc value delta)) )
 
 (let count (make-counter))
 (print (count) (count) (count) (count))
@@ -1128,7 +1129,6 @@ exit :
             (throw "Too many cycles!") )) )
 
 (eval-asm code-text)
-
 `
     },
 ];

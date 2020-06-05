@@ -198,11 +198,7 @@ class Interpreter {
     private makeClosureEnv(name: string, params: string[], args: any[], env: any[]): any[] {
         const closureEnv = env.concat([["#scope", name], ["#args", args], ["#name", name]]);
 
-        for (let i = 0; i < params.length; i++) {
-            const param: string = params[i];
-            const arg:   any    = i < args.length ? args[i] : null;
-            closureEnv.push([param, arg]);
-        }
+        this.evalListDestructuring(params, args, closureEnv);
 
         return closureEnv;
     }
@@ -216,9 +212,15 @@ class Interpreter {
         return expr[1];
     }
 
+    // [let, [arg1, arg2, ...], [par1, par2, ...]]
     // [let, symbol, expr]
     // [let, symbol, [par1, par2, ...], expr1, expr2, ...]
-    private evalLet(expr: any[], env: any[]): any {
+    private evalLet(expr: any[], env: any[]): null {
+        if (expr.length === 3 && Array.isArray(expr[1])) {
+            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), env);
+            return null;
+        }
+
         const symbol: string = expr[1];
         this.throwOnExistingDef(symbol, env);
 
@@ -233,6 +235,39 @@ class Interpreter {
         env.push([symbol, value]);
 
         return null;
+    }
+
+    private evalListDestructuring(params: any[], args: any[], env: any[]): void {
+        if ( !Array.isArray(args) ) {
+            throw "Error: list destructuring requires one iterable argument.";
+        }
+
+        const restIndex: number = params.indexOf(".");
+
+        for (let i: number = 0; i < params.length && i !== restIndex; i++) {
+            const isParamArray: boolean = Array.isArray(params[i]);
+            const param :string = isParamArray ? params[i][0] : params[i];
+            this.throwOnExistingDef(param, env);
+
+            const value: any = typeof args[i] === "undefined" || args[i] === null
+                ? isParamArray
+                    ? this.evalExpr(params[i][1], env)
+                    : null
+                : args[i];
+
+            env.push([param, value]);
+        }
+
+        if (restIndex > -1) {
+            const param :string = params[restIndex + 1];
+            this.throwOnExistingDef(param, env);
+
+            const value: any = args.length < restIndex
+                ? []
+                : args.slice(restIndex);
+
+            env.push([param, value]);
+        }
     }
 
     // [expr]

@@ -16,7 +16,7 @@
             return obj;
         }
 
-        const constants = makeKeywords("true false null #args #name");
+        const constants = makeKeywords(". true false null #args #name");
 
         const keywords = makeKeywords(
             "λ block break call case cond continue debug do else for repeat if unless import lambda let " +
