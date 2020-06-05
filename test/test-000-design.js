@@ -100,5 +100,9 @@ b"                                                   `), "\na\nb");
                                                     (let a 2)               `),
                                                     "Error: Identifier already defined: a");
         });
+        it("cannot set unspecified value", function () {
+            assert.strictEqual(easl.evaluate(`      (let a (when true 5))   `),
+                "Error: cannot set unspecified value to symbol: a.");
+        });
     });
 });

@@ -139,16 +139,10 @@ class Interpreter {
         }
         throw `Error: Unbound identifier: ${symbol}`;
     }
-    throwOnExistingDef(symbol, env) {
-        for (let i = env.length - 1; i > -1; i--) {
-            const cellKey = env[i][0];
-            if (cellKey === "#scope")
-                return;
-            if (cellKey === symbol)
-                throw `Error: Identifier already defined: ${symbol}`;
-        }
-    }
     setInEnv(symbol, value, env) {
+        if (typeof value === "undefined") {
+            throw `Error: cannot set unspecified value to symbol: ${symbol}.`;
+        }
         for (let i = env.length - 1; i > -1; i--) {
             if (symbol === env[i][0]) {
                 env[i][1] = value;
@@ -156,6 +150,24 @@ class Interpreter {
             }
         }
         throw `Error: Unbound identifier: ${symbol}`;
+    }
+    addToEnv(symbol, value, env) {
+        this.throwOnExistingDef(symbol, env);
+        if (typeof value === "undefined") {
+            throw `Error: cannot set unspecified value to symbol: ${symbol}.`;
+        }
+        env.push([symbol, value]);
+    }
+    throwOnExistingDef(symbol, env) {
+        for (let i = env.length - 1; i > -1; i--) {
+            const cellKey = env[i][0];
+            if (cellKey === "#scope") {
+                return;
+            }
+            if (cellKey === symbol) {
+                throw `Error: Identifier already defined: ${symbol}`;
+            }
+        }
     }
     callProc(expr, env) {
         const proc = expr[0];
@@ -199,15 +211,14 @@ class Interpreter {
             this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), env);
             return;
         }
-        const symbol = expr[1];
-        this.throwOnExistingDef(symbol, env);
         if (!Array.isArray(expr[2]) && expr.length !== 3) {
             throw "Error: 'let' requires a symbol and a value.";
         }
+        const symbol = expr[1];
         const value = expr.length === 3
             ? this.evalLetValue(expr[2], env)
             : this.evalLetValue(["lambda", expr[2], ...expr.slice(3)], env);
-        env.push([symbol, value]);
+        this.addToEnv(symbol, value, env);
     }
     evalListDestructuring(params, args, env) {
         if (!Array.isArray(args)) {
@@ -217,21 +228,19 @@ class Interpreter {
         for (let i = 0; i < params.length && i !== restIndex; i++) {
             const isParamArray = Array.isArray(params[i]);
             const param = isParamArray ? params[i][0] : params[i];
-            this.throwOnExistingDef(param, env);
-            const value = typeof args[i] === "undefined" || args[i] === null
+            const value = typeof args[i] === "undefined"
                 ? isParamArray
                     ? this.evalExpr(params[i][1], env)
-                    : null
+                    : `Error: cannot set unspecified value to parameter: ${param}.`
                 : args[i];
-            env.push([param, value]);
+            this.addToEnv(param, value, env);
         }
         if (restIndex > -1) {
             const param = params[restIndex + 1];
-            this.throwOnExistingDef(param, env);
             const value = args.length < restIndex
                 ? []
                 : args.slice(restIndex);
-            env.push([param, value]);
+            this.addToEnv(param, value, env);
         }
     }
     evalLetValue(expr, env) {
@@ -403,7 +412,7 @@ class Interpreter {
         }
         for (const elem of range) {
             env.push(["#scope", "for"]);
-            env.push([symbol, elem]);
+            this.addToEnv(symbol, elem, env);
             for (const bodyExpr of loopBody) {
                 const res = this.evalExpr(bodyExpr, env);
                 if (res === "continue")
@@ -453,8 +462,7 @@ class Interpreter {
     evalEnum(expr, env) {
         for (let i = 1; i < expr.length; i++) {
             const symbol = expr[i];
-            this.throwOnExistingDef(symbol, env);
-            env.push([symbol, i - 1]);
+            this.addToEnv(symbol, i - 1, env);
         }
     }
     evalRepeat(expr, env) {

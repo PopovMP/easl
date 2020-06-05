@@ -36,7 +36,7 @@ describe("default parameters", function () {
     it("one param, zero args", function () {
         assert.strictEqual(easl.evaluate(` 
                 (let (a) (list))
-                a                   `), null);
+                a                   `), "Error: cannot set unspecified value to parameter: a.");
     });
 
     it("default first param", function () {

@@ -149,15 +149,11 @@ class Interpreter {
         throw `Error: Unbound identifier: ${symbol}`;
     }
 
-    private throwOnExistingDef(symbol: string, env: any[]): void {
-        for (let i = env.length - 1; i > -1; i--) {
-            const cellKey = env[i][0];
-            if (cellKey === "#scope") return;
-            if (cellKey === symbol) throw `Error: Identifier already defined: ${symbol}`;
-        }
-    }
-
     private setInEnv(symbol: string, value: any, env: any[]): void {
+        if (typeof value === "undefined") {
+            throw `Error: cannot set unspecified value to symbol: ${symbol}.`;
+        }
+
         for (let i = env.length - 1; i > -1; i--) {
             if (symbol === env[i][0]) {
                 env[i][1] = value;
@@ -166,6 +162,30 @@ class Interpreter {
         }
 
         throw `Error: Unbound identifier: ${symbol}`;
+    }
+
+    private addToEnv(symbol: string, value: any, env: any[]): void {
+        this.throwOnExistingDef(symbol, env);
+
+        if (typeof value === "undefined") {
+            throw `Error: cannot set unspecified value to symbol: ${symbol}.`;
+        }
+
+        env.push([symbol, value]);
+    }
+
+    private throwOnExistingDef(symbol: string, env: any[]): void {
+        for (let i = env.length - 1; i > -1; i--) {
+            const cellKey = env[i][0];
+
+            if (cellKey === "#scope") {
+                return;
+            }
+
+            if (cellKey === symbol) {
+                throw `Error: Identifier already defined: ${symbol}`;
+            }
+        }
     }
 
     // [func-id, arg1, arg2, ...]
@@ -225,18 +245,16 @@ class Interpreter {
             return;
         }
 
-        const symbol: string = expr[1];
-        this.throwOnExistingDef(symbol, env);
-
         if ( !Array.isArray(expr[2])  && expr.length !== 3 ) {
             throw "Error: 'let' requires a symbol and a value.";
         }
 
-        const value: any = expr.length === 3
+        const symbol: string = expr[1];
+        const value: any     = expr.length === 3
             ? this.evalLetValue(expr[2], env)
             : this.evalLetValue(["lambda", expr[2], ...expr.slice(3)], env);
 
-        env.push([symbol, value]);
+        this.addToEnv(symbol, value, env);
     }
 
     private evalListDestructuring(params: any[], args: any[], env: any[]): void {
@@ -249,26 +267,22 @@ class Interpreter {
         for (let i: number = 0; i < params.length && i !== restIndex; i++) {
             const isParamArray: boolean = Array.isArray(params[i]);
             const param :string = isParamArray ? params[i][0] : params[i];
-            this.throwOnExistingDef(param, env);
-
-            const value: any = typeof args[i] === "undefined" || args[i] === null
+            const value: any    = typeof args[i] === "undefined"
                 ? isParamArray
                     ? this.evalExpr(params[i][1], env)
-                    : null
+                    : `Error: cannot set unspecified value to parameter: ${param}.`
                 : args[i];
 
-            env.push([param, value]);
+            this.addToEnv(param, value, env);
         }
 
         if (restIndex > -1) {
             const param :string = params[restIndex + 1];
-            this.throwOnExistingDef(param, env);
-
-            const value: any = args.length < restIndex
+            const value: any    = args.length < restIndex
                 ? []
                 : args.slice(restIndex);
 
-            env.push([param, value]);
+            this.addToEnv(param, value, env);
         }
     }
 
@@ -501,7 +515,7 @@ class Interpreter {
 
         for (const elem of range) {
             env.push(["#scope", "for"]);
-            env.push([symbol, elem]);
+            this.addToEnv(symbol, elem, env);
 
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
@@ -562,8 +576,7 @@ class Interpreter {
     private evalEnum(expr: any[], env: any[]): void {
         for (let i: number = 1; i < expr.length; i++) {
             const symbol: string = expr[i];
-            this.throwOnExistingDef(symbol, env);
-            env.push([symbol, i - 1]);
+            this.addToEnv(symbol, i - 1, env);
         }
     }
 

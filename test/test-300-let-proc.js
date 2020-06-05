@@ -97,10 +97,11 @@ describe("function", function () {
                 (sum 2 3)                            `), 5);
         });
 
-        it("sets uninitialized args to null", function () {
+        it("throw on unspecified parameters", function () {
             assert.strictEqual(easl.evaluate(`
                 {let fun (a b) b}
-                (fun 1)                             `,), null);
+                (fun 1)                             `,),
+                "Error: cannot set unspecified value to parameter: b.");
         });
 
         it("function defines `func-args`", function () {

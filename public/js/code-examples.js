@@ -89,12 +89,8 @@ const examplesList = [
     {
         name: "Function with optional arguments",
         code: `;; The function's arguments are optional.
-;; If you don't provide an argument,
-;; the corresponding parameter is set to 'null'.
-
-(let sum (a b)
-   (+ (or a 0)
-      (or b 0)))
+(let sum ((a 0) (b 0))
+   (+ a b))
 
 (print "(sum)     →" (sum))
 (print "(sum 1)   →" (sum 1))
@@ -117,8 +113,8 @@ const examplesList = [
 
     res)
 
-(let range (list.range 1 10))       ;; Make a range form 1 to 10
-(let lst (map (λ (e) (* e 2)) range)) ;; Double each element 
+(let range (list.range 1 10))         ; Make a range form 1 to 10
+(let lst (map (λ (e) (* e 2)) range)) ; Double each element 
 (print lst)
 `
     },
