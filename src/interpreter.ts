@@ -286,14 +286,6 @@ class Interpreter {
         }
     }
 
-    // [expr]
-    // [lambda, [par1, par2, ...], expr1, expr2, ...]
-    private evalLetValue(expr: any[], env: any[]): any {
-        return (Array.isArray(expr) && expr[0] === "lambda")
-            ? this.evalLambda(expr, env)
-            : this.evalExpr(expr, env);
-    }
-
     // [set, symbol, expr]
     private evalSet(expr: any[], env: any[]): void {
         if (expr.length !== 3) {
@@ -303,6 +295,14 @@ class Interpreter {
         const value: any = this.evalLetValue(expr[2], env);
 
         this.setInEnv(expr[1], value, env);
+    }
+
+    // [expr]
+    // [lambda, [par1, par2, ...], expr1, expr2, ...]
+    private evalLetValue(expr: any[], env: any[]): any {
+        return (Array.isArray(expr) && expr[0] === "lambda")
+            ? this.evalLambda(expr, env)
+            : this.evalExpr(expr, env);
     }
 
     // [delete, symbol]
@@ -325,28 +325,28 @@ class Interpreter {
         throw `Error: 'delete' unbound identifier: ${symbol}`;
     }
 
-    // [inc, symbol, inc]
+    // [inc, symbol, delta]
     private evalIncrement(expr: any[], env: any[]): any {
         if (expr.length === 1 || expr.length > 3) {
             throw "Error: 'inc' requires 1 or 2 arguments. Given: " + (expr.length - 1);
         }
 
-        const inc: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
-        const value: number = this.evalExpr(expr[1], env) + inc;
+        const delta: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
+        const value: number = this.evalExpr(expr[1], env) + delta;
 
         this.setInEnv(expr[1], value, env);
 
         return value;
     }
 
-    // [dec, symbol, dec]
+    // [dec, symbol, delta]
     private evalDecrement(expr: any[], env: any[]): any {
         if (expr.length === 1 || expr.length > 3) {
             throw "Error: 'dec' requires 1 or 2 arguments. Given: " + (expr.length - 1);
         }
 
-        const dec: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
-        const value: number = this.evalExpr(expr[1], env) - dec;
+        const delta: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
+        const value: number = this.evalExpr(expr[1], env) - delta;
 
         this.setInEnv(expr[1], value, env);
 
@@ -735,7 +735,7 @@ class Interpreter {
         this.isDebug = true;
     }
 
-    private dumpEnvironment(env: any[]): null {
+    private dumpEnvironment(env: any[]): void {
         const getCircularReplacer = () => {
             const seen: object[] = [];
             return (key: string, value: any) => {
@@ -755,17 +755,10 @@ class Interpreter {
             envDumpList.push(`${record[0]} : ${JSON.stringify(record[1], getCircularReplacer()).substr(0, 500)}`);
         }
 
-        const envDumpText: string = envDumpList.join("\n      ");
-        const message: string = `Env : ${envDumpText}`;
-
-        this.options.printer(message);
-        return null;
+        this.options.printer( `Env : ${envDumpList.join("\n      ")}` );
     }
 
-    private dumpExpression(expr: any[]): null {
-        const message: string = `Expr: ${JSON.stringify(expr)}`;
-
-        this.options.printer(message);
-        return null;
+    private dumpExpression(expr: any[]): void {
+        this.options.printer( `Expr: ${JSON.stringify(expr)}` );
     }
 }

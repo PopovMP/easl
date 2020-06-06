@@ -243,17 +243,17 @@ class Interpreter {
             this.addToEnv(param, value, env);
         }
     }
-    evalLetValue(expr, env) {
-        return (Array.isArray(expr) && expr[0] === "lambda")
-            ? this.evalLambda(expr, env)
-            : this.evalExpr(expr, env);
-    }
     evalSet(expr, env) {
         if (expr.length !== 3) {
             throw "Error: 'set' requires 2 arguments. Given: " + (expr.length - 1);
         }
         const value = this.evalLetValue(expr[2], env);
         this.setInEnv(expr[1], value, env);
+    }
+    evalLetValue(expr, env) {
+        return (Array.isArray(expr) && expr[0] === "lambda")
+            ? this.evalLambda(expr, env)
+            : this.evalExpr(expr, env);
     }
     evalDelete(expr, env) {
         if (expr.length !== 2) {
@@ -275,8 +275,8 @@ class Interpreter {
         if (expr.length === 1 || expr.length > 3) {
             throw "Error: 'inc' requires 1 or 2 arguments. Given: " + (expr.length - 1);
         }
-        const inc = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
-        const value = this.evalExpr(expr[1], env) + inc;
+        const delta = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
+        const value = this.evalExpr(expr[1], env) + delta;
         this.setInEnv(expr[1], value, env);
         return value;
     }
@@ -284,8 +284,8 @@ class Interpreter {
         if (expr.length === 1 || expr.length > 3) {
             throw "Error: 'dec' requires 1 or 2 arguments. Given: " + (expr.length - 1);
         }
-        const dec = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
-        const value = this.evalExpr(expr[1], env) - dec;
+        const delta = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
+        const value = this.evalExpr(expr[1], env) - delta;
         this.setInEnv(expr[1], value, env);
         return value;
     }
@@ -605,15 +605,10 @@ class Interpreter {
             const record = env[i];
             envDumpList.push(`${record[0]} : ${JSON.stringify(record[1], getCircularReplacer()).substr(0, 500)}`);
         }
-        const envDumpText = envDumpList.join("\n      ");
-        const message = `Env : ${envDumpText}`;
-        this.options.printer(message);
-        return null;
+        this.options.printer(`Env : ${envDumpList.join("\n      ")}`);
     }
     dumpExpression(expr) {
-        const message = `Expr: ${JSON.stringify(expr)}`;
-        this.options.printer(message);
-        return null;
+        this.options.printer(`Expr: ${JSON.stringify(expr)}`);
     }
 }
 const XMLHttpRequestLib = (typeof XMLHttpRequest === "function")
@@ -974,39 +969,38 @@ if (typeof module === "object") {
 }
 class CoreLib {
     constructor(interpreter) {
-        this.builtinFunc = ["!=", "%", "*", "+", "-", "/", "<", "<=", "=", ">", ">=", "eval", "not",
-            "parse", "print", "to-boolean", "to-number", "to-string", "type-of", "display", "newline"];
+        this.methods = {
+            "+": this.evalPlus,
+            "-": this.evalSubtract,
+            "*": this.evalMultiply,
+            "/": this.evalDivide,
+            "%": this.evalModulo,
+            "=": this.evalEqual,
+            "!=": this.evalNotEqual,
+            ">": this.evalGreater,
+            ">=": this.evalGreaterOrEqual,
+            "<": this.evalLower,
+            "<=": this.evalLowerOrEqual,
+            "not": this.evalNot,
+            "type-of": this.evalTypeOf,
+            "to-string": this.evalToString,
+            "to-number": this.evalToNumber,
+            "to-boolean": this.evalToBoolean,
+            "parse": this.evalParse,
+            "eval": this.evalEval,
+            "print": this.evalPrint,
+            "display": this.evalDisplay,
+            "newline": this.evalNewline,
+        };
         this.builtinHash = {};
         this.inter = interpreter;
+        this.builtinFunc = Object.keys(this.methods);
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
         }
     }
     libEvalExpr(expr, env) {
-        switch (expr[0]) {
-            case "+": return this.evalPlus(expr, env);
-            case "-": return this.evalSubtract(expr, env);
-            case "*": return this.evalMultiply(expr, env);
-            case "/": return this.evalDivide(expr, env);
-            case "%": return this.evalModulo(expr, env);
-            case "=": return this.evalEqual(expr, env);
-            case "!=": return this.evalNotEqual(expr, env);
-            case ">": return this.evalGreater(expr, env);
-            case ">=": return this.evalGreaterOrEqual(expr, env);
-            case "<": return this.evalLower(expr, env);
-            case "<=": return this.evalLowerOrEqual(expr, env);
-            case "not": return this.evalNot(expr, env);
-            case "type-of": return this.evalTypeOf(expr, env);
-            case "to-string": return this.evalToString(expr, env);
-            case "to-number": return this.evalToNumber(expr, env);
-            case "to-boolean": return this.evalToBoolean(expr, env);
-            case "parse": return this.evalParse(expr, env);
-            case "eval": return this.evalEval(expr, env);
-            case "print": return this.evalPrint(expr, env);
-            case "display": return this.evalDisplay(expr, env);
-            case "newline": return this.evalNewline(expr);
-        }
-        throw "Error: Not found in 'core-lib': " + expr[0];
+        return this.methods[expr[0]].call(this, expr, env);
     }
     evalPlus(expr, env) {
         if (expr.length === 1) {
@@ -1178,8 +1172,7 @@ class CoreLib {
         if (expr.length !== 2) {
             throw "Error: 'to-number' requires 1 argument. Given: " + (expr.length - 1);
         }
-        const entity = this.inter.evalExpr(expr[1], env);
-        const number = Number(entity);
+        const number = Number(this.inter.evalExpr(expr[1], env));
         return number !== number ? null : number;
     }
     evalParse(expr, env) {
@@ -1207,33 +1200,28 @@ class CoreLib {
         }
         else {
             const text = this.inter.mapExprLst(expr.slice(1), env)
-                .map((e) => Printer.stringify(e))
+                .map(Printer.stringify)
                 .join(" ");
             this.inter.options.printer(text + "\r\n");
         }
-        return null;
     }
     evalDisplay(expr, env) {
         if (expr.length !== 2) {
             throw "Error: 'display' requires 1 argument. Given: " + (expr.length - 1);
         }
-        const text = this.evalToString(expr, env);
-        this.inter.options.printer(text);
-        return null;
+        this.inter.options.printer(this.evalToString(expr, env));
     }
-    evalNewline(expr) {
+    evalNewline(expr, env) {
         if (expr.length !== 1) {
             throw "Error: 'newline' requires 0 arguments. Given: " + (expr.length - 1);
         }
         this.inter.options.printer("\r\n");
-        return null;
     }
     evalToString(expr, env) {
         if (expr.length !== 2) {
             throw "Error: 'to-string' requires 1 argument. Given: " + (expr.length - 1);
         }
-        const res = this.inter.evalExpr(expr[1], env);
-        return Printer.stringify(res);
+        return Printer.stringify(this.inter.evalExpr(expr[1], env));
     }
 }
 class DateLib {
@@ -1574,11 +1562,7 @@ class StringLib {
         }
     }
     libEvalExpr(expr, env) {
-        const methodName = expr[0];
-        if (this.methods.hasOwnProperty(methodName)) {
-            return this.methods[methodName].call(this, expr, env);
-        }
-        throw "Error: Not found in 'string-lib': " + expr[0];
+        return this.methods[expr[0]].call(this, expr, env);
     }
     strCharAt(expr, env) {
         const str = this.inter.evalExpr(expr[1], env);
@@ -1631,7 +1615,9 @@ class StringLib {
     strIncludes(expr, env) {
         const haystack = this.inter.evalExpr(expr[1], env);
         const needle = this.inter.evalExpr(expr[2], env);
-        const start = expr.length === 4 ? this.inter.evalExpr(expr[3], env) : 0;
+        const start = expr.length === 4
+            ? this.inter.evalExpr(expr[3], env)
+            : 0;
         if (typeof haystack !== "string") {
             throw Error("Not a string: " + haystack);
         }
@@ -1646,7 +1632,9 @@ class StringLib {
     strIndexOf(expr, env) {
         const str = this.inter.evalExpr(expr[1], env);
         const search = this.inter.evalExpr(expr[2], env);
-        const start = expr.length === 4 ? this.inter.evalExpr(expr[3], env) : 0;
+        const start = expr.length === 4
+            ? this.inter.evalExpr(expr[3], env)
+            : 0;
         if (typeof str !== "string") {
             throw Error("Not a string: " + str);
         }
@@ -1661,7 +1649,9 @@ class StringLib {
     strLastIndexOf(expr, env) {
         const str = this.inter.evalExpr(expr[1], env);
         const search = this.inter.evalExpr(expr[2], env);
-        const start = expr.length === 4 ? this.inter.evalExpr(expr[3], env) : str.length;
+        const start = expr.length === 4
+            ? this.inter.evalExpr(expr[3], env)
+            : str.length;
         if (typeof str !== "string") {
             throw Error("Not a string: " + str);
         }
@@ -1683,7 +1673,9 @@ class StringLib {
     strMatch(expr, env) {
         const str = this.inter.evalExpr(expr[1], env);
         const pattern = this.inter.evalExpr(expr[2], env);
-        const modifiers = expr.length === 4 ? this.inter.evalExpr(expr[3], env) : "";
+        const modifiers = expr.length === 4
+            ? this.inter.evalExpr(expr[3], env)
+            : "";
         if (typeof str !== "string") {
             throw Error("Not a string: " + str);
         }
@@ -1711,7 +1703,9 @@ class StringLib {
         const str = this.inter.evalExpr(expr[1], env);
         const pattern = this.inter.evalExpr(expr[2], env);
         const replace = this.inter.evalExpr(expr[3], env);
-        const modifiers = expr.length === 5 ? this.inter.evalExpr(expr[4], env) : "";
+        const modifiers = expr.length === 5
+            ? this.inter.evalExpr(expr[4], env)
+            : "";
         if (typeof str !== "string") {
             throw Error("Not a string: " + str);
         }

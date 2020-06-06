@@ -4,13 +4,13 @@ const app = {};
 
 function initialize() {
     const codeMirrorOptions = {
-        lineNumbers: true,
-        matchBrackets: true,
-        mode: "easl-mode",
-        theme: "easl",
-        indentUnit: 4,
+        lineNumbers   : true,
+        matchBrackets : true,
+        mode          : "easl-mode",
+        theme         : "easl",
+        indentUnit    : 4,
         indentWithTabs: false,
-        tabSize: 4
+        tabSize       : 4
     };
 
     app.easl = new Easl();
@@ -58,7 +58,7 @@ function runCode(codeText) {
 }
 
 function showOutput(text) {
-    if (text === null) return;
+    if (typeof text === "undefined") return;
     app.view.codeOutputElem.value += text;
 }
 

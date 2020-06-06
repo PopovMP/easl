@@ -3,26 +3,26 @@
 class StringLib implements ILib {
     private readonly inter: Interpreter;
     private readonly methods: any = {
-        "str.char-at": this.strCharAt,
-        "str.char-code-at": this.strCharCodeAt,
-        "str.concat": this.strConcat,
-        "str.ends-with": this.strEndsWith,
+        "str.char-at"       : this.strCharAt,
+        "str.char-code-at"  : this.strCharCodeAt,
+        "str.concat"        : this.strConcat,
+        "str.ends-with"     : this.strEndsWith,
         "str.from-char-code": this.strFromCharCode,
-        "str.includes": this.strIncludes,
-        "str.index-of": this.strIndexOf,
-        "str.last-index-of": this.strLastIndexOf,
-        "str.length": this.strLength,
-        "str.match": this.strMatch,
-        "str.repeat": this.strRepeat,
-        "str.replace": this.strReplace,
-        "str.split": this.strSplit,
-        "str.starts-with": this.strStartsWith,
-        "str.sub-string": this.strSubString,
-        "str.trim": this.strTrim,
-        "str.trim-left": this.strTrimLeft,
-        "str.trim-right": this.strTrimRight,
-        "str.to-lowercase": this.strToLowercase,
-        "str.to-uppercase": this.strToUppercase,
+        "str.includes"      : this.strIncludes,
+        "str.index-of"      : this.strIndexOf,
+        "str.last-index-of" : this.strLastIndexOf,
+        "str.length"        : this.strLength,
+        "str.match"         : this.strMatch,
+        "str.repeat"        : this.strRepeat,
+        "str.replace"       : this.strReplace,
+        "str.split"         : this.strSplit,
+        "str.starts-with"   : this.strStartsWith,
+        "str.sub-string"    : this.strSubString,
+        "str.trim"          : this.strTrim,
+        "str.trim-left"     : this.strTrimLeft,
+        "str.trim-right"    : this.strTrimRight,
+        "str.to-lowercase"  : this.strToLowercase,
+        "str.to-uppercase"  : this.strToUppercase,
     };
 
     public readonly builtinFunc: string[];
@@ -39,13 +39,7 @@ class StringLib implements ILib {
     }
 
     public libEvalExpr(expr: any[], env: any[]): any {
-        const methodName: string = expr[0];
-
-        if (this.methods.hasOwnProperty(methodName)) {
-            return this.methods[methodName].call(this, expr, env);
-        }
-
-        throw "Error: Not found in 'string-lib': " + expr[0];
+        return this.methods[expr[0]].call(this, expr, env);
     }
 
     // [str.char-at, str, pos]
@@ -94,7 +88,7 @@ class StringLib implements ILib {
 
     // [str.ends-with, str, search]
     private strEndsWith(expr: any[], env: any): boolean {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
+        const str: string | any    = this.inter.evalExpr(expr[1], env);
         const search: string | any = this.inter.evalExpr(expr[2], env);
 
         if (typeof str !== "string") {
@@ -122,8 +116,10 @@ class StringLib implements ILib {
     // [str.includes, str, search, start?]
     private strIncludes(expr: any[], env: any): boolean {
         const haystack: string | any = this.inter.evalExpr(expr[1], env);
-        const needle: string | any = this.inter.evalExpr(expr[2], env);
-        const start: number | any = expr.length === 4 ? this.inter.evalExpr(expr[3], env) : 0;
+        const needle: string | any   = this.inter.evalExpr(expr[2], env);
+        const start: number | any    = expr.length === 4
+            ? this.inter.evalExpr(expr[3], env)
+            : 0;
 
         if (typeof haystack !== "string") {
             throw Error("Not a string: " + haystack);
@@ -142,9 +138,11 @@ class StringLib implements ILib {
 
     // [str.index-of, str, search, start?]
     private strIndexOf(expr: any[], env: any): number {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
+        const str: string | any    = this.inter.evalExpr(expr[1], env);
         const search: string | any = this.inter.evalExpr(expr[2], env);
-        const start: number | any = expr.length === 4 ? this.inter.evalExpr(expr[3], env) : 0;
+        const start: number | any  = expr.length === 4
+            ? this.inter.evalExpr(expr[3], env)
+            : 0;
 
         if (typeof str !== "string") {
             throw Error("Not a string: " + str);
@@ -163,9 +161,11 @@ class StringLib implements ILib {
 
     // [str.last-index-of, str, search, start?]
     private strLastIndexOf(expr: any[], env: any): number {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
+        const str: string | any    = this.inter.evalExpr(expr[1], env);
         const search: string | any = this.inter.evalExpr(expr[2], env);
-        const start: number | any = expr.length === 4 ? this.inter.evalExpr(expr[3], env) : str.length;
+        const start: number | any  = expr.length === 4
+            ? this.inter.evalExpr(expr[3], env)
+            : str.length;
 
         if (typeof str !== "string") {
             throw Error("Not a string: " + str);
@@ -197,7 +197,9 @@ class StringLib implements ILib {
     private strMatch(expr: any[], env: any): string[] | null {
         const str: string | any = this.inter.evalExpr(expr[1], env);
         const pattern: string | any = this.inter.evalExpr(expr[2], env);
-        const modifiers: string | any = expr.length === 4 ? this.inter.evalExpr(expr[3], env) : "";
+        const modifiers: string | any = expr.length === 4
+            ? this.inter.evalExpr(expr[3], env)
+            : "";
 
         if (typeof str !== "string") {
             throw Error("Not a string: " + str);
@@ -218,7 +220,7 @@ class StringLib implements ILib {
 
     // [str.repeat, str, count]
     private strRepeat(expr: any[], env: any): string {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
+        const str: string | any   = this.inter.evalExpr(expr[1], env);
         const count: number | any = this.inter.evalExpr(expr[2], env);
 
         if (typeof str !== "string") {
@@ -234,10 +236,12 @@ class StringLib implements ILib {
 
     // [str.replace, str, pattern, replace, modifiers?]
     private strReplace(expr: any[], env: any): string {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
-        const pattern: string | any = this.inter.evalExpr(expr[2], env);
-        const replace: string | any = this.inter.evalExpr(expr[3], env);
-        const modifiers: string | any = expr.length === 5 ? this.inter.evalExpr(expr[4], env) : "";
+        const str: string | any       = this.inter.evalExpr(expr[1], env);
+        const pattern: string | any   = this.inter.evalExpr(expr[2], env);
+        const replace: string | any   = this.inter.evalExpr(expr[3], env);
+        const modifiers: string | any = expr.length === 5
+            ? this.inter.evalExpr(expr[4], env)
+            : "";
 
         if (typeof str !== "string") {
             throw Error("Not a string: " + str);
@@ -280,7 +284,7 @@ class StringLib implements ILib {
 
     private strStartsWith(expr: any[], env: any): boolean {
         const haystack: string | any = this.inter.evalExpr(expr[1], env);
-        const needle: string | any = this.inter.evalExpr(expr[2], env);
+        const needle: string | any   = this.inter.evalExpr(expr[2], env);
 
         if (typeof haystack !== "string") {
             throw Error("Not a string: " + haystack);
@@ -347,6 +351,7 @@ class StringLib implements ILib {
         return str.trimRight();
     }
 
+    // [str.to-lowercase, str]
     private strToLowercase(expr: any[], env: any): string {
         const str = this.inter.evalExpr(expr[1], env);
 
@@ -357,6 +362,7 @@ class StringLib implements ILib {
         return str.toLowerCase();
     }
 
+    // [str.to-uppercase, str]
     private strToUppercase(expr: any[], env: any): string {
         const str = this.inter.evalExpr(expr[1], env);
 
