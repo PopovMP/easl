@@ -21,7 +21,7 @@ class ExtLib implements ILib {
             throw "Error: Not found in 'ext-lib': " + funcName;
         }
 
-        const argsList = this.inter.mapExprLst(expr.slice(1), env);
+        const argsList = this.inter.mapExprList(expr.slice(1), env);
         return this.inter.options.extFunctions[funcName].apply(this.inter.options.extContext, argsList);
     }
 }

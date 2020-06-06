@@ -1,13 +1,12 @@
 "use strict";
 
 const {describe, it} = require("mocha");
-
-const Easl = require("../public/js/easl.js").Easl;
-const codeExamples = require("../public/js/code-examples.js").codeExamples;
+const { Easl }       = require("../public/js/easl.js");
+const codeExamples   = require("../public/js/code-examples.js").codeExamples;
 
 const easl = new Easl();
 
-describe('Code examples', function () {
+describe("Code examples", function () {
     codeExamples.forEach( (e) => {
         it(e.name, function () {
             easl.evaluate( e.code, {printer: interpreter_print}, eval_ready );
@@ -24,7 +23,9 @@ function eval_ready(output) {
 }
 
 function showOutput(text) {
-    if (text === null) return;
+    if (text === undefined) {
+        return;
+    }
 
     const output = String(text);
 

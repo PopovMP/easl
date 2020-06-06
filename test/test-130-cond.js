@@ -19,7 +19,7 @@ describe("cond", function () {
 
     it("Not a case", function () {
         assert.strictEqual(easl.evaluate(`  (cond
-                                                (false 3} }        `), null);
+                                                (false 3} }        `), undefined);
     });
 
     it("Two clauses: false, true", function () {

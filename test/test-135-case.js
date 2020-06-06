@@ -23,7 +23,7 @@ describe("case", function () {
     it("Not in options", function () {
         assert.strictEqual(easl.evaluate(`
             (case 3
-                ((2) "ok") )                `), null);
+                ((2) "ok") )                `), undefined);
     });
 
     it("Two clauses", function () {
@@ -51,7 +51,8 @@ describe("case", function () {
             (let type (case n
                          ((0 2 4 6 8) "even")
                          ((1 3 5 7 9)  "odd") ))
-            type                            `), null);
+            type                            `),
+            "Error: cannot set unspecified value to symbol: type.");
     });
 
     it("multiple expressions", function () {

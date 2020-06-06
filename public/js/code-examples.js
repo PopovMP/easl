@@ -57,8 +57,8 @@ const examplesList = [
 
 ; Checks which list of options contains the value of 'n' and returns the text.
 (let type (case n
-             ('(0 2 4 6 8) "even")
-             ('(1 3 5 7 9) "odd" ) ))
+             ((0 2 4 6 8) "even")
+             ((1 3 5 7 9) "odd" ) ))
 
 (print n "is" type)
 `

@@ -321,7 +321,7 @@ class CoreLib implements ILib {
             const text = this.evalToString(expr, env);
             this.inter.options.printer(text + "\r\n");
         } else {
-            const text = this.inter.mapExprLst(expr.slice(1), env)
+            const text = this.inter.mapExprList(expr.slice(1), env)
                 .map(Printer.stringify)
                 .join(" ")
             this.inter.options.printer(text + "\r\n");

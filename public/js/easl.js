@@ -36,21 +36,20 @@ class Interpreter {
             LibManager.manageImports(codeTree, this.manageImport_ready.bind(this, callback));
         }
         else {
-            return this.evalExprLst(codeTree, []);
+            return this.evalExprList(codeTree, []);
         }
     }
     manageImport_ready(callback, codeTree) {
-        const res = this.evalExprLst(codeTree, []);
-        callback(res);
+        callback(this.evalExprList(codeTree, []));
     }
-    evalExprLst(exprLst, env) {
+    evalExprList(exprLst, env) {
         let res;
         for (const expr of exprLst) {
             res = this.evalExpr(expr, env);
         }
         return res;
     }
-    mapExprLst(exprLst, env) {
+    mapExprList(exprLst, env) {
         const res = [];
         for (const expr of exprLst) {
             res.push(this.evalExpr(expr, env));
@@ -71,7 +70,7 @@ class Interpreter {
             throw "Error: Improper function application. Probably: ()";
         }
         switch (expr[0]) {
-            case "list": return this.mapExprLst(expr.slice(1), env);
+            case "list": return this.mapExprList(expr.slice(1), env);
             case "string": return this.evalString(expr);
         }
         switch (expr[0]) {
@@ -110,9 +109,8 @@ class Interpreter {
             case "throw": return this.evalThrow(expr, env);
             case "while": return this.evalWhile(expr, env);
         }
-        const identifier = expr[0];
         for (const lib of this.libs) {
-            if (lib.builtinHash[identifier]) {
+            if (lib.builtinHash[expr[0]]) {
                 return lib.libEvalExpr(expr, env);
             }
         }
@@ -173,7 +171,9 @@ class Interpreter {
         const proc = expr[0];
         const isNamed = typeof proc === "string";
         const funcName = isNamed ? proc : proc[0];
-        const closure = isNamed ? this.lookup(proc, env) : this.evalExpr(proc, env);
+        const closure = isNamed
+            ? this.lookup(proc, env)
+            : this.evalExpr(proc, env);
         if (typeof closure === "string") {
             const newExpr = expr.slice();
             newExpr[0] = closure;
@@ -190,7 +190,7 @@ class Interpreter {
     callClosure(expr, env, closure, funcName) {
         const args = expr.length === 1 ? [] : expr.length === 2
             ? [this.evalExpr(expr[1], env)]
-            : this.mapExprLst(expr.slice(1), env);
+            : this.mapExprList(expr.slice(1), env);
         const closureBody = closure[2];
         const closureEnv = this.makeClosureEnv(funcName, closure[1], args, closure[3]);
         return this.evalExpr(closureBody, closureEnv);
@@ -214,11 +214,11 @@ class Interpreter {
         if (!Array.isArray(expr[2]) && expr.length !== 3) {
             throw "Error: 'let' requires a symbol and a value.";
         }
-        const symbol = expr[1];
-        const value = expr.length === 3
-            ? this.evalLetValue(expr[2], env)
-            : this.evalLetValue(["lambda", expr[2], ...expr.slice(3)], env);
-        this.addToEnv(symbol, value, env);
+        const param = expr.length === 3
+            ? expr[2]
+            : ["lambda", expr[2], ...expr.slice(3)];
+        const value = this.evalExpr(param, env);
+        this.addToEnv(expr[1], value, env);
     }
     evalListDestructuring(params, args, env) {
         if (!Array.isArray(args)) {
@@ -247,13 +247,8 @@ class Interpreter {
         if (expr.length !== 3) {
             throw "Error: 'set' requires 2 arguments. Given: " + (expr.length - 1);
         }
-        const value = this.evalLetValue(expr[2], env);
+        const value = this.evalExpr(expr[2], env);
         this.setInEnv(expr[1], value, env);
-    }
-    evalLetValue(expr, env) {
-        return (Array.isArray(expr) && expr[0] === "lambda")
-            ? this.evalLambda(expr, env)
-            : this.evalExpr(expr, env);
     }
     evalDelete(expr, env) {
         if (expr.length !== 2) {
@@ -275,8 +270,20 @@ class Interpreter {
         if (expr.length === 1 || expr.length > 3) {
             throw "Error: 'inc' requires 1 or 2 arguments. Given: " + (expr.length - 1);
         }
-        const delta = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
-        const value = this.evalExpr(expr[1], env) + delta;
+        if (typeof expr[1] !== "string") {
+            throw "Error: 'inc' requires a symbol. Given: " + expr[1];
+        }
+        const delta = expr.length === 2
+            ? 1
+            : this.evalExpr(expr[2], env);
+        if (typeof delta !== "number") {
+            throw "Error: 'inc' delta must be a number. Given: " + delta;
+        }
+        const initialValue = this.lookup(expr[1], env);
+        if (typeof initialValue !== "number") {
+            throw "Error: 'inc' initial value must be a number. Given: " + initialValue;
+        }
+        const value = initialValue + delta;
         this.setInEnv(expr[1], value, env);
         return value;
     }
@@ -284,8 +291,20 @@ class Interpreter {
         if (expr.length === 1 || expr.length > 3) {
             throw "Error: 'dec' requires 1 or 2 arguments. Given: " + (expr.length - 1);
         }
-        const delta = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
-        const value = this.evalExpr(expr[1], env) - delta;
+        if (typeof expr[1] !== "string") {
+            throw "Error: 'dec' requires a symbol. Given: " + expr[1];
+        }
+        const delta = expr.length === 2
+            ? 1
+            : this.evalExpr(expr[2], env);
+        if (typeof delta !== "number") {
+            throw "Error: 'dec' delta must be a number. Given: " + delta;
+        }
+        const initialValue = this.lookup(expr[1], env);
+        if (typeof initialValue !== "number") {
+            throw "Error: 'dec' initial value must be a number. Given: " + initialValue;
+        }
+        const value = initialValue - delta;
         this.setInEnv(expr[1], value, env);
         return value;
     }
@@ -295,7 +314,7 @@ class Interpreter {
         env.push(["#scope", "block"]);
         const res = expr.length === 2
             ? this.evalExpr(expr[1], env)
-            : this.evalExprLst(expr.slice(1), env);
+            : this.evalExprList(expr.slice(1), env);
         this.clearEnv("#scope", env);
         return res;
     }
@@ -339,7 +358,7 @@ class Interpreter {
             this.evalExpr(expr[2], env);
         }
         else {
-            this.evalExprLst(expr.slice(2), env);
+            this.evalExprList(expr.slice(2), env);
         }
         this.clearEnv("#scope", env);
     }
@@ -358,7 +377,7 @@ class Interpreter {
             this.evalExpr(expr[2], env);
         }
         else {
-            this.evalExprLst(expr.slice(2), env);
+            this.evalExprList(expr.slice(2), env);
         }
         this.clearEnv("#scope", env);
     }
@@ -369,13 +388,13 @@ class Interpreter {
             if (clause[0] === "else" || this.evalExpr(clause[0], env)) {
                 const res = clause.length === 2
                     ? this.evalExpr(clause[1], env)
-                    : this.evalExprLst(clause.slice(1), env);
+                    : this.evalExprList(clause.slice(1), env);
                 this.clearEnv("#scope", env);
                 return res;
             }
         }
         this.clearEnv("#scope", env);
-        return null;
+        return undefined;
     }
     evalCase(expr, env) {
         const key = this.evalExpr(expr[1], env);
@@ -394,21 +413,19 @@ class Interpreter {
                 env.push(["#scope", "case"]);
                 const res = clause.length === 2
                     ? this.evalExpr(clause[1], env)
-                    : this.evalExprLst(clause.slice(1), env);
+                    : this.evalExprList(clause.slice(1), env);
                 this.clearEnv("#scope", env);
                 return res;
             }
         }
-        return null;
+        return undefined;
     }
     evalFor(expr, env) {
         const symbol = expr[1];
         const range = this.evalExpr(expr[2], env);
         const loopBody = expr.slice(3);
-        if (!Array.isArray(range))
+        if (!Array.isArray(range)) {
             throw `Error: No range provided in 'for'`;
-        if (range.length === 0) {
-            return;
         }
         for (const elem of range) {
             env.push(["#scope", "for"]);
@@ -548,7 +565,7 @@ class Interpreter {
             env.push(["#scope", "try"]);
             const res = expr.length === 3
                 ? this.evalExpr(expr[2], env)
-                : this.evalExprLst(expr.slice(2), env);
+                : this.evalExprList(expr.slice(2), env);
             this.clearEnv("#scope", env);
             return res;
         }
@@ -1199,7 +1216,7 @@ class CoreLib {
             this.inter.options.printer(text + "\r\n");
         }
         else {
-            const text = this.inter.mapExprLst(expr.slice(1), env)
+            const text = this.inter.mapExprList(expr.slice(1), env)
                 .map(Printer.stringify)
                 .join(" ");
             this.inter.options.printer(text + "\r\n");
@@ -1256,7 +1273,7 @@ class ExtLib {
         if (this.builtinFunc.indexOf(funcName) === -1) {
             throw "Error: Not found in 'ext-lib': " + funcName;
         }
-        const argsList = this.inter.mapExprLst(expr.slice(1), env);
+        const argsList = this.inter.mapExprList(expr.slice(1), env);
         return this.inter.options.extFunctions[funcName].apply(this.inter.options.extContext, argsList);
     }
 }
@@ -1585,7 +1602,7 @@ class StringLib {
         return char.charCodeAt(0);
     }
     strConcat(expr, env) {
-        const args = this.inter.mapExprLst(expr.slice(1), env);
+        const args = this.inter.mapExprList(expr.slice(1), env);
         const strList = args.map((e) => {
             return String(e);
         });

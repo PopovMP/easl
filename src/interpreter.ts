@@ -17,30 +17,34 @@ class Interpreter {
         this.libs.push(... LibManager.getBuiltinLibs(options.libs, this));
 
         if (typeof callback === "function") {
-            LibManager.manageImports(codeTree, this.manageImport_ready.bind(this, callback));
+            LibManager.manageImports(codeTree,
+                this.manageImport_ready.bind(this, callback));
         } else {
-            return this.evalExprLst(codeTree, []);
+            return this.evalExprList(codeTree, []);
         }
     }
 
     private manageImport_ready(callback: Function, codeTree: any[]): any {
-        const res: any = this.evalExprLst(codeTree, []);
-        callback(res);
+        callback( this.evalExprList(codeTree, []) );
     }
 
-    public evalExprLst(exprLst: any[], env: any[]): void {
+    public evalExprList(exprLst: any[], env: any[]): any {
         let res: any;
+
         for (const expr of exprLst) {
             res = this.evalExpr(expr, env);
         }
+
         return res;
     }
 
-    public mapExprLst(exprLst: any[], env: any[]): any[] {
+    public mapExprList(exprLst: any[], env: any[]): any[] {
         const res: any[] = [];
+
         for (const expr of exprLst) {
-            res.push(this.evalExpr(expr, env));
+            res.push( this.evalExpr(expr, env) );
         }
+
         return res;
     }
 
@@ -65,7 +69,7 @@ class Interpreter {
 
         // Constructors
         switch (expr[0]) {
-            case "list"     : return this.mapExprLst(expr.slice(1), env);
+            case "list"     : return this.mapExprList(expr.slice(1), env);
             case "string"   : return this.evalString(expr);
         }
 
@@ -112,10 +116,8 @@ class Interpreter {
             case "while"    : return this.evalWhile(expr, env);
         }
 
-        const identifier: string = expr[0];
-
         for (const lib of this.libs) {
-            if (lib.builtinHash[identifier]) {
+            if ( lib.builtinHash[expr[0]] ) {
                 return lib.libEvalExpr(expr, env);
             }
         }
@@ -194,7 +196,9 @@ class Interpreter {
         const proc: string | any[] = expr[0];
         const isNamed: boolean = typeof proc === "string";
         const funcName: string = isNamed ? <string>proc : proc[0];
-        const closure: any[] | string = isNamed ? this.lookup(<string>proc, env) : this.evalExpr(proc, env);
+        const closure: any[] | string = isNamed
+            ? this.lookup(<string>proc, env)
+            : this.evalExpr(proc, env);
 
         if (typeof closure === "string") {
             const newExpr = expr.slice();
@@ -211,7 +215,7 @@ class Interpreter {
     private callClosure(expr: any[], env: any[], closure: any[], funcName: string) {
         const args: any[] = expr.length === 1 ? [] : expr.length === 2
             ? [this.evalExpr(expr[1], env)]
-            : this.mapExprLst(expr.slice(1), env);
+            : this.mapExprList(expr.slice(1), env);
 
         const closureBody: any   = closure[2];
         const closureEnv:  any[] = this.makeClosureEnv(funcName, closure[1], args, closure[3]);
@@ -245,16 +249,17 @@ class Interpreter {
             return;
         }
 
-        if ( !Array.isArray(expr[2])  && expr.length !== 3 ) {
+        if ( !Array.isArray(expr[2]) && expr.length !== 3 ) {
             throw "Error: 'let' requires a symbol and a value.";
         }
 
-        const symbol: string = expr[1];
-        const value: any     = expr.length === 3
-            ? this.evalLetValue(expr[2], env)
-            : this.evalLetValue(["lambda", expr[2], ...expr.slice(3)], env);
+        const param: any = expr.length === 3
+            ? expr[2]
+            : ["lambda", expr[2], ...expr.slice(3)];
 
-        this.addToEnv(symbol, value, env);
+        const value: any = this.evalExpr(param, env);
+
+        this.addToEnv(expr[1], value, env);
     }
 
     private evalListDestructuring(params: any[], args: any[], env: any[]): void {
@@ -292,17 +297,9 @@ class Interpreter {
             throw "Error: 'set' requires 2 arguments. Given: " + (expr.length - 1);
         }
 
-        const value: any = this.evalLetValue(expr[2], env);
+        const value: any = this.evalExpr(expr[2], env);
 
         this.setInEnv(expr[1], value, env);
-    }
-
-    // [expr]
-    // [lambda, [par1, par2, ...], expr1, expr2, ...]
-    private evalLetValue(expr: any[], env: any[]): any {
-        return (Array.isArray(expr) && expr[0] === "lambda")
-            ? this.evalLambda(expr, env)
-            : this.evalExpr(expr, env);
     }
 
     // [delete, symbol]
@@ -331,8 +328,25 @@ class Interpreter {
             throw "Error: 'inc' requires 1 or 2 arguments. Given: " + (expr.length - 1);
         }
 
-        const delta: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
-        const value: number = this.evalExpr(expr[1], env) + delta;
+        if (typeof expr[1] !== "string") {
+            throw "Error: 'inc' requires a symbol. Given: " + expr[1];
+        }
+
+        const delta: number | any = expr.length === 2
+            ? 1
+            : this.evalExpr(expr[2], env);
+
+        if (typeof delta !== "number") {
+            throw "Error: 'inc' delta must be a number. Given: " + delta;
+        }
+
+        const initialValue: number | any = this.lookup(expr[1], env);
+
+        if (typeof initialValue !== "number") {
+            throw "Error: 'inc' initial value must be a number. Given: " + initialValue;
+        }
+
+        const value: number = initialValue + delta;
 
         this.setInEnv(expr[1], value, env);
 
@@ -345,8 +359,25 @@ class Interpreter {
             throw "Error: 'dec' requires 1 or 2 arguments. Given: " + (expr.length - 1);
         }
 
-        const delta: number = expr.length === 2 ? 1 : this.evalExpr(expr[2], env);
-        const value: number = this.evalExpr(expr[1], env) - delta;
+        if (typeof expr[1] !== "string") {
+            throw "Error: 'dec' requires a symbol. Given: " + expr[1];
+        }
+
+        const delta: number | any = expr.length === 2
+            ? 1
+            : this.evalExpr(expr[2], env);
+
+        if (typeof delta !== "number") {
+            throw "Error: 'dec' delta must be a number. Given: " + delta;
+        }
+
+        const initialValue: number | any = this.lookup(expr[1], env);
+
+        if (typeof initialValue !== "number") {
+            throw "Error: 'dec' initial value must be a number. Given: " + initialValue;
+        }
+
+        const value: number = initialValue - delta;
 
         this.setInEnv(expr[1], value, env);
 
@@ -360,7 +391,7 @@ class Interpreter {
 
         const res: any = expr.length === 2
             ? this.evalExpr(expr[1], env)
-            : this.evalExprLst(expr.slice(1), env);
+            : this.evalExprList(expr.slice(1), env);
 
         this.clearEnv("#scope", env);
         return res;
@@ -416,7 +447,7 @@ class Interpreter {
         if (expr.length === 3) {
             this.evalExpr(expr[2], env);
         } else {
-            this.evalExprLst(expr.slice(2), env);
+            this.evalExprList(expr.slice(2), env);
         }
 
         this.clearEnv("#scope", env);
@@ -441,7 +472,7 @@ class Interpreter {
         if (expr.length === 3) {
             this.evalExpr(expr[2], env);
         } else {
-            this.evalExprLst(expr.slice(2), env);
+            this.evalExprList(expr.slice(2), env);
         }
 
         this.clearEnv("#scope", env);
@@ -459,14 +490,15 @@ class Interpreter {
             if (clause[0] === "else" || this.evalExpr(clause[0], env)) {
                 const res: any = clause.length === 2
                     ? this.evalExpr(clause[1], env)
-                    : this.evalExprLst(clause.slice(1), env);
+                    : this.evalExprList(clause.slice(1), env);
                 this.clearEnv("#scope", env);
                 return res;
             }
         }
 
         this.clearEnv("#scope", env);
-        return null;
+
+        return undefined;
     }
 
     // [case, expr,
@@ -493,13 +525,13 @@ class Interpreter {
                 env.push(["#scope", "case"]);
                 const res: any = clause.length === 2
                         ? this.evalExpr(clause[1], env)
-                        : this.evalExprLst(clause.slice(1), env);
+                        : this.evalExprList(clause.slice(1), env);
                 this.clearEnv("#scope", env);
                 return res;
             }
         }
 
-        return null;
+        return undefined;
     }
 
     // [for, symbol, range, exp1 exp2 ...]
@@ -508,9 +540,8 @@ class Interpreter {
         const range: any[]    = this.evalExpr(expr[2], env);
         const loopBody: any[] = expr.slice(3);
 
-        if (!Array.isArray(range))  throw `Error: No range provided in 'for'`;
-        if (range.length === 0) {
-            return;
+        if ( !Array.isArray(range) ) {
+            throw `Error: No range provided in 'for'`;
         }
 
         for (const elem of range) {
@@ -685,7 +716,7 @@ class Interpreter {
             env.push(["#scope", "try"]);
             const res = expr.length === 3
                 ? this.evalExpr(expr[2], env)
-                : this.evalExprLst(expr.slice(2), env);
+                : this.evalExprList(expr.slice(2), env);
             this.clearEnv("#scope", env);
             return res;
         } catch (e) {
