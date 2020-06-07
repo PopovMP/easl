@@ -2,6 +2,7 @@
 
 class CoreLib implements ILib {
     private readonly inter: Interpreter;
+    private readonly app: Applicator;
     private readonly methods: any = {
         "+"          : this.evalPlus,
         "-"          : this.evalSubtract,
@@ -31,6 +32,7 @@ class CoreLib implements ILib {
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
+        this.app = new Applicator(interpreter);
 
         this.builtinFunc = Object.keys(this.methods);
 
@@ -85,16 +87,26 @@ class CoreLib implements ILib {
     }
 
     // [-, num1, num2]
-    private evalSubtract(expr: any[], env: any[]): any {
+    private evalSubtract(expr: any[], env: any[]): number {
+        if (expr.length === 1 || expr.length > 3) {
+            throw `Error: '-' requires 1 or 2 arguments. Given: ${expr.length - 1}`;
+        }
+
+        const num1: any = this.inter.evalExpr(expr[1], env);
+        if (typeof num1 !== "number") {
+            throw `Error: '-' requires a number. Given: ${num1}`;
+        }
+
         if (expr.length === 2) {
-            return -this.inter.evalExpr(expr[1], env);
+            return -num1;
         }
 
-        if (expr.length === 3) {
-            return this.inter.evalExpr(expr[1], env) - this.inter.evalExpr(expr[2], env);
+        const num2: any = this.inter.evalExpr(expr[2], env);
+        if (typeof num2 !== "number") {
+            throw `Error: '-' requires a number. Given: ${num2}`;
         }
 
-        throw "Error: '-' requires 2 arguments. Given: " + (expr.length - 1);
+        return num1 - num2;
     }
 
     // [*, num1, num2, ..., num_n]
@@ -131,25 +143,20 @@ class CoreLib implements ILib {
 
     // [/, num1, num2]
     private evalDivide(expr: any[], env: any[]): any {
-        if (expr.length !== 3) {
-            throw "Error: '/' requires 2 arguments. Given: " + (expr.length - 1);
-        }
-
-        const divisor = this.inter.evalExpr(expr[2], env);
-
-        if (divisor === 0) {
-            throw Error("Error: '/' - division by zero");
-        }
-
-        return this.inter.evalExpr(expr[1], env) / divisor;
+        return this.app.callWithNumberNumber<number>(
+            (m: number, n: number): number => {
+                if (n === 0) {
+                    throw "Error: Error: '/' division by zero.";
+                }
+                return m / n;
+            }, "/", expr, env);
     }
 
+    // [%, num1, num2]
     private evalModulo(expr: any[], env: any[]): any {
-        if (expr.length !== 3) {
-            throw "Error: '%' requires 2 arguments. Given: " + (expr.length - 1);
-        }
-
-        return this.inter.evalExpr(expr[1], env) % this.inter.evalExpr(expr[2], env);
+        return this.app.callWithNumberNumber<number>(
+            (m: number, n: number): number => m % n,
+            "%", expr, env);
     }
 
     // [=, obj1, obj2, ...]
@@ -174,21 +181,17 @@ class CoreLib implements ILib {
     }
 
     // [>, obj1, obj2]
-    private evalGreater(expr: any[], env: any[]): any {
-        if (expr.length !== 3) {
-            throw "Error: '>' requires 2 arguments. Given: " + (expr.length - 1);
-        }
-
-        return this.inter.evalExpr(expr[1], env) > this.inter.evalExpr(expr[2], env);
+    private evalGreater(expr: any[], env: any[]): boolean {
+        return this.app.callWithNumberNumber<boolean>(
+            (m: number, n: number): boolean => m > n,
+            ">", expr, env);
     }
 
     // [<, obj1, obj2]
-    private evalLower(expr: any[], env: any[]): any {
-        if (expr.length !== 3) {
-            throw "Error: '<' requires 2 arguments. Given: " + (expr.length - 1);
-        }
-
-        return this.inter.evalExpr(expr[1], env) < this.inter.evalExpr(expr[2], env);
+    private evalLower(expr: any[], env: any[]): boolean {
+        return this.app.callWithNumberNumber<boolean>(
+            (m: number, n: number): boolean => m < n,
+            "<", expr, env);
     }
 
     // [!=, obj1, obj2]

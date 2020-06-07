@@ -9,11 +9,11 @@ const easl = new Easl();
 describe('str library', function () {
 
     describe('str.char-at', function () {
-        it('empty string → null', function () {
-            assert.strictEqual(easl.evaluate(`(str.char-at "" 0)`), null);
+        it("empty string → ''", function () {
+            assert.strictEqual(easl.evaluate(`(str.char-at "" 0)`), "");
         });
         it('index out of range → null', function () {
-            assert.strictEqual(easl.evaluate(`(str.char-at "ab" 5)`), null);
+            assert.strictEqual(easl.evaluate(`(str.char-at "ab" 5)`), "");
         });
         it('index in range → char', function () {
             assert.strictEqual(easl.evaluate(`(str.char-at "ab" 1)`), "b");
@@ -22,10 +22,12 @@ describe('str library', function () {
 
     describe('str.char-code-at', function () {
         it('empty string → exception', function () {
-            assert.strictEqual(easl.evaluate(`(str.char-code-at "" 0)`), "Error: Not a character: null");
+            assert.strictEqual(easl.evaluate(`(str.char-code-at "" 0)`),
+                "Error: 'str.char-code-at' index out of range.");
         });
         it('index out of range → exception', function () {
-            assert.strictEqual(easl.evaluate(`(str.char-code-at "ab" 5)`), "Error: Not a character: null");
+            assert.strictEqual(easl.evaluate(`(str.char-code-at "ab" 5)`),
+                "Error: 'str.char-code-at' index out of range.");
         });
         it('match a char → number', function () {
             assert.strictEqual(easl.evaluate(`(str.char-code-at "xa" 1)`), 97);
@@ -138,7 +140,8 @@ C" "\n")`                                 ), ["A", "B", "C"]);
     describe('str.to-lowercase', function () {
         it('not a string', function () {
             assert.strictEqual(easl.evaluate(`
-                (str.to-lowercase  42)              `), "Error: Not a string: 42");
+                (str.to-lowercase  42)              `),
+                "Error: 'str.to-lowercase' requires a string. Given: 42");
         });
         it('lowercase', function () {
             assert.strictEqual(easl.evaluate(`
@@ -157,7 +160,8 @@ C" "\n")`                                 ), ["A", "B", "C"]);
     describe('str.to-uppercase', function () {
         it('not a string', function () {
             assert.strictEqual(easl.evaluate(`
-                (str.to-uppercase  42)              `), "Error: Not a string: 42");
+                (str.to-uppercase  42)              `),
+                "Error: 'str.to-uppercase' requires a string. Given: 42");
         });
         it('lowercase', function () {
             assert.strictEqual(easl.evaluate(`

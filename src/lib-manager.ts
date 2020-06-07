@@ -54,7 +54,7 @@ class LibManager {
         }
     }
 
-    public static importLibrary(libUrl: string, callback: (lib: any[]) => void): void {
+    public static importLibrary(libUrl: string | any, callback: (lib: any[]) => void): void {
         if (typeof  libUrl !== "string" || libUrl.length === 0) {
             throw "Error: Empty library name";
         }

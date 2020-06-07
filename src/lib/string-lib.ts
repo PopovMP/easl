@@ -1,6 +1,7 @@
 "use strict";
 
 class StringLib implements ILib {
+    private readonly app: Applicator;
     private readonly inter: Interpreter;
     private readonly methods: any = {
         "str.char-at"       : this.strCharAt,
@@ -30,6 +31,7 @@ class StringLib implements ILib {
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
+        this.app = new Applicator(interpreter);
 
         this.builtinFunc = Object.keys(this.methods);
 
@@ -43,32 +45,23 @@ class StringLib implements ILib {
     }
 
     // [str.char-at, str, pos]
-    private strCharAt(expr: any[], env: any): string | null {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
-        const pos: number | any = this.inter.evalExpr(expr[2], env);
-
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-
-        if (typeof pos !== "number") {
-            throw Error("Not a number: " + pos);
-        }
-
-        return pos >= 0 && pos < str.length
-            ? str.charAt(pos)
-            : null;
+    private strCharAt(expr: any[], env: any): string {
+        return this.app.callWithStringNumber<string>(
+            (s: string, n: number): string => s.charAt(n),
+            "str.char-at", expr, env);
     }
 
-    // [str.char-code-at, str, pos]
+    // [str.char-code-at, str, index]
     private strCharCodeAt(expr: any[], env: any): number {
-        const char: string | null = this.strCharAt(expr, env);
+        const code: number = this.app.callWithStringNumber<number>(
+            (s: string, n: number): number => s.charCodeAt(n),
+            "str.char-code-at", expr, env);
 
-        if (typeof char !== "string") {
-            throw Error("Not a character: " + char);
+        if ( isNaN(code) ) {
+            throw `Error: 'str.char-code-at' index out of range.`;
         }
 
-        return char.charCodeAt(0);
+        return code;
     }
 
     // [str.concat, str1, str2, ..., strN]
@@ -88,29 +81,16 @@ class StringLib implements ILib {
 
     // [str.ends-with, str, search]
     private strEndsWith(expr: any[], env: any): boolean {
-        const str: string | any    = this.inter.evalExpr(expr[1], env);
-        const search: string | any = this.inter.evalExpr(expr[2], env);
-
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-
-        if (typeof search !== "string") {
-            throw Error("Not a string: " + search);
-        }
-
-        return str.lastIndexOf(search) === str.length - search.length;
+        return this.app.callWithStringString<boolean>(
+            (s: string, t: string): boolean => s.endsWith(t),
+            "str.ends-with", expr, env);
     }
 
     // [str.from-char-code, code]
     private strFromCharCode(expr: any[], env: any): string {
-        const code: number | any = this.inter.evalExpr(expr[1], env);
-
-        if (typeof code !== "number") {
-            throw Error("Not a number: " + code);
-        }
-
-        return String.fromCharCode(code);
+        return this.app.callWithNumber<string>(
+            String.fromCharCode,
+            "str.from-char-code", expr, env);
     }
 
     // [str.includes, str, search, start?]
@@ -184,13 +164,9 @@ class StringLib implements ILib {
 
     // [str.length, str]
     private strLength(expr: any[], env: any): number {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
-
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-
-        return str.length;
+        return this.app.callWithString<number>(
+            (s: string): number => s.length,
+            "str.length", expr, env);
     }
 
     // [str.match, str, pattern, modifiers?]
@@ -283,18 +259,9 @@ class StringLib implements ILib {
     }
 
     private strStartsWith(expr: any[], env: any): boolean {
-        const haystack: string | any = this.inter.evalExpr(expr[1], env);
-        const needle: string | any   = this.inter.evalExpr(expr[2], env);
-
-        if (typeof haystack !== "string") {
-            throw Error("Not a string: " + haystack);
-        }
-
-        if (typeof needle !== "string") {
-            throw Error("Not a string: " + needle);
-        }
-
-        return haystack.lastIndexOf(needle, 0) === 0;
+        return this.app.callWithStringString<boolean>(
+            (s: string, t: string): boolean => s.startsWith(t),
+            "str.starts-with", expr, env);
     }
 
     // [str.sub-string, str, start, end]
@@ -320,56 +287,36 @@ class StringLib implements ILib {
 
     // [str.trim, str]
     private strTrim(expr: any[], env: any): string {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
-
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-
-        return str.trim();
+        return this.app.callWithString<string>(
+            (s: string): string => s.trim(),
+            "str.trim", expr, env);
     }
 
     // [str.trim-left, str]
     private strTrimLeft(expr: any[], env: any): string {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
-
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-
-        return str.trimLeft();
+        return this.app.callWithString<string>(
+            (s: string): string => s.trimLeft(),
+            "str.trim-left", expr, env);
     }
 
     // [str.trim-right, str]
     private strTrimRight(expr: any[], env: any): string {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
-
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-
-        return str.trimRight();
+        return this.app.callWithString<string>(
+            (s: string): string => s.trimRight(),
+            "str.trim-right", expr, env);
     }
 
     // [str.to-lowercase, str]
     private strToLowercase(expr: any[], env: any): string {
-        const str = this.inter.evalExpr(expr[1], env);
-
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-
-        return str.toLowerCase();
+        return this.app.callWithString<string>(
+            (s: string): string => s.toLowerCase(),
+            "str.to-lowercase", expr, env);
     }
 
     // [str.to-uppercase, str]
     private strToUppercase(expr: any[], env: any): string {
-        const str = this.inter.evalExpr(expr[1], env);
-
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-
-        return str.toUpperCase();
+        return this.app.callWithString<string>(
+            (s: string): string => s.toUpperCase(),
+            "str.to-uppercase", expr, env);
     }
 }

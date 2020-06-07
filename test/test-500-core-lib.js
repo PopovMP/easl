@@ -33,7 +33,8 @@ describe('core-lib', function () {
 
     describe('-', function () {
         it('no args', function () {
-            assert.strictEqual(easl.evaluate(` (-) `), "Error: '-' requires 2 arguments. Given: 0");
+            assert.strictEqual(easl.evaluate(` (-) `),
+                "Error: '-' requires 1 or 2 arguments. Given: 0");
         });
         it('one arg', function () {
             assert.strictEqual(easl.evaluate(` (- 5) `), -5);
@@ -45,7 +46,8 @@ describe('core-lib', function () {
             assert.strictEqual(easl.evaluate(` (- 8 3) `), 5);
         });
         it('three args', function () {
-            assert.strictEqual(easl.evaluate(` (- 8 3 2) `), "Error: '-' requires 2 arguments. Given: 3");
+            assert.strictEqual(easl.evaluate(` (- 8 3 2) `),
+                "Error: '-' requires 1 or 2 arguments. Given: 3");
         });
     });
 
@@ -66,13 +68,16 @@ describe('core-lib', function () {
 
     describe('/', function () {
         it('no args', function () {
-            assert.strictEqual(easl.evaluate(` (/)     `), "Error: '/' requires 2 arguments. Given: 0");
+            assert.strictEqual(easl.evaluate(` (/)     `),
+                "Error: '/' requires 2 arguments. Given: 0");
         });
         it('one arg', function () {
-            assert.strictEqual(easl.evaluate(` (/ 5)   `), "Error: '/' requires 2 arguments. Given: 1");
+            assert.strictEqual(easl.evaluate(` (/ 5)   `),
+                "Error: '/' requires 2 arguments. Given: 1");
         });
         it('divide by zero', function () {
-            assert.strictEqual(easl.evaluate(` (/ 5 0) `), "Error: Error: '/' - division by zero");
+            assert.strictEqual(easl.evaluate(` (/ 5 0) `),
+                "Error: Error: '/' division by zero.");
         });
         it('correct division', function () {
             assert.strictEqual(easl.evaluate(` (/ 9 3) `), 3);
