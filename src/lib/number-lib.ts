@@ -2,12 +2,24 @@
 
 class NumberLib implements ILib {
     private readonly inter: Interpreter;
-    public readonly builtinFunc = ["numb.max-value", "numb.min-value", "numb.parse-float", "numb.parse-int",
-        "numb.is-finite", "numb.is-integer", "numb.to-fixed", "numb.to-string"];
+    private readonly methods: any = {
+        "numb.max-int"     : this.evalMaxInt,
+        "numb.min-int"     : this.evalMinInt,
+        "numb.parse-float" : this.evalParseFloat,
+        "numb.parse-int"   : this.evalParseInt,
+        "numb.is-finite"   : this.evalIsFinite,
+        "numb.is-integer"  : this.evalIsInteger,
+        "numb.to-fixed"    : this.evalToFixed,
+        "numb.to-string"   : this.evalToString,
+    };
+
+    public readonly builtinFunc: string[];
     public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
+
+        this.builtinFunc = Object.keys(this.methods);
 
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
@@ -15,23 +27,20 @@ class NumberLib implements ILib {
     }
 
     public libEvalExpr(expr: any[], env: any[]): any {
-        switch (expr[0]) {
-            case "numb.max-value"   : return Number.MAX_VALUE;
-            case "numb.min-value"   : return Number.MIN_VALUE;
-            case "numb.parse-float" : return this.evalParseFloat(expr, env);
-            case "numb.parse-int"   : return this.evalParseInt(expr, env);
-            case "numb.is-finite"   : return this.evalIsFinite(expr, env);
-            case "numb.is-integer"  : return this.evalIsInteger(expr, env);
-            case "numb.to-fixed"    : return this.evalToFixed(expr, env);
-            case "numb.to-string"   : return this.evalToString(expr, env);
-        }
+        return this.methods[expr[0]].call(this, expr, env);
+    }
 
-        throw "Error: Not found in 'numb-lib': " + expr[0];
+    private evalMaxInt(): number {
+        return Number.MAX_SAFE_INTEGER;
+    }
+
+    private evalMinInt(): number {
+        return Number.MIN_SAFE_INTEGER;
     }
 
     private evalParseFloat(expr: any[], env: any[]): number {
         const value: string = this.inter.evalExpr(expr[1], env);
-        const res: number = parseFloat(value);
+        const res: number   = parseFloat(value);
         if (isNaN(res)) throw "Error: Not a number: " + value;
         return res;
     }
@@ -44,13 +53,13 @@ class NumberLib implements ILib {
     }
 
     private evalIsFinite(expr: any[], env: any[]): boolean {
-        const value: number = this.inter.evalExpr(expr[1], env);
+        const value: number | any = this.inter.evalExpr(expr[1], env);
         return typeof value === "number" && isFinite(value);
     }
 
     private evalIsInteger(expr: any[], env: any[]): boolean {
-        const value: number = this.inter.evalExpr(expr[1], env);
-        return typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
+        const value: number | any = this.inter.evalExpr(expr[1], env);
+        return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
     }
 
     private evalToFixed(expr: any[], env: any[]): string {

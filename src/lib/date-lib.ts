@@ -2,11 +2,18 @@
 
 class DateLib implements ILib {
     private readonly inter: Interpreter;
-    public readonly builtinFunc = ["date.now", "date.to-string"];
+    private readonly methods: any = {
+        "date.now"       : this.evalDateNow,
+        "date.to-string" : this.evalDateToString,
+    };
+
+    public readonly builtinFunc: string[];
     public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
+
+        this.builtinFunc = Object.keys(this.methods);
 
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
@@ -14,11 +21,14 @@ class DateLib implements ILib {
     }
 
     public libEvalExpr(expr: any[], env: any[]): any {
-        switch (expr[0]) {
-            case "date.now"       : return Date.now();
-            case "date.to-string" : return (new Date(this.inter.evalExpr(expr[1], env))).toString();
-        }
+        return this.methods[expr[0]].call(this, expr, env);
+    }
 
-        throw "Error: Not found in 'date-lib': " + expr[0];
+    private evalDateNow(): number {
+        return Date.now();
+    }
+
+    private evalDateToString(expr: any[], env: any[]): string {
+        return ( new Date( this.inter.evalExpr(expr[1], env) )).toString();
     }
 }

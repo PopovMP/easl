@@ -2,13 +2,36 @@
 
 class ListLib implements ILib {
     private readonly inter: Interpreter;
-    public readonly builtinFunc = ["list.add", "list.concat", "list.dec", "list.first", "list.flatten", "list.get",
-        "list.has", "list.inc", "list.index", "list.join", "list.last", "list.less", "list.length", "list.push",
-        "list.range", "list.reverse", "list.rest", "list.set", "list.slice", "list.sort"];
+    private readonly methods: any = {
+        "list.add"     : this.listAdd,
+        "list.concat"  : this.listConcat,
+        "list.dec"     : this.listDec,
+        "list.first"   : this.listFirst,
+        "list.flatten" : this.listFlatten,
+        "list.get"     : this.listGet,
+        "list.has"     : this.listHas,
+        "list.inc"     : this.listInc,
+        "list.index"   : this.listIndex,
+        "list.join"    : this.listJoin,
+        "list.last"    : this.listLast,
+        "list.length"  : this.listLength,
+        "list.less"    : this.listLess,
+        "list.push"    : this.listPush,
+        "list.range"   : this.listRange,
+        "list.reverse" : this.listReverse,
+        "list.rest"    : this.listRest,
+        "list.set"     : this.listSet,
+        "list.slice"   : this.listSlice,
+        "list.sort"    : this.listSort,
+    };
+
+    public readonly builtinFunc: string[];
     public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
+
+        this.builtinFunc = Object.keys(this.methods);
 
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
@@ -16,30 +39,7 @@ class ListLib implements ILib {
     }
 
     public libEvalExpr(expr: any[], env: any[]): any {
-        switch (expr[0]) {
-            case "list.add"     : return this.listAdd(expr, env);
-            case "list.concat"  : return this.listConcat(expr, env);
-            case "list.dec"     : return this.listDec(expr, env);
-            case "list.first"   : return this.listFirst(expr, env);
-            case "list.flatten" : return this.listFlatten(expr, env);
-            case "list.get"     : return this.listGet(expr, env);
-            case "list.has"     : return this.listHas(expr, env);
-            case "list.inc"     : return this.listInc(expr, env);
-            case "list.index"   : return this.listIndex(expr, env);
-            case "list.join"    : return this.listJoin(expr, env);
-            case "list.last"    : return this.listLast(expr, env);
-            case "list.length"  : return this.listLength(expr, env);
-            case "list.less"    : return this.listLess(expr, env);
-            case "list.push"    : return this.listPush(expr, env);
-            case "list.range"   : return this.listRange(expr, env);
-            case "list.reverse" : return this.listReverse(expr, env);
-            case "list.rest"    : return this.listRest(expr, env);
-            case "list.set"     : return this.listSet(expr, env);
-            case "list.slice"   : return this.listSlice(expr, env);
-            case "list.sort"    : return this.listSort(expr, env);
-        }
-
-        throw "Error: Not found in 'list-lib': " + expr[0];
+        return this.methods[expr[0]].call(this, expr, env);
     }
 
     private listAdd(expr: any[], env: any[]): any[] {
@@ -167,13 +167,13 @@ class ListLib implements ILib {
 
     // (list.range start end step)
     private listRange(expr: any[], env: any[]): any[] {
-        const start: number = this.inter.evalExpr(expr[1], env);
-        const end:   number = this.inter.evalExpr(expr[2], env);
+        const start: number | any = this.inter.evalExpr(expr[1], env);
+        const end:   number | any = this.inter.evalExpr(expr[2], env);
         if (typeof start !== "number") throw "Error: The 'start' parameter must be a number in 'list.range'.";
         if (typeof end   !== "number") throw "Error: The 'end' parameter must be a number in 'list.range'.";
         if (start === end)  return [start];
 
-        const step:  number = expr.length === 4
+        const step: number | any = expr.length === 4
             ? this.inter.evalExpr(expr[3], env)
             : end > start ? 1 : -1;
 

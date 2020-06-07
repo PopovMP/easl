@@ -1243,19 +1243,25 @@ class CoreLib {
 }
 class DateLib {
     constructor(interpreter) {
-        this.builtinFunc = ["date.now", "date.to-string"];
+        this.methods = {
+            "date.now": this.evalDateNow,
+            "date.to-string": this.evalDateToString,
+        };
         this.builtinHash = {};
         this.inter = interpreter;
+        this.builtinFunc = Object.keys(this.methods);
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
         }
     }
     libEvalExpr(expr, env) {
-        switch (expr[0]) {
-            case "date.now": return Date.now();
-            case "date.to-string": return (new Date(this.inter.evalExpr(expr[1], env))).toString();
-        }
-        throw "Error: Not found in 'date-lib': " + expr[0];
+        return this.methods[expr[0]].call(this, expr, env);
+    }
+    evalDateNow() {
+        return Date.now();
+    }
+    evalDateToString(expr, env) {
+        return (new Date(this.inter.evalExpr(expr[1], env))).toString();
     }
 }
 class ExtLib {
@@ -1270,48 +1276,43 @@ class ExtLib {
     }
     libEvalExpr(expr, env) {
         const funcName = expr[0];
-        if (this.builtinFunc.indexOf(funcName) === -1) {
-            throw "Error: Not found in 'ext-lib': " + funcName;
-        }
         const argsList = this.inter.mapExprList(expr.slice(1), env);
         return this.inter.options.extFunctions[funcName].apply(this.inter.options.extContext, argsList);
     }
 }
 class ListLib {
     constructor(interpreter) {
-        this.builtinFunc = ["list.add", "list.concat", "list.dec", "list.first", "list.flatten", "list.get",
-            "list.has", "list.inc", "list.index", "list.join", "list.last", "list.less", "list.length", "list.push",
-            "list.range", "list.reverse", "list.rest", "list.set", "list.slice", "list.sort"];
+        this.methods = {
+            "list.add": this.listAdd,
+            "list.concat": this.listConcat,
+            "list.dec": this.listDec,
+            "list.first": this.listFirst,
+            "list.flatten": this.listFlatten,
+            "list.get": this.listGet,
+            "list.has": this.listHas,
+            "list.inc": this.listInc,
+            "list.index": this.listIndex,
+            "list.join": this.listJoin,
+            "list.last": this.listLast,
+            "list.length": this.listLength,
+            "list.less": this.listLess,
+            "list.push": this.listPush,
+            "list.range": this.listRange,
+            "list.reverse": this.listReverse,
+            "list.rest": this.listRest,
+            "list.set": this.listSet,
+            "list.slice": this.listSlice,
+            "list.sort": this.listSort,
+        };
         this.builtinHash = {};
         this.inter = interpreter;
+        this.builtinFunc = Object.keys(this.methods);
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
         }
     }
     libEvalExpr(expr, env) {
-        switch (expr[0]) {
-            case "list.add": return this.listAdd(expr, env);
-            case "list.concat": return this.listConcat(expr, env);
-            case "list.dec": return this.listDec(expr, env);
-            case "list.first": return this.listFirst(expr, env);
-            case "list.flatten": return this.listFlatten(expr, env);
-            case "list.get": return this.listGet(expr, env);
-            case "list.has": return this.listHas(expr, env);
-            case "list.inc": return this.listInc(expr, env);
-            case "list.index": return this.listIndex(expr, env);
-            case "list.join": return this.listJoin(expr, env);
-            case "list.last": return this.listLast(expr, env);
-            case "list.length": return this.listLength(expr, env);
-            case "list.less": return this.listLess(expr, env);
-            case "list.push": return this.listPush(expr, env);
-            case "list.range": return this.listRange(expr, env);
-            case "list.reverse": return this.listReverse(expr, env);
-            case "list.rest": return this.listRest(expr, env);
-            case "list.set": return this.listSet(expr, env);
-            case "list.slice": return this.listSlice(expr, env);
-            case "list.sort": return this.listSort(expr, env);
-        }
-        throw "Error: Not found in 'list-lib': " + expr[0];
+        return this.methods[expr[0]].call(this, expr, env);
     }
     listAdd(expr, env) {
         const lst = this.inter.evalExpr(expr[1], env);
@@ -1466,54 +1467,124 @@ class ListLib {
 }
 class MathLib {
     constructor(interpreter) {
-        this.builtinFunc = ["math.pi", "math.abs", "math.ceil", "math.floor", "math.log", "math.ln", "math.max",
-            "math.min", "math.pow", "math.random", "math.round", "math.sqrt"];
+        this.methods = {
+            "math.pi": this.evalMathPi,
+            "math.abs": this.evalMathAbs,
+            "math.ceil": this.evalMathCeil,
+            "math.floor": this.evalMathFloor,
+            "math.log": this.evalMathLog,
+            "math.ln": this.evalMathLn,
+            "math.max": this.evalMathMax,
+            "math.min": this.evalMathMin,
+            "math.pow": this.evalMathPow,
+            "math.random": this.evalMathRandom,
+            "math.round": this.evalMathRound,
+            "math.sqrt": this.evalMathSqrt,
+        };
         this.builtinHash = {};
         this.inter = interpreter;
+        this.builtinFunc = Object.keys(this.methods);
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
         }
     }
     libEvalExpr(expr, env) {
-        switch (expr[0]) {
-            case "math.pi": return Math.PI;
-            case "math.abs": return Math.abs(this.inter.evalExpr(expr[1], env));
-            case "math.ceil": return Math.ceil(this.inter.evalExpr(expr[1], env));
-            case "math.floor": return Math.floor(this.inter.evalExpr(expr[1], env));
-            case "math.log": return Math.log(this.inter.evalExpr(expr[1], env)) * Math.LOG10E;
-            case "math.ln": return Math.log(this.inter.evalExpr(expr[1], env));
-            case "math.max": return Math.max(this.inter.evalExpr(expr[1], env), this.inter.evalExpr(expr[2], env));
-            case "math.min": return Math.min(this.inter.evalExpr(expr[1], env), this.inter.evalExpr(expr[2], env));
-            case "math.pow": return Math.pow(this.inter.evalExpr(expr[1], env), this.inter.evalExpr(expr[2], env));
-            case "math.random": return Math.random();
-            case "math.round": return Math.round(this.inter.evalExpr(expr[1], env));
-            case "math.sqrt": return Math.sqrt(this.inter.evalExpr(expr[1], env));
+        return this.methods[expr[0]].call(this, expr, env);
+    }
+    getNumber(proc, expr, env) {
+        if (expr.length !== 2) {
+            throw `Error: '${proc}' requires 1 argument. Given: ${expr.length - 1}`;
         }
-        throw "Error: Not found in 'math-lib': " + expr[0];
+        const n = this.inter.evalExpr(expr[1], env);
+        if (typeof n !== "number") {
+            throw `Error: '${proc}' requires a number. Given: ${n}`;
+        }
+        return n;
+    }
+    getNumberNumber(proc, expr, env) {
+        if (expr.length !== 3) {
+            throw `Error: '${proc}' requires 2 arguments. Given: ${expr.length - 1}`;
+        }
+        const m = this.inter.evalExpr(expr[1], env);
+        const n = this.inter.evalExpr(expr[2], env);
+        if (typeof m !== "number" || typeof n !== "number") {
+            throw `Error: '${proc}' requires two numbers. Given: ${m}, ${n}`;
+        }
+        return [m, n];
+    }
+    evalMathPi(expr) {
+        if (expr.length !== 1) {
+            throw `Error: 'math.pi' requires 0 arguments. Given: ${expr.length - 1}`;
+        }
+        return Math.PI;
+    }
+    evalMathAbs(expr, env) {
+        return Math.abs(this.getNumber("math.abs", expr, env));
+    }
+    evalMathCeil(expr, env) {
+        return Math.ceil(this.getNumber("math.ceil", expr, env));
+    }
+    evalMathFloor(expr, env) {
+        return Math.floor(this.getNumber("math.floor", expr, env));
+    }
+    evalMathLog(expr, env) {
+        return Math.log(this.getNumber("math.log", expr, env)) * Math.LOG10E;
+    }
+    evalMathLn(expr, env) {
+        return Math.log(this.getNumber("math.ln", expr, env));
+    }
+    evalMathMax(expr, env) {
+        const [m, n] = this.getNumberNumber("math.max", expr, env);
+        return Math.max(m, n);
+    }
+    evalMathMin(expr, env) {
+        const [m, n] = this.getNumberNumber("math.min", expr, env);
+        return Math.min(m, n);
+    }
+    evalMathPow(expr, env) {
+        const [m, n] = this.getNumberNumber("math.pow", expr, env);
+        return Math.pow(m, n);
+    }
+    evalMathRandom(expr) {
+        if (expr.length !== 1) {
+            throw `Error: 'math.random' requires 0 arguments. Given: ${expr.length - 1}`;
+        }
+        return Math.random();
+    }
+    evalMathRound(expr, env) {
+        return Math.round(this.getNumber("math.round", expr, env));
+    }
+    evalMathSqrt(expr, env) {
+        return Math.round(this.getNumber("math.sqrt", expr, env));
     }
 }
 class NumberLib {
     constructor(interpreter) {
-        this.builtinFunc = ["numb.max-value", "numb.min-value", "numb.parse-float", "numb.parse-int",
-            "numb.is-finite", "numb.is-integer", "numb.to-fixed", "numb.to-string"];
+        this.methods = {
+            "numb.max-int": this.evalMaxInt,
+            "numb.min-int": this.evalMinInt,
+            "numb.parse-float": this.evalParseFloat,
+            "numb.parse-int": this.evalParseInt,
+            "numb.is-finite": this.evalIsFinite,
+            "numb.is-integer": this.evalIsInteger,
+            "numb.to-fixed": this.evalToFixed,
+            "numb.to-string": this.evalToString,
+        };
         this.builtinHash = {};
         this.inter = interpreter;
+        this.builtinFunc = Object.keys(this.methods);
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
         }
     }
     libEvalExpr(expr, env) {
-        switch (expr[0]) {
-            case "numb.max-value": return Number.MAX_VALUE;
-            case "numb.min-value": return Number.MIN_VALUE;
-            case "numb.parse-float": return this.evalParseFloat(expr, env);
-            case "numb.parse-int": return this.evalParseInt(expr, env);
-            case "numb.is-finite": return this.evalIsFinite(expr, env);
-            case "numb.is-integer": return this.evalIsInteger(expr, env);
-            case "numb.to-fixed": return this.evalToFixed(expr, env);
-            case "numb.to-string": return this.evalToString(expr, env);
-        }
-        throw "Error: Not found in 'numb-lib': " + expr[0];
+        return this.methods[expr[0]].call(this, expr, env);
+    }
+    evalMaxInt() {
+        return Number.MAX_SAFE_INTEGER;
+    }
+    evalMinInt() {
+        return Number.MIN_SAFE_INTEGER;
     }
     evalParseFloat(expr, env) {
         const value = this.inter.evalExpr(expr[1], env);
@@ -1535,7 +1606,7 @@ class NumberLib {
     }
     evalIsInteger(expr, env) {
         const value = this.inter.evalExpr(expr[1], env);
-        return typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
+        return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
     }
     evalToFixed(expr, env) {
         const value = this.inter.evalExpr(expr[1], env);
