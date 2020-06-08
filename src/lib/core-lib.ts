@@ -58,7 +58,7 @@ class CoreLib implements ILib {
                 return a;
             }
 
-            throw Error("Wrong parameter type: " + "+");
+            throw `Error: '+' requires a string or a number. Given: ${a}`;
         }
 
         if (expr.length === 3) {
@@ -72,15 +72,13 @@ class CoreLib implements ILib {
                 if (typeof b === "number") {
                     return a + b.toString();
                 }
-
-                throw Error("Wrong parameter types: " + "+");
             }
 
             if (typeof a === "number" && typeof b === "number") {
                 return a + b;
             }
 
-            throw Error("Wrong parameter types: " + "+");
+            throw `Error: '+' requires strings or numbers. Given: ${a}, ${b}`;
         }
 
         return a + this.evalPlus(expr.slice(1), env);
@@ -117,7 +115,7 @@ class CoreLib implements ILib {
 
         const a: any = this.inter.evalExpr(expr[1], env);
         if (typeof a !== "number") {
-            throw Error("Wrong parameter type: " + "*");
+            throw `Error: '*' requires a number. Given: ${a}`;
         }
 
         if (expr.length === 2) {
@@ -132,7 +130,7 @@ class CoreLib implements ILib {
             const b: any = this.inter.evalExpr(expr[2], env);
 
             if (typeof b !== "number") {
-                throw Error("Wrong parameter type: " + "*");
+                throw `Error: '*' requires numbers. Given: ${a}, ${b}`;
             }
 
             return a * b;
@@ -299,8 +297,8 @@ class CoreLib implements ILib {
             throw "Error: 'parse' requires 2 arguments. Given: " + (expr.length - 1);
         }
 
+        const parser: Parser   = new Parser();
         const codeText: string = this.inter.evalExpr(expr[1], env);
-        const parser: Parser = new Parser();
 
         return parser.parse(codeText);
     }

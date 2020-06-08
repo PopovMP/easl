@@ -425,7 +425,7 @@ class Interpreter {
             ? this.evalExpr(expr[2], env)
             : expr.length === 4
                 ? this.evalExpr(expr[3], env)
-                : null;
+                : undefined;
     }
 
     // [unless, test-expr, when-not-expr, else-expr]

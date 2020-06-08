@@ -24,12 +24,12 @@ class DateLib implements ILib {
         return this.methods[expr[0]].call(this, expr, env);
     }
 
-    // (date.now)
+    // [date.now]
     private evalDateNow(expr: any[], env: any[]): number {
         return this.app.callWithNoArgs<number>(Date.now, "date.now", expr, env);
     }
 
-    // (date.to-string date)
+    // [date.to-string, date]
     private evalDateToString(expr: any[], env: any[]): string {
         return this.app.callWithNumber<string>(
             (n: number): string => new Date(n).toString(),

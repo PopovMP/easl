@@ -24,7 +24,8 @@ describe('core-lib', function () {
             assert.strictEqual(easl.evaluate(` (+ 1 2 3) `), 6);
         });
         it('number + string', function () {
-            assert.strictEqual(easl.evaluate(` (+ 1 "a") `), "Error: Wrong parameter types: +");
+            assert.strictEqual(easl.evaluate(` (+ 1 "a") `),
+                "Error: '+' requires strings or numbers. Given: 1, a");
         });
         it('string + number', function () {
             assert.strictEqual(easl.evaluate(` (+ "a" 1) `), "a1");

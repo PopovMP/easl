@@ -28,7 +28,7 @@ describe("if", function () {
     });
 
     it("(if false 1) → null", function () {
-        assert.strictEqual(easl.evaluate("{if false 1}"), null);
+        assert.strictEqual(easl.evaluate("{if false 1}"), undefined);
     });
 
     it("when truthy 'if' evaluates only the 'than clause'", function () {

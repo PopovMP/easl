@@ -1,77 +1,4 @@
 "use strict";
-class Applicator {
-    constructor(interpreter) {
-        this.interpreter = interpreter;
-    }
-    getWithNoArgs(value, name, expr, env) {
-        if (expr.length !== 1) {
-            throw `Error: '${name}' requires 0 arguments. Given: ${expr.length - 1}`;
-        }
-        return value;
-    }
-    callWithNoArgs(func, name, expr, env) {
-        if (expr.length !== 1) {
-            throw `Error: '${name}' requires 0 arguments. Given: ${expr.length - 1}`;
-        }
-        return func();
-    }
-    callWithNumber(func, name, expr, env) {
-        if (expr.length !== 2) {
-            throw `Error: '${name}' requires 1 argument. Given: ${expr.length - 1}`;
-        }
-        const num = this.interpreter.evalExpr(expr[1], env);
-        if (typeof num !== "number") {
-            throw `Error: '${name}' requires a number. Given: ${num}`;
-        }
-        return func(num);
-    }
-    callWithString(func, name, expr, env) {
-        if (expr.length !== 2) {
-            throw `Error: '${name}' requires 1 argument. Given: ${expr.length - 1}`;
-        }
-        const str = this.interpreter.evalExpr(expr[1], env);
-        if (typeof str !== "string") {
-            throw `Error: '${name}' requires a string. Given: ${str}`;
-        }
-        return func(str);
-    }
-    callWithNumberNumber(func, name, expr, env) {
-        if (expr.length !== 3) {
-            throw `Error: '${name}' requires 2 arguments. Given: ${expr.length - 1}`;
-        }
-        const num1 = this.interpreter.evalExpr(expr[1], env);
-        const num2 = this.interpreter.evalExpr(expr[2], env);
-        if (typeof num1 !== "number" || typeof num2 !== "number") {
-            throw `Error: '${name}' requires two numbers. Given: ${num1}, ${num2}`;
-        }
-        return func(num1, num2);
-    }
-    callWithStringString(func, name, expr, env) {
-        if (expr.length !== 3) {
-            throw `Error: '${name}' requires 2 arguments. Given: ${expr.length - 1}`;
-        }
-        const str1 = this.interpreter.evalExpr(expr[1], env);
-        const str2 = this.interpreter.evalExpr(expr[2], env);
-        if (typeof str1 !== "string" || typeof str2 !== "string") {
-            throw `Error: '${name}' requires two strings. Given: ${str1}, ${str2}`;
-        }
-        return func(str1, str2);
-    }
-    callWithStringNumber(func, name, expr, env) {
-        if (expr.length !== 3) {
-            throw `Error: '${name}' requires 2 arguments. Given: ${expr.length - 1}`;
-        }
-        const str = this.interpreter.evalExpr(expr[1], env);
-        const num = this.interpreter.evalExpr(expr[2], env);
-        if (typeof str !== "string") {
-            throw `Error: '${name}' requires a string. Given: ${str}`;
-        }
-        if (typeof num !== "number") {
-            throw `Error: '${name}' requires a number. Given: ${num}`;
-        }
-        return func(str, num);
-    }
-}
 class Easl {
     constructor() {
     }
@@ -414,7 +341,7 @@ class Interpreter {
             ? this.evalExpr(expr[2], env)
             : expr.length === 4
                 ? this.evalExpr(expr[3], env)
-                : null;
+                : undefined;
     }
     evalUnless(expr, env) {
         if (expr.length === 1) {
@@ -1102,7 +1029,7 @@ class CoreLib {
             if (typeof a === "string" || typeof a === "number") {
                 return a;
             }
-            throw Error("Wrong parameter type: " + "+");
+            throw `Error: '+' requires a string or a number. Given: ${a}`;
         }
         if (expr.length === 3) {
             const b = this.inter.evalExpr(expr[2], env);
@@ -1113,12 +1040,11 @@ class CoreLib {
                 if (typeof b === "number") {
                     return a + b.toString();
                 }
-                throw Error("Wrong parameter types: " + "+");
             }
             if (typeof a === "number" && typeof b === "number") {
                 return a + b;
             }
-            throw Error("Wrong parameter types: " + "+");
+            throw `Error: '+' requires strings or numbers. Given: ${a}, ${b}`;
         }
         return a + this.evalPlus(expr.slice(1), env);
     }
@@ -1145,7 +1071,7 @@ class CoreLib {
         }
         const a = this.inter.evalExpr(expr[1], env);
         if (typeof a !== "number") {
-            throw Error("Wrong parameter type: " + "*");
+            throw `Error: '*' requires a number. Given: ${a}`;
         }
         if (expr.length === 2) {
             return a;
@@ -1156,7 +1082,7 @@ class CoreLib {
             }
             const b = this.inter.evalExpr(expr[2], env);
             if (typeof b !== "number") {
-                throw Error("Wrong parameter type: " + "*");
+                throw `Error: '*' requires numbers. Given: ${a}, ${b}`;
             }
             return a * b;
         }
@@ -1267,8 +1193,8 @@ class CoreLib {
         if (expr.length !== 2) {
             throw "Error: 'parse' requires 2 arguments. Given: " + (expr.length - 1);
         }
-        const codeText = this.inter.evalExpr(expr[1], env);
         const parser = new Parser();
+        const codeText = this.inter.evalExpr(expr[1], env);
         return parser.parse(codeText);
     }
     evalEval(expr, env) {
@@ -1867,5 +1793,78 @@ class StringLib {
     }
     strToUppercase(expr, env) {
         return this.app.callWithString((s) => s.toUpperCase(), "str.to-uppercase", expr, env);
+    }
+}
+class Applicator {
+    constructor(interpreter) {
+        this.interpreter = interpreter;
+    }
+    getWithNoArgs(value, name, expr, env) {
+        if (expr.length !== 1) {
+            throw `Error: '${name}' requires 0 arguments. Given: ${expr.length - 1}`;
+        }
+        return value;
+    }
+    callWithNoArgs(func, name, expr, env) {
+        if (expr.length !== 1) {
+            throw `Error: '${name}' requires 0 arguments. Given: ${expr.length - 1}`;
+        }
+        return func();
+    }
+    callWithNumber(func, name, expr, env) {
+        if (expr.length !== 2) {
+            throw `Error: '${name}' requires 1 argument. Given: ${expr.length - 1}`;
+        }
+        const num = this.interpreter.evalExpr(expr[1], env);
+        if (typeof num !== "number") {
+            throw `Error: '${name}' requires a number. Given: ${num}`;
+        }
+        return func(num);
+    }
+    callWithString(func, name, expr, env) {
+        if (expr.length !== 2) {
+            throw `Error: '${name}' requires 1 argument. Given: ${expr.length - 1}`;
+        }
+        const str = this.interpreter.evalExpr(expr[1], env);
+        if (typeof str !== "string") {
+            throw `Error: '${name}' requires a string. Given: ${str}`;
+        }
+        return func(str);
+    }
+    callWithNumberNumber(func, name, expr, env) {
+        if (expr.length !== 3) {
+            throw `Error: '${name}' requires 2 arguments. Given: ${expr.length - 1}`;
+        }
+        const num1 = this.interpreter.evalExpr(expr[1], env);
+        const num2 = this.interpreter.evalExpr(expr[2], env);
+        if (typeof num1 !== "number" || typeof num2 !== "number") {
+            throw `Error: '${name}' requires two numbers. Given: ${num1}, ${num2}`;
+        }
+        return func(num1, num2);
+    }
+    callWithStringString(func, name, expr, env) {
+        if (expr.length !== 3) {
+            throw `Error: '${name}' requires 2 arguments. Given: ${expr.length - 1}`;
+        }
+        const str1 = this.interpreter.evalExpr(expr[1], env);
+        const str2 = this.interpreter.evalExpr(expr[2], env);
+        if (typeof str1 !== "string" || typeof str2 !== "string") {
+            throw `Error: '${name}' requires two strings. Given: ${str1}, ${str2}`;
+        }
+        return func(str1, str2);
+    }
+    callWithStringNumber(func, name, expr, env) {
+        if (expr.length !== 3) {
+            throw `Error: '${name}' requires 2 arguments. Given: ${expr.length - 1}`;
+        }
+        const str = this.interpreter.evalExpr(expr[1], env);
+        const num = this.interpreter.evalExpr(expr[2], env);
+        if (typeof str !== "string") {
+            throw `Error: '${name}' requires a string. Given: ${str}`;
+        }
+        if (typeof num !== "number") {
+            throw `Error: '${name}' requires a number. Given: ${num}`;
+        }
+        return func(str, num);
     }
 }
