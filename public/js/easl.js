@@ -1172,7 +1172,7 @@ class CoreLib {
         return num1 < num2;
     }
     evalNotEqual(expr, env) {
-        const [val1, val2] = this.inter.evalArgs(["scalar", "scalar"], expr, env);
+        const [val1, val2] = this.inter.evalArgs(["number", "number"], expr, env);
         return val1 !== val2;
     }
     evalGreaterOrEqual(expr, env) {

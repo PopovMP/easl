@@ -181,7 +181,7 @@ class CoreLib implements ILib {
 
     // [!=, obj1, obj2]
     private evalNotEqual(expr: any[], env: any[]): any {
-        const [val1, val2] = this.inter.evalArgs(["scalar", "scalar"], expr, env);
+        const [val1, val2] = this.inter.evalArgs(["number", "number"], expr, env);
 
         return val1 !== val2;
     }
