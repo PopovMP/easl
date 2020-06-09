@@ -124,6 +124,18 @@ class Interpreter {
             ? true
             : !value;
     }
+    evalArgs(argTypes, expr, env) {
+        const optionalCount = argTypes.filter(e => Array.isArray(e)).length;
+        this.assertArity(expr, argTypes.length, optionalCount);
+        return argTypes.map((argType, index) => {
+            const isRequired = !Array.isArray(argType);
+            const arg = isRequired || index + 1 < expr.length
+                ? this.evalExpr(expr[index + 1], env)
+                : argTypes[index][1];
+            this.assertArgType(expr[0], arg, (isRequired ? argType : argType[0]));
+            return arg;
+        });
+    }
     lookup(symbol, env) {
         for (let i = env.length - 1; i > -1; i--) {
             if (symbol === env[i][0]) {
@@ -627,6 +639,44 @@ class Interpreter {
     dumpExpression(expr) {
         this.options.printer(`Expr: ${JSON.stringify(expr)}`);
     }
+    assertArity(expr, argsCount, optionalCount) {
+        const argText = (count) => count === 1
+            ? "1 argument"
+            : count + " arguments";
+        if (optionalCount === 0 && expr.length !== argsCount + 1) {
+            throw `Error: '${expr[0]}' requires ${argText(argsCount)}. Given: ${argText(expr.length - 1)}`;
+        }
+        else if (optionalCount !== 0 &&
+            (expr.length - 1 < argsCount - optionalCount || expr.length - 1 > argsCount)) {
+            throw `Error: '${expr[0]}' requires from ${argText(argsCount - optionalCount)} to ${argText(argsCount)}.` +
+                ` Given: ${argText(expr.length - 1)}`;
+        }
+    }
+    assertArgType(name, arg, argType) {
+        if (!this.isTypeMatch(arg, argType)) {
+            throw `Error: '${name}' requires ${argType}. Given: ${typeof arg} ${this.argToStr(arg)}`;
+        }
+    }
+    isTypeMatch(arg, argType) {
+        switch (argType) {
+            case "any":
+                return true;
+            case "array":
+                return Array.isArray(arg);
+            case "scalar":
+                return arg === null ||
+                    ["string", "number", "boolean"].includes(typeof arg);
+            default:
+                return typeof arg === argType;
+        }
+    }
+    argToStr(arg) {
+        const maxLength = 25;
+        const argText = Printer.stringify(arg);
+        return argText.length > maxLength
+            ? argText.substring(0, maxLength) + "..."
+            : argText;
+    }
 }
 const XMLHttpRequestLib = (typeof XMLHttpRequest === "function")
     ? XMLHttpRequest
@@ -984,6 +1034,16 @@ class Printer {
 if (typeof module === "object") {
     module.exports.Printer = Printer;
 }
+class Validator {
+    static assertArrayIndex(name, arr, index) {
+        if (arr.length === 0) {
+            throw `Error: '${name}' index operation of an empty list`;
+        }
+        if (index < 0 || index >= arr.length) {
+            throw `Error: '${name}' list index out of range. Given: ${index}, list length ${arr.length}`;
+        }
+    }
+}
 class CoreLib {
     constructor(interpreter) {
         this.methods = {
@@ -1011,7 +1071,6 @@ class CoreLib {
         };
         this.builtinHash = {};
         this.inter = interpreter;
-        this.app = new Applicator(interpreter);
         this.builtinFunc = Object.keys(this.methods);
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
@@ -1089,15 +1148,15 @@ class CoreLib {
         return a * this.evalMultiply(expr.slice(1), env);
     }
     evalDivide(expr, env) {
-        return this.app.callWithNumberNumber((m, n) => {
-            if (n === 0) {
-                throw "Error: Error: '/' division by zero.";
-            }
-            return m / n;
-        }, "/", expr, env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        if (num2 === 0) {
+            throw "Error: '/' division by zero.";
+        }
+        return num1 / num2;
     }
     evalModulo(expr, env) {
-        return this.app.callWithNumberNumber((m, n) => m % n, "%", expr, env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        return num1 % num2;
     }
     evalEqual(expr, env) {
         if (expr.length === 3) {
@@ -1115,35 +1174,28 @@ class CoreLib {
         throw "Error: '=' requires 2 or more arguments. Given: " + (expr.length - 1);
     }
     evalGreater(expr, env) {
-        return this.app.callWithNumberNumber((m, n) => m > n, ">", expr, env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        return num1 > num2;
     }
     evalLower(expr, env) {
-        return this.app.callWithNumberNumber((m, n) => m < n, "<", expr, env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        return num1 < num2;
     }
     evalNotEqual(expr, env) {
-        if (expr.length !== 3) {
-            throw "Error: '!=' requires 2 arguments. Given: " + (expr.length - 1);
-        }
-        return this.inter.evalExpr(expr[1], env) !== this.inter.evalExpr(expr[2], env);
+        const [val1, val2] = this.inter.evalArgs(["scalar", "scalar"], expr, env);
+        return val1 !== val2;
     }
     evalGreaterOrEqual(expr, env) {
-        if (expr.length !== 3) {
-            throw "Error: '>=' requires 2 arguments. Given: " + (expr.length - 1);
-        }
-        return this.inter.evalExpr(expr[1], env) >= this.inter.evalExpr(expr[2], env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        return num1 >= num2;
     }
     evalLowerOrEqual(expr, env) {
-        if (expr.length !== 3) {
-            throw "Error: '<=' requires 2 arguments. Given: " + (expr.length - 1);
-        }
-        return this.inter.evalExpr(expr[1], env) <= this.inter.evalExpr(expr[2], env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        return num1 <= num2;
     }
     evalNot(expr, env) {
-        if (expr.length !== 2) {
-            throw "Error: 'not' requires 1 argument. Given: " + (expr.length - 1);
-        }
-        const entity = this.inter.evalExpr(expr[1], env);
-        return (Array.isArray(entity) && entity.length === 0) || !entity;
+        const [obj] = this.inter.evalArgs(["any"], expr, env);
+        return Array.isArray(obj) && obj.length === 0 || !Boolean(obj);
     }
     evalTypeOf(expr, env) {
         if (expr.length !== 2) {
@@ -1177,32 +1229,22 @@ class CoreLib {
         return typeof value;
     }
     evalToBoolean(expr, env) {
-        if (expr.length !== 2) {
-            throw "Error: 'to-boolean' requires 1 argument. Given: " + (expr.length - 1);
-        }
-        return !this.evalNot(expr, env);
+        const [obj] = this.inter.evalArgs(["any"], expr, env);
+        return Array.isArray(obj) && obj.length === 0 ? false : Boolean(obj);
     }
     evalToNumber(expr, env) {
-        if (expr.length !== 2) {
-            throw "Error: 'to-number' requires 1 argument. Given: " + (expr.length - 1);
-        }
-        const number = Number(this.inter.evalExpr(expr[1], env));
-        return number !== number ? null : number;
+        const [obj] = this.inter.evalArgs(["any"], expr, env);
+        const number = Number(obj);
+        return isNaN(number) ? null : number;
     }
     evalParse(expr, env) {
-        if (expr.length !== 2) {
-            throw "Error: 'parse' requires 2 arguments. Given: " + (expr.length - 1);
-        }
+        const [scr] = this.inter.evalArgs(["string"], expr, env);
         const parser = new Parser();
-        const codeText = this.inter.evalExpr(expr[1], env);
-        return parser.parse(codeText);
+        return parser.parse(scr);
     }
     evalEval(expr, env) {
-        if (expr.length !== 2) {
-            throw "Error: 'eval' requires 1 argument. Given: " + (expr.length - 1);
-        }
-        const codeTree = this.inter.evalExpr(expr[1], env);
-        return this.inter.evalCodeTree(codeTree, this.inter.options);
+        const [obj] = this.inter.evalArgs(["any"], expr, env);
+        return this.inter.evalCodeTree(obj, this.inter.options);
     }
     evalPrint(expr, env) {
         if (expr.length === 1) {
@@ -1220,22 +1262,16 @@ class CoreLib {
         }
     }
     evalDisplay(expr, env) {
-        if (expr.length !== 2) {
-            throw "Error: 'display' requires 1 argument. Given: " + (expr.length - 1);
-        }
-        this.inter.options.printer(this.evalToString(expr, env));
+        const [obj] = this.inter.evalArgs(["any"], expr, env);
+        this.inter.options.printer(Printer.stringify(obj));
     }
     evalNewline(expr, env) {
-        if (expr.length !== 1) {
-            throw "Error: 'newline' requires 0 arguments. Given: " + (expr.length - 1);
-        }
+        this.inter.evalArgs([], expr, env);
         this.inter.options.printer("\r\n");
     }
     evalToString(expr, env) {
-        if (expr.length !== 2) {
-            throw "Error: 'to-string' requires 1 argument. Given: " + (expr.length - 1);
-        }
-        return Printer.stringify(this.inter.evalExpr(expr[1], env));
+        const [obj] = this.inter.evalArgs(["any"], expr, env);
+        return Printer.stringify(obj);
     }
 }
 class DateLib {
@@ -1245,7 +1281,7 @@ class DateLib {
             "date.to-string": this.evalDateToString,
         };
         this.builtinHash = {};
-        this.app = new Applicator(interpreter);
+        this.inter = interpreter;
         this.builtinFunc = Object.keys(this.methods);
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
@@ -1255,10 +1291,12 @@ class DateLib {
         return this.methods[expr[0]].call(this, expr, env);
     }
     evalDateNow(expr, env) {
-        return this.app.callWithNoArgs(Date.now, "date.now", expr, env);
+        this.inter.evalArgs([], expr, env);
+        return Date.now();
     }
     evalDateToString(expr, env) {
-        return this.app.callWithNumber((n) => new Date(n).toString(), "date.to-string", expr, env);
+        const [date] = this.inter.evalArgs(["number"], expr, env);
+        return new Date(date).toString();
     }
 }
 class ExtLib {
@@ -1324,16 +1362,16 @@ class ListLib {
         return [lst, elm];
     }
     listConcat(expr, env) {
-        const lst1 = this.inter.evalExpr(expr[1], env);
-        const lst2 = this.inter.evalExpr(expr[2], env);
-        return Array.isArray(lst1) ? lst1.concat(lst2) : lst1;
+        const [lst1, lst2] = this.inter.evalArgs(["array", "array"], expr, env);
+        return lst1.concat(lst2);
     }
     listFirst(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        return Array.isArray(lst) && lst.length > 0 ? lst[0] : null;
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        Validator.assertArrayIndex("list.first", lst, 0);
+        return lst[0];
     }
     listFlatten(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
         return this.listFlattenLoop(lst);
     }
     listFlattenLoop(arr) {
@@ -1342,37 +1380,30 @@ class ListLib {
             : toFlatten), []);
     }
     listGet(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        const index = this.inter.evalExpr(expr[2], env);
-        if (Array.isArray(lst) && index >= 0 && index < lst.length) {
-            return lst[index];
-        }
-        return null;
+        const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
+        Validator.assertArrayIndex("list.get", lst, index);
+        return lst[index];
     }
     listHas(expr, env) {
-        return this.listIndex(expr, env) > -1;
+        const [lst, elem] = this.inter.evalArgs(["array", "scalar"], expr, env);
+        return lst.includes(elem);
     }
     listIndex(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        const elm = this.inter.evalExpr(expr[2], env);
-        if (Array.isArray(lst)) {
-            return lst.indexOf(elm);
-        }
-        return -1;
+        const [lst, elem] = this.inter.evalArgs(["array", "scalar"], expr, env);
+        return lst.indexOf(elem);
     }
     listInc(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        const elm = this.inter.evalExpr(expr[2], env);
-        return ++lst[elm];
+        const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
+        Validator.assertArrayIndex("list.inc", lst, index);
+        return ++lst[index];
     }
     listDec(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        const elm = this.inter.evalExpr(expr[2], env);
-        return --lst[elm];
+        const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
+        Validator.assertArrayIndex("list.dec", lst, index);
+        return --lst[index];
     }
     listJoin(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        const sep = expr.length === 3 ? this.inter.evalExpr(expr[2], env) : ",";
+        const [lst, sep] = this.inter.evalArgs(["array", ["string", ","]], expr, env);
         return lst.join(sep);
     }
     listLast(expr, env) {
@@ -1384,8 +1415,8 @@ class ListLib {
         return Array.isArray(lst) && lst.length > 1 ? lst.slice(0, lst.length - 1) : [];
     }
     listLength(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        return Array.isArray(lst) ? lst.length : -1;
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        return lst.length;
     }
     listPush(expr, env) {
         const lst = this.inter.evalExpr(expr[1], env);
@@ -1437,28 +1468,21 @@ class ListLib {
         return Array.isArray(lst) && lst.length > 1 ? lst.slice(1) : [];
     }
     listReverse(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
         return lst.reverse();
     }
     listSet(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        const index = this.inter.evalExpr(expr[2], env);
-        const elm = this.inter.evalExpr(expr[3], env);
-        if (Array.isArray(lst) && index >= 0 && index < lst.length) {
-            lst[index] = elm;
-            return lst;
-        }
+        const [lst, index, elem] = this.inter.evalArgs(["array", "number", "any"], expr, env);
+        Validator.assertArrayIndex("list.set", lst, index);
+        lst[index] = elem;
         return lst;
     }
     listSlice(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        const args = expr.length - 2;
-        const begin = args > 0 ? this.inter.evalExpr(expr[2], env) : 0;
-        const end = args > 1 ? this.inter.evalExpr(expr[3], env) : lst.length;
+        const [lst, begin, end] = this.inter.evalArgs(["array", ["number", 0], ["number", Number.MAX_SAFE_INTEGER]], expr, env);
         return lst.slice(begin, end);
     }
     listSort(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
         return lst.sort();
     }
 }
@@ -1478,7 +1502,7 @@ class MathLib {
             "math.sqrt": this.evalMathSqrt,
         };
         this.builtinHash = {};
-        this.app = new Applicator(interpreter);
+        this.inter = interpreter;
         this.builtinFunc = Object.keys(this.methods);
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
@@ -1488,37 +1512,48 @@ class MathLib {
         return this.methods[expr[0]].call(this, expr, env);
     }
     evalMathPi(expr, env) {
-        return this.app.getWithNoArgs(Math.PI, "math.pi", expr, env);
+        this.inter.evalArgs([], expr, env);
+        return Math.PI;
     }
     evalMathAbs(expr, env) {
-        return this.app.callWithNumber(Math.abs, "math.abs", expr, env);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+        return Math.abs(num);
     }
     evalMathCeil(expr, env) {
-        return this.app.callWithNumber(Math.ceil, "math.ceil", expr, env);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+        return Math.ceil(num);
     }
     evalMathFloor(expr, env) {
-        return this.app.callWithNumber(Math.floor, "math.floor", expr, env);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+        return Math.floor(num);
     }
     evalMathLog(expr, env) {
-        return this.app.callWithNumber(Math.log, "math.log", expr, env);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+        return Math.log(num);
     }
     evalMathMax(expr, env) {
-        return this.app.callWithNumberNumber(Math.max, "math.max", expr, env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        return Math.max(num1, num2);
     }
     evalMathMin(expr, env) {
-        return this.app.callWithNumberNumber(Math.min, "math.min", expr, env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        return Math.min(num1, num2);
     }
     evalMathPow(expr, env) {
-        return this.app.callWithNumberNumber(Math.pow, "math.pow", expr, env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        return Math.pow(num1, num2);
     }
     evalMathRandom(expr, env) {
-        return this.app.callWithNoArgs(Math.random, "math.random", expr, env);
+        this.inter.evalArgs([], expr, env);
+        return Math.random();
     }
     evalMathRound(expr, env) {
-        return this.app.callWithNumber(Math.round, "math.round", expr, env);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+        return Math.round(num);
     }
     evalMathSqrt(expr, env) {
-        return this.app.callWithNumber(Math.sqrt, "math.sqrt", expr, env);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+        return Math.sqrt(num);
     }
 }
 class NumberLib {
@@ -1543,42 +1578,45 @@ class NumberLib {
     libEvalExpr(expr, env) {
         return this.methods[expr[0]].call(this, expr, env);
     }
-    evalMaxInt() {
+    evalMaxInt(expr, env) {
+        this.inter.evalArgs([], expr, env);
         return Number.MAX_SAFE_INTEGER;
     }
-    evalMinInt() {
+    evalMinInt(expr, env) {
+        this.inter.evalArgs([], expr, env);
         return Number.MIN_SAFE_INTEGER;
     }
     evalParseFloat(expr, env) {
-        const value = this.inter.evalExpr(expr[1], env);
-        const res = parseFloat(value);
-        if (isNaN(res))
-            throw "Error: Not a number: " + value;
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+        const res = parseFloat(str);
+        if (isNaN(res)) {
+            throw "Error: 'numb.parse-float' argument not a number: " + str;
+        }
         return res;
     }
     evalParseInt(expr, env) {
-        const value = this.inter.evalExpr(expr[1], env);
-        const res = parseInt(value);
-        if (isNaN(res))
-            throw "Error: Not a number: " + value;
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+        const res = parseInt(str);
+        if (isNaN(res)) {
+            throw "Error: 'numb.parse-int' argument not a number: " + str;
+        }
         return res;
     }
     evalIsFinite(expr, env) {
-        const value = this.inter.evalExpr(expr[1], env);
-        return typeof value === "number" && isFinite(value);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+        return isFinite(num);
     }
     evalIsInteger(expr, env) {
-        const value = this.inter.evalExpr(expr[1], env);
-        return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+        return isFinite(num) && Math.floor(num) === num;
     }
     evalToFixed(expr, env) {
-        const value = this.inter.evalExpr(expr[1], env);
-        const digits = expr[2] ? this.inter.evalExpr(expr[2], env) : 0;
-        return value.toFixed(digits);
+        const [num, digits] = this.inter.evalArgs(["number", ["number", 0]], expr, env);
+        return num.toFixed(digits);
     }
     evalToString(expr, env) {
-        const value = this.inter.evalExpr(expr[1], env);
-        return value.toString();
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+        return num.toString();
     }
 }
 class StringLib {
@@ -1607,7 +1645,6 @@ class StringLib {
         };
         this.builtinHash = {};
         this.inter = interpreter;
-        this.app = new Applicator(interpreter);
         this.builtinFunc = Object.keys(this.methods);
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
@@ -1617,10 +1654,12 @@ class StringLib {
         return this.methods[expr[0]].call(this, expr, env);
     }
     strCharAt(expr, env) {
-        return this.app.callWithStringNumber((s, n) => s.charAt(n), "str.char-at", expr, env);
+        const [str, pos] = this.inter.evalArgs(["string", "number"], expr, env);
+        return str.charAt(pos);
     }
     strCharCodeAt(expr, env) {
-        const code = this.app.callWithStringNumber((s, n) => s.charCodeAt(n), "str.char-code-at", expr, env);
+        const [str, index] = this.inter.evalArgs(["string", "number"], expr, env);
+        const code = str.charCodeAt(index);
         if (isNaN(code)) {
             throw `Error: 'str.char-code-at' index out of range.`;
         }
@@ -1637,234 +1676,73 @@ class StringLib {
         return res;
     }
     strEndsWith(expr, env) {
-        return this.app.callWithStringString((s, t) => s.endsWith(t), "str.ends-with", expr, env);
+        const [str, search] = this.inter.evalArgs(["string", "string"], expr, env);
+        return str.endsWith(search);
     }
     strFromCharCode(expr, env) {
-        return this.app.callWithNumber(String.fromCharCode, "str.from-char-code", expr, env);
+        const [code] = this.inter.evalArgs(["number"], expr, env);
+        return String.fromCharCode(code);
     }
     strIncludes(expr, env) {
-        const haystack = this.inter.evalExpr(expr[1], env);
-        const needle = this.inter.evalExpr(expr[2], env);
-        const start = expr.length === 4
-            ? this.inter.evalExpr(expr[3], env)
-            : 0;
-        if (typeof haystack !== "string") {
-            throw Error("Not a string: " + haystack);
-        }
-        if (typeof needle !== "string") {
-            throw Error("Not a string: " + needle);
-        }
-        if (typeof start !== "number") {
-            throw Error("Not a number: " + start);
-        }
-        return haystack.includes(needle, start);
+        const [str, search, pos] = this.inter.evalArgs(["string", "string", ["number", 0]], expr, env);
+        return str.includes(search, pos);
     }
     strIndexOf(expr, env) {
-        const str = this.inter.evalExpr(expr[1], env);
-        const search = this.inter.evalExpr(expr[2], env);
-        const start = expr.length === 4
-            ? this.inter.evalExpr(expr[3], env)
-            : 0;
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-        if (typeof search !== "string") {
-            throw Error("Not a string: " + search);
-        }
-        if (typeof start !== "number") {
-            throw Error("Not a number: " + start);
-        }
-        return str.indexOf(search, start);
+        const [str, search, pos] = this.inter.evalArgs(["string", "string", ["number", 0]], expr, env);
+        return str.indexOf(search, pos);
     }
     strLastIndexOf(expr, env) {
-        const str = this.inter.evalExpr(expr[1], env);
-        const search = this.inter.evalExpr(expr[2], env);
-        const start = expr.length === 4
-            ? this.inter.evalExpr(expr[3], env)
-            : str.length;
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-        if (typeof search !== "string") {
-            throw Error("Not a string: " + search);
-        }
-        if (typeof start !== "number") {
-            throw Error("Not a number: " + start);
-        }
-        return str.lastIndexOf(search, start);
+        const [str, search, pos] = this.inter.evalArgs(["string", "string", ["number", 0]], expr, env);
+        return str.lastIndexOf(search, pos);
     }
     strLength(expr, env) {
-        return this.app.callWithString((s) => s.length, "str.length", expr, env);
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+        return str.length;
     }
     strMatch(expr, env) {
-        const str = this.inter.evalExpr(expr[1], env);
-        const pattern = this.inter.evalExpr(expr[2], env);
-        const modifiers = expr.length === 4
-            ? this.inter.evalExpr(expr[3], env)
-            : "";
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-        if (typeof pattern !== "string") {
-            throw Error("Not a string: " + pattern);
-        }
-        if (typeof modifiers !== "string") {
-            throw Error("Not a string: " + modifiers);
-        }
-        const regExp = new RegExp(pattern, modifiers);
+        const [str, pattern, flags] = this.inter.evalArgs(["string", "string", ["string", ""]], expr, env);
+        const regExp = new RegExp(pattern, flags);
         return str.match(regExp);
     }
     strRepeat(expr, env) {
-        const str = this.inter.evalExpr(expr[1], env);
-        const count = this.inter.evalExpr(expr[2], env);
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-        if (typeof count !== "number") {
-            throw Error("Not a number: " + count);
-        }
+        const [str, count] = this.inter.evalArgs(["string", "number"], expr, env);
         return str.repeat(count);
     }
     strReplace(expr, env) {
-        const str = this.inter.evalExpr(expr[1], env);
-        const pattern = this.inter.evalExpr(expr[2], env);
-        const replace = this.inter.evalExpr(expr[3], env);
-        const modifiers = expr.length === 5
-            ? this.inter.evalExpr(expr[4], env)
-            : "";
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-        if (typeof pattern !== "string") {
-            throw Error("Not a string: " + pattern);
-        }
-        if (typeof replace !== "string") {
-            throw Error("Not a string: " + replace);
-        }
-        if (typeof modifiers !== "string") {
-            throw Error("Not a string: " + modifiers);
-        }
-        const regExp = new RegExp(pattern, modifiers);
+        const [str, pattern, replace, flags] = this.inter.evalArgs(["string", "string", "string", ["string", ""]], expr, env);
+        const regExp = new RegExp(pattern, flags);
         return str.replace(regExp, replace);
     }
     strSplit(expr, env) {
-        const str = this.inter.evalExpr(expr[1], env);
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-        const sep = expr.length === 2
-            ? ""
-            : this.inter.evalExpr(expr[2], env);
-        if (typeof sep !== "string") {
-            throw Error("Not a string: " + sep);
-        }
+        const [str, sep] = this.inter.evalArgs(["string", ["string", ""]], expr, env);
         return str.split(sep);
     }
     strStartsWith(expr, env) {
-        return this.app.callWithStringString((s, t) => s.startsWith(t), "str.starts-with", expr, env);
+        const [str, search] = this.inter.evalArgs(["string", "string"], expr, env);
+        return str.startsWith(search);
     }
     strSubString(expr, env) {
-        const str = this.inter.evalExpr(expr[1], env);
-        const start = expr.length > 2
-            ? this.inter.evalExpr(expr[2], env)
-            : 0;
-        const end = expr.length === 4
-            ? this.inter.evalExpr(expr[3], env)
-            : str.length;
-        if (typeof start !== "number") {
-            throw Error("Not a number: " + start);
-        }
-        if (typeof end !== "number") {
-            throw Error("Not a number: " + end);
-        }
+        const [str, start, end] = this.inter.evalArgs(["string", "number", ["number", 0]], expr, env);
         return str.substring(start, end);
     }
     strTrim(expr, env) {
-        return this.app.callWithString((s) => s.trim(), "str.trim", expr, env);
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+        return str.trim();
     }
     strTrimLeft(expr, env) {
-        return this.app.callWithString((s) => s.trimLeft(), "str.trim-left", expr, env);
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+        return str.trimLeft();
     }
     strTrimRight(expr, env) {
-        return this.app.callWithString((s) => s.trimRight(), "str.trim-right", expr, env);
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+        return str.trimRight();
     }
     strToLowercase(expr, env) {
-        return this.app.callWithString((s) => s.toLowerCase(), "str.to-lowercase", expr, env);
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+        return str.toLowerCase();
     }
     strToUppercase(expr, env) {
-        return this.app.callWithString((s) => s.toUpperCase(), "str.to-uppercase", expr, env);
-    }
-}
-class Applicator {
-    constructor(interpreter) {
-        this.interpreter = interpreter;
-    }
-    getWithNoArgs(value, name, expr, env) {
-        if (expr.length !== 1) {
-            throw `Error: '${name}' requires 0 arguments. Given: ${expr.length - 1}`;
-        }
-        return value;
-    }
-    callWithNoArgs(func, name, expr, env) {
-        if (expr.length !== 1) {
-            throw `Error: '${name}' requires 0 arguments. Given: ${expr.length - 1}`;
-        }
-        return func();
-    }
-    callWithNumber(func, name, expr, env) {
-        if (expr.length !== 2) {
-            throw `Error: '${name}' requires 1 argument. Given: ${expr.length - 1}`;
-        }
-        const num = this.interpreter.evalExpr(expr[1], env);
-        if (typeof num !== "number") {
-            throw `Error: '${name}' requires a number. Given: ${num}`;
-        }
-        return func(num);
-    }
-    callWithString(func, name, expr, env) {
-        if (expr.length !== 2) {
-            throw `Error: '${name}' requires 1 argument. Given: ${expr.length - 1}`;
-        }
-        const str = this.interpreter.evalExpr(expr[1], env);
-        if (typeof str !== "string") {
-            throw `Error: '${name}' requires a string. Given: ${str}`;
-        }
-        return func(str);
-    }
-    callWithNumberNumber(func, name, expr, env) {
-        if (expr.length !== 3) {
-            throw `Error: '${name}' requires 2 arguments. Given: ${expr.length - 1}`;
-        }
-        const num1 = this.interpreter.evalExpr(expr[1], env);
-        const num2 = this.interpreter.evalExpr(expr[2], env);
-        if (typeof num1 !== "number" || typeof num2 !== "number") {
-            throw `Error: '${name}' requires two numbers. Given: ${num1}, ${num2}`;
-        }
-        return func(num1, num2);
-    }
-    callWithStringString(func, name, expr, env) {
-        if (expr.length !== 3) {
-            throw `Error: '${name}' requires 2 arguments. Given: ${expr.length - 1}`;
-        }
-        const str1 = this.interpreter.evalExpr(expr[1], env);
-        const str2 = this.interpreter.evalExpr(expr[2], env);
-        if (typeof str1 !== "string" || typeof str2 !== "string") {
-            throw `Error: '${name}' requires two strings. Given: ${str1}, ${str2}`;
-        }
-        return func(str1, str2);
-    }
-    callWithStringNumber(func, name, expr, env) {
-        if (expr.length !== 3) {
-            throw `Error: '${name}' requires 2 arguments. Given: ${expr.length - 1}`;
-        }
-        const str = this.interpreter.evalExpr(expr[1], env);
-        const num = this.interpreter.evalExpr(expr[2], env);
-        if (typeof str !== "string") {
-            throw `Error: '${name}' requires a string. Given: ${str}`;
-        }
-        if (typeof num !== "number") {
-            throw `Error: '${name}' requires a number. Given: ${num}`;
-        }
-        return func(str, num);
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+        return str.toUpperCase();
     }
 }

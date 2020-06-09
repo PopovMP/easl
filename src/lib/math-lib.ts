@@ -1,7 +1,7 @@
 "use strict";
 
 class MathLib implements ILib {
-    private readonly app: Applicator;
+    private readonly inter: Interpreter;
     private readonly methods: any = {
         "math.pi"     : this.evalMathPi,
         "math.abs"    : this.evalMathAbs,
@@ -20,8 +20,7 @@ class MathLib implements ILib {
     public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
-        this.app = new Applicator(interpreter);
-
+        this.inter = interpreter;
         this.builtinFunc = Object.keys(this.methods);
 
         for (const func of this.builtinFunc) {
@@ -33,47 +32,80 @@ class MathLib implements ILib {
         return this.methods[expr[0]].call(this, expr, env);
     }
 
+    // [math.pi]
     private evalMathPi(expr: any[], env: any[]): number {
-        return this.app.getWithNoArgs<number>(Math.PI, "math.pi", expr, env);
+        this.inter.evalArgs([], expr, env);
+
+        return Math.PI;
     }
 
+    // [math.abs, num]
     private evalMathAbs(expr: any[], env: any[]): number {
-        return this.app.callWithNumber<number>(Math.abs, "math.abs", expr, env);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+
+        return Math.abs(num);
     }
 
+    // [math.ceil, num]
     private evalMathCeil(expr: any[], env: any[]): number {
-        return this.app.callWithNumber<number>(Math.ceil, "math.ceil", expr, env);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+
+        return Math.ceil(num);
     }
 
+    // [math.floor, num]
     private evalMathFloor(expr: any[], env: any[]): number {
-        return this.app.callWithNumber<number>(Math.floor, "math.floor", expr, env);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+
+        return Math.floor(num);
     }
 
+    // [math.log, num]
     private evalMathLog(expr: any[], env: any[]): number {
-        return this.app.callWithNumber<number>(Math.log, "math.log", expr, env);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+
+        return Math.log(num);
     }
 
+    // [math.max, num1, num2]
     private evalMathMax(expr: any[], env: any[]): number {
-        return this.app.callWithNumberNumber<number>(Math.max, "math.max", expr, env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+
+        return Math.max(num1, num2);
     }
 
+    // [math.min, num1, num2]
     private evalMathMin(expr: any[], env: any[]): number {
-        return this.app.callWithNumberNumber<number>(Math.min, "math.min", expr, env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+
+        return Math.min(num1, num2);
     }
 
+    // [math.pow, num1, num2]
     private evalMathPow(expr: any[], env: any[]): number {
-        return this.app.callWithNumberNumber<number>(Math.pow, "math.pow", expr, env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+
+        return Math.pow(num1, num2);
     }
 
+    // [math.random]
     private evalMathRandom(expr: any[], env: any[]): number {
-        return this.app.callWithNoArgs<number>(Math.random, "math.random", expr, env);
+        this.inter.evalArgs([], expr, env);
+
+        return Math.random();
     }
 
+    // [math.random, num]
     private evalMathRound(expr: any[], env: any[]): number {
-        return this.app.callWithNumber<number>(Math.round, "math.round", expr, env);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+
+        return Math.round(num);
     }
 
+    // [math.sqrt, num]
     private evalMathSqrt(expr: any[], env: any[]): number {
-        return this.app.callWithNumber<number>(Math.sqrt, "math.sqrt", expr, env);
+        const [num] = this.inter.evalArgs(["number"], expr, env);
+
+        return Math.sqrt(num);
     }
 }

@@ -10,10 +10,12 @@ describe('str library', function () {
 
     describe('str.char-at', function () {
         it("empty string → ''", function () {
-            assert.strictEqual(easl.evaluate(`(str.char-at "" 0)`), "");
+            assert.strictEqual(easl.evaluate(`(str.char-at "" 0)`),
+                "");
         });
         it('index out of range → null', function () {
-            assert.strictEqual(easl.evaluate(`(str.char-at "ab" 5)`), "");
+            assert.strictEqual(easl.evaluate(`(str.char-at "ab" 5)`),
+                "");
         });
         it('index in range → char', function () {
             assert.strictEqual(easl.evaluate(`(str.char-at "ab" 1)`), "b");
@@ -117,7 +119,8 @@ describe('str library', function () {
 
     describe('str.split', function () {
         it('not a string', function () {
-            assert.strictEqual(easl.evaluate(`(str.split 42)`), "Error: Not a string: 42");
+            assert.strictEqual(easl.evaluate(`(str.split 42)`),
+                "Error: 'str.split' requires string. Given: number 42");
         });
 
         it('no separator', function () {
@@ -141,7 +144,7 @@ C" "\n")`                                 ), ["A", "B", "C"]);
         it('not a string', function () {
             assert.strictEqual(easl.evaluate(`
                 (str.to-lowercase  42)              `),
-                "Error: 'str.to-lowercase' requires a string. Given: 42");
+                "Error: 'str.to-lowercase' requires string. Given: number 42");
         });
         it('lowercase', function () {
             assert.strictEqual(easl.evaluate(`
@@ -161,7 +164,7 @@ C" "\n")`                                 ), ["A", "B", "C"]);
         it('not a string', function () {
             assert.strictEqual(easl.evaluate(`
                 (str.to-uppercase  42)              `),
-                "Error: 'str.to-uppercase' requires a string. Given: 42");
+                "Error: 'str.to-uppercase' requires string. Given: number 42");
         });
         it('lowercase', function () {
             assert.strictEqual(easl.evaluate(`

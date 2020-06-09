@@ -1,7 +1,7 @@
 "use strict";
 
 class DateLib implements ILib {
-    private readonly app: Applicator;
+    private readonly inter: Interpreter;
     private readonly methods: any = {
         "date.now"       : this.evalDateNow,
         "date.to-string" : this.evalDateToString,
@@ -11,8 +11,7 @@ class DateLib implements ILib {
     public readonly builtinHash: any = {};
 
     constructor(interpreter: Interpreter) {
-        this.app = new Applicator(interpreter);
-
+        this.inter = interpreter;
         this.builtinFunc = Object.keys(this.methods);
 
         for (const func of this.builtinFunc) {
@@ -26,13 +25,15 @@ class DateLib implements ILib {
 
     // [date.now]
     private evalDateNow(expr: any[], env: any[]): number {
-        return this.app.callWithNoArgs<number>(Date.now, "date.now", expr, env);
+        this.inter.evalArgs([], expr, env);
+
+        return Date.now();
     }
 
     // [date.to-string, date]
     private evalDateToString(expr: any[], env: any[]): string {
-        return this.app.callWithNumber<string>(
-            (n: number): string => new Date(n).toString(),
-            "date.to-string", expr, env);
+        const [date] = this.inter.evalArgs(["number"], expr, env);
+
+        return new Date(date).toString();
     }
 }

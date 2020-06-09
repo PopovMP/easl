@@ -135,6 +135,22 @@ class Interpreter {
             : !value;
     }
 
+    public evalArgs(argTypes: (string | [string, any])[], expr: any[], env: any[]): any[] {
+        const optionalCount: number = argTypes.filter( e => Array.isArray(e) ).length;
+        this.assertArity(expr, argTypes.length, optionalCount);
+
+        return argTypes.map( (argType: string | [string, any], index: number) => {
+            const isRequired =  !Array.isArray(argType);
+            const arg: any = isRequired || index + 1 < expr.length
+                ? this.evalExpr(expr[index + 1], env)
+                : argTypes[index][1];
+
+            this.assertArgType(expr[0], arg, (isRequired ? argType : argType[0]) as string);
+
+            return arg;
+        });
+    }
+
     private lookup(symbol: string, env: any[]): any {
         for (let i = env.length - 1; i > -1; i--) {
             if (symbol === env[i][0]) {
@@ -791,5 +807,47 @@ class Interpreter {
 
     private dumpExpression(expr: any[]): void {
         this.options.printer( `Expr: ${JSON.stringify(expr)}` );
+    }
+
+    private assertArity(expr: any[], argsCount: number, optionalCount: number): void {
+        const argText = (count: number) => count === 1
+            ? "1 argument"
+            : count + " arguments";
+
+        if (optionalCount === 0 && expr.length !== argsCount + 1) {
+            throw `Error: '${expr[0]}' requires ${argText(argsCount)}. Given: ${argText(expr.length - 1)}`;
+        } else if (optionalCount !== 0 &&
+            (expr.length  - 1 < argsCount - optionalCount || expr.length - 1 > argsCount)) {
+            throw `Error: '${expr[0]}' requires from ${argText(argsCount - optionalCount)} to ${argText(argsCount)}.` +
+            ` Given: ${argText(expr.length - 1)}`;
+        }
+    }
+
+    private assertArgType(name: string, arg: any, argType: string): void {
+        if ( !this.isTypeMatch(arg, argType) ) {
+            throw `Error: '${name}' requires ${argType}. Given: ${typeof arg} ${this.argToStr(arg)}`;
+        }
+    }
+
+    private isTypeMatch(arg: any, argType: string): boolean {
+        switch (argType) {
+            case "any":
+                return true;
+            case "array":
+                return Array.isArray(arg);
+            case "scalar":
+                return arg === null ||
+                    ["string", "number", "boolean"].includes(typeof arg);
+            default:
+                return typeof arg === argType;
+        }
+    }
+
+    private argToStr(arg: any): string {
+        const maxLength: number = 25;
+        const argText: string   = Printer.stringify(arg);
+        return argText.length > maxLength
+            ? argText.substring(0, maxLength) + "..."
+            : argText;
     }
 }

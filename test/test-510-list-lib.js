@@ -50,11 +50,13 @@ describe("list", function () {
     });
 
     describe("list.first", function () {
-        it("not a list: (list.first 42) → null", function () {
-            assert.strictEqual(easl.evaluate(`   (list.first 42)        `), null);
+        it("(list.first 42) → Error", function () {
+            assert.strictEqual(easl.evaluate(`   (list.first 42)        `),
+                "Error: 'list.first' requires array. Given: number 42");
         });
-        it("empty list: (list.first '()) → null", function () {
-            assert.strictEqual(easl.evaluate(`   (list.first '())        `), null);
+        it("(list.first '()) → Error", function () {
+            assert.strictEqual(easl.evaluate(`   (list.first '())        `),
+                "Error: 'list.first' index operation of an empty list");
         });
         it("non empty list of nums", function () {
             assert.strictEqual(easl.evaluate(`   (list.first '(1 2 3))   `), 1);
@@ -75,10 +77,12 @@ describe("list", function () {
 
     describe("list.get", function () {
         it("empty list", function () {
-            assert.deepStrictEqual(easl.evaluate(` (list.get '() 0)  `), null);
+            assert.deepStrictEqual(easl.evaluate(` (list.get '() 0)  `),
+                "Error: 'list.get' index operation of an empty list");
         });
         it("not list", function () {
-            assert.deepStrictEqual(easl.evaluate(` (list.get 42 0)  `), null);
+            assert.deepStrictEqual(easl.evaluate(` (list.get 42 0)  `),
+                "Error: 'list.get' requires array. Given: number 42");
         });
         it("first element of num list", function () {
             assert.deepStrictEqual(easl.evaluate(` (list.get '(1) 0)  `), 1);
@@ -93,19 +97,22 @@ describe("list", function () {
             assert.deepStrictEqual(easl.evaluate(` (list.get '(a b c) 2)  `), "c");
         });
         it("out of range", function () {
-            assert.deepStrictEqual(easl.evaluate(` (list.get '(1 2 3) 42)  `), null);
+            assert.deepStrictEqual(easl.evaluate(` (list.get '(1 2 3) 42)  `),
+                "Error: 'list.get' list index out of range. Given: 42, list length 3");
         });
     });
 
     describe("list.index", function () {
-        it("not a list: (list.index 1 2) → -1", function () {
-            assert.strictEqual(easl.evaluate(`   (list.index 1 2)          `), -1);
+        it("(list.index 1 2) → Error", function () {
+            assert.strictEqual(easl.evaluate(`   (list.index 1 2)          `),
+                "Error: 'list.index' requires array. Given: number 1");
         });
-        it("empty list: (list.index '() 1) → -1", function () {
+        it("(list.index null 1) → Error", function () {
+            assert.strictEqual(easl.evaluate(`   (list.index null 1)       `),
+                "Error: 'list.index' requires array. Given: object null");
+        });
+        it("(list.index '() 1) → -1", function () {
             assert.strictEqual(easl.evaluate(`   (list.index '() 1)         `), -1);
-        });
-        it("null:  (list.index null 1) → -1", function () {
-            assert.strictEqual(easl.evaluate(`   (list.index null 1)       `), -1);
         });
         it("existing element:  (list.index '(1 2 3) 2) → 1", function () {
             assert.strictEqual(easl.evaluate(`   (list.index '(1 2 3) 2)    `), 1);
@@ -159,7 +166,8 @@ describe("list", function () {
 
     describe("list.length", function () {
         it("not a list:  (list.length 42) → -1", function () {
-            assert.strictEqual(easl.evaluate(`   (list.length 42)        `), -1);
+            assert.strictEqual(easl.evaluate(`   (list.length 42)        `),
+                "Error: 'list.length' requires array. Given: number 42");
         });
         it("empty list:  (list.length '()) → 0", function () {
             assert.strictEqual(easl.evaluate(`   (list.length '())        `), 0);

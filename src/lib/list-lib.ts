@@ -30,7 +30,6 @@ class ListLib implements ILib {
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
-
         this.builtinFunc = Object.keys(this.methods);
 
         for (const func of this.builtinFunc) {
@@ -59,20 +58,20 @@ class ListLib implements ILib {
     }
 
     private listConcat(expr: any[], env: any): any[] {
-        const lst1: any[] = this.inter.evalExpr(expr[1], env);
-        const lst2: any[] = this.inter.evalExpr(expr[2], env);
+        const [lst1, lst2] = this.inter.evalArgs(["array", "array"], expr, env);
 
-        return Array.isArray(lst1) ? lst1.concat(lst2) : lst1;
+        return (lst1 as any[]).concat(lst2 as any[]);
     }
 
     private listFirst(expr: any[], env: any[]): any {
-        const lst: any[] = this.inter.evalExpr(expr[1], env);
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        Validator.assertArrayIndex("list.first", lst, 0);
 
-        return Array.isArray(lst) && lst.length > 0 ? lst[0] : null;
+        return (lst as any[])[0];
     }
 
     private listFlatten(expr: any[], env: any): any[] {
-        const lst: any[] = this.inter.evalExpr(expr[1], env);
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
 
         return this.listFlattenLoop(lst);
     }
@@ -85,48 +84,40 @@ class ListLib implements ILib {
     }
 
     private listGet(expr: any[], env: any): any {
-        const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const index: any = this.inter.evalExpr(expr[2], env);
+        const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
+        Validator.assertArrayIndex("list.get", lst, index);
 
-        if (Array.isArray(lst) && index >= 0 && index < lst.length) {
-            return lst[index];
-        }
-
-        return null;
+        return lst[index];
     }
 
     private listHas(expr: any[], env: any[]): boolean {
-        return this.listIndex(expr, env) > -1;
+        const [lst, elem] = this.inter.evalArgs(["array", "scalar"], expr, env);
+
+        return (lst as any[]).includes(elem);
     }
 
     private listIndex(expr: any[], env: any[]): number {
-        const lst: any[] = this.inter.evalExpr(expr[1], env);
-        const elm: any   = this.inter.evalExpr(expr[2], env);
+        const [lst, elem] = this.inter.evalArgs(["array", "scalar"], expr, env);
 
-        if (Array.isArray(lst)) {
-            return lst.indexOf(elm);
-        }
-
-        return -1;
+        return (lst as any[]).indexOf(elem);
     }
 
     private listInc(expr: any[], env: any[]): number {
-        const lst: any[]  = this.inter.evalExpr(expr[1], env);
-        const elm: number = this.inter.evalExpr(expr[2], env);
+        const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
+        Validator.assertArrayIndex("list.inc", lst, index);
 
-        return ++lst[elm];
+        return ++lst[index];
     }
 
     private listDec(expr: any[], env: any[]): number {
-        const lst: any[]  = this.inter.evalExpr(expr[1], env);
-        const elm: number = this.inter.evalExpr(expr[2], env);
+        const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
+        Validator.assertArrayIndex("list.dec", lst, index);
 
-        return --lst[elm];
+        return --lst[index];
     }
 
     private listJoin(expr: any[], env: any): string {
-        const lst: any[]  = this.inter.evalExpr(expr[1], env);
-        const sep: string = expr.length === 3 ? this.inter.evalExpr(expr[2], env) : ",";
+        const [lst, sep] = this.inter.evalArgs(["array", ["string", ","]], expr, env);
 
         return lst.join(sep);
     }
@@ -144,9 +135,9 @@ class ListLib implements ILib {
     }
 
     private listLength(expr: any[], env: any[]): number {
-        const lst: any[] = this.inter.evalExpr(expr[1], env);
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
 
-        return Array.isArray(lst) ? lst.length : -1;
+        return (lst as any[]).length;
     }
 
     private listPush(expr: any[], env: any[]): any[] {
@@ -165,7 +156,7 @@ class ListLib implements ILib {
         return [elm, lst];
     }
 
-    // (list.range start end step)
+    // [list.range size]
     private listRange(expr: any[], env: any[]): any[] {
         const start: number | any = this.inter.evalExpr(expr[1], env);
         const end:   number | any = this.inter.evalExpr(expr[2], env);
@@ -202,36 +193,34 @@ class ListLib implements ILib {
         return Array.isArray(lst) && lst.length > 1 ? lst.slice(1) : [];
     }
 
+    // [list.reverse lst]
     private listReverse(expr: any[], env: any): any[] {
-        const lst: any[]  = this.inter.evalExpr(expr[1], env);
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
 
         return lst.reverse();
     }
 
+    // [list.set lst index elem]
     private listSet(expr: any[], env: any): any[] {
-        const lst: any[]    = this.inter.evalExpr(expr[1], env);
-        const index: number = this.inter.evalExpr(expr[2], env);
-        const elm: any      = this.inter.evalExpr(expr[3], env);
+        const [lst, index, elem] = this.inter.evalArgs(["array", "number", "any"], expr, env);
+        Validator.assertArrayIndex("list.set", lst, index);
 
-        if (Array.isArray(lst) && index >= 0 && index < lst.length) {
-            lst[index] = elm;
-            return lst;
-        }
+        lst[index] = elem;
 
         return lst;
     }
 
+    // [list.slice lst begin end]
     private listSlice(expr: any[], env: any[]): any[] {
-        const lst: any[]    = this.inter.evalExpr(expr[1], env);
-        const args: number  = expr.length - 2;
-        const begin: number = args > 0 ? this.inter.evalExpr(expr[2], env) : 0;
-        const end: number   = args > 1 ? this.inter.evalExpr(expr[3], env) : lst.length;
+        const [lst, begin, end] = this.inter.evalArgs(["array", ["number", 0], ["number", Number.MAX_SAFE_INTEGER]],
+            expr, env);
 
         return lst.slice(begin, end);
     }
 
+    // [list.sort lst]
     private listSort(expr: any[], env: any[]): any[] {
-        const lst: any[]  = this.inter.evalExpr(expr[1], env);
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
 
         return lst.sort();
     }

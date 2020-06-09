@@ -70,15 +70,15 @@ describe('core-lib', function () {
     describe('/', function () {
         it('no args', function () {
             assert.strictEqual(easl.evaluate(` (/)     `),
-                "Error: '/' requires 2 arguments. Given: 0");
+                "Error: '/' requires 2 arguments. Given: 0 arguments");
         });
         it('one arg', function () {
             assert.strictEqual(easl.evaluate(` (/ 5)   `),
-                "Error: '/' requires 2 arguments. Given: 1");
+                "Error: '/' requires 2 arguments. Given: 1 argument");
         });
         it('divide by zero', function () {
             assert.strictEqual(easl.evaluate(` (/ 5 0) `),
-                "Error: Error: '/' division by zero.");
+                "Error: '/' division by zero.");
         });
         it('correct division', function () {
             assert.strictEqual(easl.evaluate(` (/ 9 3) `), 3);
@@ -270,9 +270,9 @@ describe('core-lib', function () {
         });
         it('element of string list', function () {
             assert.strictEqual(easl.evaluate(`
-               {let lst (list "42")}
-               {let elm (list.get lst 0)}
-               (to-number elm)                                          `), 42);
+               (let lst (list "42"))
+               (let elm (list.get lst 0))
+               (to-number elm)                                         `), 42);
         });
         it('true', function () {
             assert.strictEqual(easl.evaluate(`   (to-number true)      `), 1);
@@ -286,13 +286,13 @@ describe('core-lib', function () {
         it('empty string', function () {
             assert.strictEqual(easl.evaluate(`   (to-number "")        `), 0);
         });
-        it('empty list', function () {
-            assert.strictEqual(easl.evaluate(`   (to-number '())        `), 0);
+        it('empty list -> null', function () {
+            assert.strictEqual(easl.evaluate(`   (to-number '())       `), 0);
         });
-        it('non empty list', function () {
-            assert.strictEqual(easl.evaluate(`   (to-number '(1 2 3))   `), null);
+        it('non empty list -> null', function () {
+            assert.strictEqual(easl.evaluate(`   (to-number '(1 2 3))  `), null);
         });
-        it('not a number', function () {
+        it('none number string -> null', function () {
             assert.strictEqual(easl.evaluate(`   (to-number "hello")   `), null);
         });
     });

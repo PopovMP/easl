@@ -1,7 +1,6 @@
 "use strict";
 
 class StringLib implements ILib {
-    private readonly app: Applicator;
     private readonly inter: Interpreter;
     private readonly methods: any = {
         "str.char-at"       : this.strCharAt,
@@ -31,7 +30,6 @@ class StringLib implements ILib {
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
-        this.app = new Applicator(interpreter);
 
         this.builtinFunc = Object.keys(this.methods);
 
@@ -46,16 +44,16 @@ class StringLib implements ILib {
 
     // [str.char-at, str, pos]
     private strCharAt(expr: any[], env: any): string {
-        return this.app.callWithStringNumber<string>(
-            (s: string, n: number): string => s.charAt(n),
-            "str.char-at", expr, env);
+        const [str, pos] = this.inter.evalArgs(["string", "number"], expr, env);
+
+        return str.charAt(pos);
     }
 
     // [str.char-code-at, str, index]
     private strCharCodeAt(expr: any[], env: any): number {
-        const code: number = this.app.callWithStringNumber<number>(
-            (s: string, n: number): number => s.charCodeAt(n),
-            "str.char-code-at", expr, env);
+        const [str, index] = this.inter.evalArgs(["string", "number"], expr, env);
+
+        const code: number = str.charCodeAt(index);
 
         if ( isNaN(code) ) {
             throw `Error: 'str.char-code-at' index out of range.`;
@@ -81,242 +79,125 @@ class StringLib implements ILib {
 
     // [str.ends-with, str, search]
     private strEndsWith(expr: any[], env: any): boolean {
-        return this.app.callWithStringString<boolean>(
-            (s: string, t: string): boolean => s.endsWith(t),
-            "str.ends-with", expr, env);
+        const [str, search] = this.inter.evalArgs(["string", "string"], expr, env);
+
+        return (str as string).endsWith(search);
     }
 
     // [str.from-char-code, code]
     private strFromCharCode(expr: any[], env: any): string {
-        return this.app.callWithNumber<string>(
-            String.fromCharCode,
-            "str.from-char-code", expr, env);
+        const [code] = this.inter.evalArgs(["number"], expr, env);
+
+        return String.fromCharCode(code);
     }
 
-    // [str.includes, str, search, start?]
+    // [str.includes, str, search, pos=0]
     private strIncludes(expr: any[], env: any): boolean {
-        const haystack: string | any = this.inter.evalExpr(expr[1], env);
-        const needle: string | any   = this.inter.evalExpr(expr[2], env);
-        const start: number | any    = expr.length === 4
-            ? this.inter.evalExpr(expr[3], env)
-            : 0;
+        const [str, search, pos] = this.inter.evalArgs(["string", "string", ["number", 0]], expr, env);
 
-        if (typeof haystack !== "string") {
-            throw Error("Not a string: " + haystack);
-        }
-
-        if (typeof needle !== "string") {
-            throw Error("Not a string: " + needle);
-        }
-
-        if (typeof start !== "number") {
-            throw Error("Not a number: " + start);
-        }
-
-        return haystack.includes(needle, start);
+        return (str as string).includes(search, pos);
     }
 
-    // [str.index-of, str, search, start?]
+    // [str.index-of, str, search, pos=0]
     private strIndexOf(expr: any[], env: any): number {
-        const str: string | any    = this.inter.evalExpr(expr[1], env);
-        const search: string | any = this.inter.evalExpr(expr[2], env);
-        const start: number | any  = expr.length === 4
-            ? this.inter.evalExpr(expr[3], env)
-            : 0;
+        const [str, search, pos] = this.inter.evalArgs(["string", "string", ["number", 0]], expr, env);
 
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-
-        if (typeof search !== "string") {
-            throw Error("Not a string: " + search);
-        }
-
-        if (typeof start !== "number") {
-            throw Error("Not a number: " + start);
-        }
-
-        return str.indexOf(search, start);
+        return (str as string).indexOf(search, pos);
     }
 
-    // [str.last-index-of, str, search, start?]
+    // [str.last-index-of, str, search, pos=0]
     private strLastIndexOf(expr: any[], env: any): number {
-        const str: string | any    = this.inter.evalExpr(expr[1], env);
-        const search: string | any = this.inter.evalExpr(expr[2], env);
-        const start: number | any  = expr.length === 4
-            ? this.inter.evalExpr(expr[3], env)
-            : str.length;
+        const [str, search, pos] = this.inter.evalArgs(["string", "string", ["number", 0]], expr, env);
 
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-
-        if (typeof search !== "string") {
-            throw Error("Not a string: " + search);
-        }
-
-        if (typeof start !== "number") {
-            throw Error("Not a number: " + start);
-        }
-
-        return str.lastIndexOf(search, start);
+        return (str as string).lastIndexOf(search, pos);
     }
 
     // [str.length, str]
     private strLength(expr: any[], env: any): number {
-        return this.app.callWithString<number>(
-            (s: string): number => s.length,
-            "str.length", expr, env);
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+
+        return (str as string).length;
     }
 
-    // [str.match, str, pattern, modifiers?]
+    // [str.match, str, pattern, flags=""]
     private strMatch(expr: any[], env: any): string[] | null {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
-        const pattern: string | any = this.inter.evalExpr(expr[2], env);
-        const modifiers: string | any = expr.length === 4
-            ? this.inter.evalExpr(expr[3], env)
-            : "";
+        const [str, pattern, flags] = this.inter.evalArgs(["string", "string", ["string", ""]], expr, env);
 
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
+        const regExp = new RegExp(pattern, flags);
 
-        if (typeof pattern !== "string") {
-            throw Error("Not a string: " + pattern);
-        }
-
-        if (typeof modifiers !== "string") {
-            throw Error("Not a string: " + modifiers);
-        }
-
-        const regExp = new RegExp(pattern, modifiers);
-
-        return str.match(regExp);
+        return (str as string).match(regExp);
     }
 
     // [str.repeat, str, count]
     private strRepeat(expr: any[], env: any): string {
-        const str: string | any   = this.inter.evalExpr(expr[1], env);
-        const count: number | any = this.inter.evalExpr(expr[2], env);
+        const [str, count] = this.inter.evalArgs(["string", "number"], expr, env);
 
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-
-        if (typeof count !== "number") {
-            throw Error("Not a number: " + count);
-        }
-
-        return str.repeat(count);
+        return (str as string).repeat(count);
     }
 
-    // [str.replace, str, pattern, replace, modifiers?]
+    // [str.replace, str, pattern, replace, flags=""]
     private strReplace(expr: any[], env: any): string {
-        const str: string | any       = this.inter.evalExpr(expr[1], env);
-        const pattern: string | any   = this.inter.evalExpr(expr[2], env);
-        const replace: string | any   = this.inter.evalExpr(expr[3], env);
-        const modifiers: string | any = expr.length === 5
-            ? this.inter.evalExpr(expr[4], env)
-            : "";
+        const [str, pattern, replace, flags] = this.inter.evalArgs(["string", "string", "string", ["string", ""]],
+            expr, env);
 
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
+        const regExp = new RegExp(pattern, flags);
 
-        if (typeof pattern !== "string") {
-            throw Error("Not a string: " + pattern);
-        }
-
-        if (typeof replace !== "string") {
-            throw Error("Not a string: " + replace);
-        }
-
-        if (typeof modifiers !== "string") {
-            throw Error("Not a string: " + modifiers);
-        }
-
-        const regExp = new RegExp(pattern, modifiers);
-
-        return str.replace(regExp, replace);
+        return (str as string).replace(regExp, replace);
     }
 
+    // [str.split, str, sep=""]
     private strSplit(expr: any[], env: any): any[] {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
+        const [str, sep] = this.inter.evalArgs(["string", ["string", ""]], expr, env);
 
-        if (typeof str !== "string") {
-            throw Error("Not a string: " + str);
-        }
-
-        const sep: string | any = expr.length === 2
-            ? ""
-            : this.inter.evalExpr(expr[2], env);
-
-        if (typeof sep !== "string") {
-            throw Error("Not a string: " + sep);
-        }
-
-        return str.split(sep);
+        return (str as string).split(sep);
     }
 
+    // [str.starts-with, str, search]
     private strStartsWith(expr: any[], env: any): boolean {
-        return this.app.callWithStringString<boolean>(
-            (s: string, t: string): boolean => s.startsWith(t),
-            "str.starts-with", expr, env);
+        const [str, search] = this.inter.evalArgs(["string", "string"], expr, env);
+
+        return (str as string).startsWith(search);
     }
 
     // [str.sub-string, str, start, end]
     private strSubString(expr: any[], env: any): string {
-        const str: string | any = this.inter.evalExpr(expr[1], env);
-        const start: number | any = expr.length > 2
-            ? this.inter.evalExpr(expr[2], env)
-            : 0;
-        const end: number | any = expr.length === 4
-            ? this.inter.evalExpr(expr[3], env)
-            : str.length;
+        const [str, start, end] = this.inter.evalArgs(["string", "number", ["number", 0]], expr, env);
 
-        if (typeof start !== "number") {
-            throw Error("Not a number: " + start);
-        }
-
-        if (typeof end !== "number") {
-            throw Error("Not a number: " + end);
-        }
-
-        return str.substring(start, end);
+        return (str as string).substring(start, end);
     }
 
     // [str.trim, str]
     private strTrim(expr: any[], env: any): string {
-        return this.app.callWithString<string>(
-            (s: string): string => s.trim(),
-            "str.trim", expr, env);
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+
+        return (str as string).trim();
     }
 
     // [str.trim-left, str]
     private strTrimLeft(expr: any[], env: any): string {
-        return this.app.callWithString<string>(
-            (s: string): string => s.trimLeft(),
-            "str.trim-left", expr, env);
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+
+        return (str as string).trimLeft();
     }
 
     // [str.trim-right, str]
     private strTrimRight(expr: any[], env: any): string {
-        return this.app.callWithString<string>(
-            (s: string): string => s.trimRight(),
-            "str.trim-right", expr, env);
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+
+        return (str as string).trimRight();
     }
 
     // [str.to-lowercase, str]
     private strToLowercase(expr: any[], env: any): string {
-        return this.app.callWithString<string>(
-            (s: string): string => s.toLowerCase(),
-            "str.to-lowercase", expr, env);
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+
+        return (str as string).toLowerCase();
     }
 
     // [str.to-uppercase, str]
     private strToUppercase(expr: any[], env: any): string {
-        return this.app.callWithString<string>(
-            (s: string): string => s.toUpperCase(),
-            "str.to-uppercase", expr, env);
+        const [str] = this.inter.evalArgs(["string"], expr, env);
+
+        return (str as string).toUpperCase();
     }
 }
