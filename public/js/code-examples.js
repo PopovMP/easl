@@ -175,7 +175,7 @@ const examplesList = [
 ; For numbers which are multiples of both three and five print "FizzBuzz".
 
 (for i (list.range 1 100)
-    (print (or (+ (if (% i 3) "" "Fizz")
+    (print (or (~ (if (% i 3) "" "Fizz")
                   (if (% i 5) "" "Buzz"))
                i )) )
 `
@@ -515,7 +515,7 @@ const examplesList = [
                   (if value (make-person first-name value) last-name ))
             ((= action .clone)
                   (make-person first-name last-name)                  )
-            (else (+ "I am " first-name " " last-name "!")            ) )))
+            (else (~ "I am " first-name " " last-name "!")            ) )))
 
 ;; Create a person: John Smith
 (let john-smith (make-person "John" "Smith"))
@@ -754,7 +754,7 @@ const examplesList = [
                      (- (list.get buffer pointer) 1) ))
 
         ;; Output the byte at the pointer.
-        ((".") (set output (+ output
+        ((".") (set output (~ output
                             (str.from-char-code (list.get buffer pointer))) ))
 
         ;; Input a byte and store it in the byte at the pointer.

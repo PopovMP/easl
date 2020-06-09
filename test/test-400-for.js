@@ -19,7 +19,7 @@ describe('for loop', function () {
         assert.strictEqual(easl.evaluate(` 
                 {let n ""}
                 {for e (list "1" "2" "3" "4" "5")
-                    {set n (+ n e)} }
+                    {set n (~ n e)} }
                 n                                      `), "12345");
     });
 
@@ -28,7 +28,7 @@ describe('for loop', function () {
                 {let lst (list "1" "2" "3" "4" "5")}
                 {let n ""}
                 {for e lst
-                    {set n (+ n e)} }
+                    {set n (~ n e)} }
                 n                                      `), "12345");
     });
 

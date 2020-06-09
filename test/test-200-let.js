@@ -38,17 +38,17 @@ describe('let', function () {
 
 
     describe('let with strings', function () {
-        it('{let name "John"} name → "John"', function () {
-            assert.strictEqual(easl.evaluate(`   {let name "John"} name `), "John");
+        it('(let name "John") name → "John"', function () {
+            assert.strictEqual(easl.evaluate(`   (let name "John") name `), "John");
         });
 
         it('two strings', function () {
             assert.strictEqual(easl.evaluate(`   
              
-             {let first-name  "John "}
-             {let second-name "Smith"} 
+             (let first-name  "John ")
+             (let second-name "Smith")
                
-             {let full-name (+ first-name second-name)}
+             (let full-name (~ first-name second-name))
              
              full-name                                      `), "John Smith");
         });
@@ -63,10 +63,10 @@ describe('let', function () {
         it('two lists', function () {
             assert.deepStrictEqual(easl.evaluate(`   
              
-                {let lst1 '(1 2)}
-                {let lst2 '(3 4)} 
+                (let lst1 '(1 2))
+                (let lst2 '(3 4)) 
         
-                {let new-list (list.concat lst1 lst2)}
+                (let new-list (list.concat lst1 lst2))
         
                 new-list                                     `), [1, 2, 3, 4]);
         });

@@ -15,7 +15,7 @@ describe('core-lib', function () {
             assert.strictEqual(easl.evaluate(` (+ 5) `),5);
         });
         it('one string', function () {
-            assert.strictEqual(easl.evaluate(` (+ "a") `), "a");
+            assert.strictEqual(easl.evaluate(` (~ "a") `), "a");
         });
         it('two numbers', function () {
             assert.strictEqual(easl.evaluate(` (+ 2 3) `), 5);
@@ -25,18 +25,15 @@ describe('core-lib', function () {
         });
         it('number + string', function () {
             assert.strictEqual(easl.evaluate(` (+ 1 "a") `),
-                "Error: '+' requires strings or numbers. Given: 1, a");
+                "Error: '+' requires number. Given: string a");
         });
         it('string + number', function () {
-            assert.strictEqual(easl.evaluate(` (+ "a" 1) `), "a1");
+            assert.strictEqual(easl.evaluate(` (+ "a" 1) `),
+                "Error: '+' requires number. Given: string a");
         });
     });
 
     describe('-', function () {
-        it('no args', function () {
-            assert.strictEqual(easl.evaluate(` (-) `),
-                "Error: '-' requires 1 or 2 arguments. Given: 0");
-        });
         it('one arg', function () {
             assert.strictEqual(easl.evaluate(` (- 5) `), -5);
         });
@@ -46,15 +43,19 @@ describe('core-lib', function () {
         it('two args', function () {
             assert.strictEqual(easl.evaluate(` (- 8 3) `), 5);
         });
+        it('no args', function () {
+            assert.strictEqual(easl.evaluate(` (-) `),
+                "Error: '-' requires 2 arguments. Given: 0 arguments");
+        });
         it('three args', function () {
             assert.strictEqual(easl.evaluate(` (- 8 3 2) `),
-                "Error: '-' requires 1 or 2 arguments. Given: 3");
+                "Error: '-' requires 2 arguments. Given: 3 arguments");
         });
     });
 
     describe('*', function () {
         it('no args', function () {
-            assert.strictEqual(easl.evaluate(` (*)     `), 0);
+            assert.strictEqual(easl.evaluate(` (*)     `), 1);
         });
         it('one arg', function () {
             assert.strictEqual(easl.evaluate(` (* 5)   `), 5);

@@ -151,6 +151,20 @@ class Interpreter {
         });
     }
 
+    public assertType(arg: any, argType: string): boolean {
+        switch (argType) {
+            case "any":
+                return true;
+            case "array":
+                return Array.isArray(arg);
+            case "scalar":
+                return arg === null ||
+                    ["string", "number", "boolean"].includes(typeof arg);
+            default:
+                return typeof arg === argType;
+        }
+    }
+
     private lookup(symbol: string, env: any[]): any {
         for (let i = env.length - 1; i > -1; i--) {
             if (symbol === env[i][0]) {
@@ -824,22 +838,8 @@ class Interpreter {
     }
 
     private assertArgType(name: string, arg: any, argType: string): void {
-        if ( !this.isTypeMatch(arg, argType) ) {
+        if ( !this.assertType(arg, argType) ) {
             throw `Error: '${name}' requires ${argType}. Given: ${typeof arg} ${this.argToStr(arg)}`;
-        }
-    }
-
-    private isTypeMatch(arg: any, argType: string): boolean {
-        switch (argType) {
-            case "any":
-                return true;
-            case "array":
-                return Array.isArray(arg);
-            case "scalar":
-                return arg === null ||
-                    ["string", "number", "boolean"].includes(typeof arg);
-            default:
-                return typeof arg === argType;
         }
     }
 

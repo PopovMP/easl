@@ -33,8 +33,8 @@ describe('call', function () {
 
     it('call let lambda with list of args string', function () {
         assert.strictEqual(easl.evaluate(`
-            {let concat {lambda (a b c) (+ a b c)}}
-            {call concat '("hello" " " "world")}     `), "hello world");
+            (let concat (lambda (a b c) (~ a b c)))
+            (call concat '(hello " " world))     `), "hello world");
     });
 
 
@@ -69,7 +69,7 @@ describe('call', function () {
 
     it('call lambda with list of string args', function () {
         assert.strictEqual(easl.evaluate(`
-            {call {lambda (a b) (+ a b)} '("2" "3")} `), "23");
+            {call {lambda (a b) (~ a b)} '("2" "3")} `), "23");
     });
 
     it('call builtin function with numbers', function () {
@@ -79,7 +79,7 @@ describe('call', function () {
 
     it('call builtin function with strings', function () {
         assert.strictEqual(easl.evaluate(`
-            {call + '("a" "b" "c")}                  `), "abc");
+            {call ~ '("a" "b" "c")}                  `), "abc");
     });
 
     it('call or with trues', function () {
@@ -110,7 +110,7 @@ describe('call', function () {
     it('call builtin function with defined empty list', function () {
         assert.strictEqual(easl.evaluate(`
             {let lst '()}
-            {call * lst}                            `), 0);
+            {call * lst}                            `), 1);
     });
 
     it('call builtin function with defined non empty list', function () {
@@ -122,7 +122,7 @@ describe('call', function () {
     it('call builtin function with defined list of strings', function () {
         assert.strictEqual(easl.evaluate(`
             {let lst '("a" "b")}
-            {call + lst}                            `), "ab");
+            {call ~ lst}                            `), "ab");
     });
 
     it('call or with defined list of booleans 1', function () {
@@ -144,7 +144,7 @@ describe('call', function () {
             {let x "a")
             {let y "b"}
             {let lst (list x y)}
-            {call + lst}                            `), "ab");
+            {call ~ lst}                            `), "ab");
     });
 
     it('call builtin function with list of boolean vars', function () {
@@ -189,7 +189,7 @@ describe('call', function () {
 
     it('call with expression, which produces string list', function () {
         assert.strictEqual(easl.evaluate(`
-            {call + (list.add '(a b) "c")}       `), "abc");
+            {call ~ (list.add '(a b) "c")}       `), "abc");
     });
 
     it('factorial 5', function () {

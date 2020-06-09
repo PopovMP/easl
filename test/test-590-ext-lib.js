@@ -209,7 +209,7 @@ describe('ext library', function () {
         it('list concat', function () {
             const options = {extContext: this, extFunctions: {"ext.getList": () => ["a", "b", "c"]}};
 
-            assert.strictEqual(easl.evaluate(`  (call + (ext.getList))       `, options), "abc");
+            assert.strictEqual(easl.evaluate(`  (call ~ (ext.getList))       `, options), "abc");
         });
 
         it('num list by ref', function () {

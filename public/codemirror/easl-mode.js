@@ -24,7 +24,7 @@
 
         const builtinFunc = makeKeywords(
             // Core lib
-            "+ - * / = > < != >= <= % not type-of to-string to-number to-boolean print parse eval display newline " +
+            "+ - * / = > < != >= <= % ~ not type-of to-string to-number to-boolean print parse eval display newline " +
 
             // list lib
             "list.has list.length list.dec list.first list.rest list.last list.less list.add list.push list.index " +

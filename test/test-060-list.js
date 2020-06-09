@@ -28,6 +28,6 @@ describe("List declaration", function () {
     });
 
     it("non empty list with string expr", function () {
-        assert.deepStrictEqual(easl.evaluate(`(list "a" (+ "a" "b") "b")`), ["a", "ab", "b"]);
+        assert.deepStrictEqual(easl.evaluate(`(list "a" (~ "a" "b") "b")`), ["a", "ab", "b"]);
     });
 });

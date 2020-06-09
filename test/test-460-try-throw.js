@@ -53,7 +53,7 @@ describe('try throw', function () {
 
     it('try with function', function () {
         assert.strictEqual(easl.evaluate(`
-            {let catch (e) (+ "Error: " e)}
-            {try catch {throw "from throw"} }  `), "Error: from throw");
+            (let catch (e) (~ "Error: " e))
+            (try catch (throw "from throw"))  `), "Error: from throw");
     });
 });

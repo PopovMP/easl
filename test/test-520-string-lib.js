@@ -50,7 +50,7 @@ describe('str library', function () {
             assert.strictEqual(easl.evaluate(`(str.concat "a" "b" "c")`), "abc");
         });
         it('eval expressions', function () {
-            assert.strictEqual(easl.evaluate(`(str.concat ({lambda () "a"}) (+ "b" "c"))`), "abc");
+            assert.strictEqual(easl.evaluate(`(str.concat ((lambda () "a")) (~ "b" "c"))`), "abc");
         });
     });
 

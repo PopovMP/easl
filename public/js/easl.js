@@ -136,6 +136,19 @@ class Interpreter {
             return arg;
         });
     }
+    assertType(arg, argType) {
+        switch (argType) {
+            case "any":
+                return true;
+            case "array":
+                return Array.isArray(arg);
+            case "scalar":
+                return arg === null ||
+                    ["string", "number", "boolean"].includes(typeof arg);
+            default:
+                return typeof arg === argType;
+        }
+    }
     lookup(symbol, env) {
         for (let i = env.length - 1; i > -1; i--) {
             if (symbol === env[i][0]) {
@@ -653,21 +666,8 @@ class Interpreter {
         }
     }
     assertArgType(name, arg, argType) {
-        if (!this.isTypeMatch(arg, argType)) {
+        if (!this.assertType(arg, argType)) {
             throw `Error: '${name}' requires ${argType}. Given: ${typeof arg} ${this.argToStr(arg)}`;
-        }
-    }
-    isTypeMatch(arg, argType) {
-        switch (argType) {
-            case "any":
-                return true;
-            case "array":
-                return Array.isArray(arg);
-            case "scalar":
-                return arg === null ||
-                    ["string", "number", "boolean"].includes(typeof arg);
-            default:
-                return typeof arg === argType;
         }
     }
     argToStr(arg) {
@@ -1047,7 +1047,7 @@ class Validator {
 class CoreLib {
     constructor(interpreter) {
         this.methods = {
-            "+": this.evalPlus,
+            "+": this.evalAdd,
             "-": this.evalSubtract,
             "*": this.evalMultiply,
             "/": this.evalDivide,
@@ -1058,6 +1058,7 @@ class CoreLib {
             ">=": this.evalGreaterOrEqual,
             "<": this.evalLower,
             "<=": this.evalLowerOrEqual,
+            "~": this.evalAddStrings,
             "not": this.evalNot,
             "type-of": this.evalTypeOf,
             "to-string": this.evalToString,
@@ -1079,73 +1080,57 @@ class CoreLib {
     libEvalExpr(expr, env) {
         return this.methods[expr[0]].call(this, expr, env);
     }
-    evalPlus(expr, env) {
+    evalAdd(expr, env) {
         if (expr.length === 1) {
             return 0;
         }
-        const a = this.inter.evalExpr(expr[1], env);
         if (expr.length === 2) {
-            if (typeof a === "string" || typeof a === "number") {
-                return a;
-            }
-            throw `Error: '+' requires a string or a number. Given: ${a}`;
+            const [num] = this.inter.evalArgs(["number"], expr, env);
+            return num;
         }
         if (expr.length === 3) {
-            const b = this.inter.evalExpr(expr[2], env);
-            if (typeof a === "string") {
-                if (typeof b === "string") {
-                    return a + b;
-                }
-                if (typeof b === "number") {
-                    return a + b.toString();
-                }
-            }
-            if (typeof a === "number" && typeof b === "number") {
-                return a + b;
-            }
-            throw `Error: '+' requires strings or numbers. Given: ${a}, ${b}`;
+            const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+            return num1 + num2;
         }
-        return a + this.evalPlus(expr.slice(1), env);
+        let sum = 0;
+        for (let i = 1; i < expr.length; i++) {
+            const num = this.inter.evalExpr(expr[i], env);
+            if (typeof num !== "number") {
+                throw `Error: '+' requires a number. Given: ${num}`;
+            }
+            sum += num;
+        }
+        return sum;
     }
     evalSubtract(expr, env) {
-        if (expr.length === 1 || expr.length > 3) {
-            throw `Error: '-' requires 1 or 2 arguments. Given: ${expr.length - 1}`;
-        }
-        const num1 = this.inter.evalExpr(expr[1], env);
-        if (typeof num1 !== "number") {
-            throw `Error: '-' requires a number. Given: ${num1}`;
-        }
         if (expr.length === 2) {
-            return -num1;
+            const [num] = this.inter.evalArgs(["number"], expr, env);
+            return -num;
         }
-        const num2 = this.inter.evalExpr(expr[2], env);
-        if (typeof num2 !== "number") {
-            throw `Error: '-' requires a number. Given: ${num2}`;
-        }
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
         return num1 - num2;
     }
     evalMultiply(expr, env) {
         if (expr.length === 1) {
-            return 0;
-        }
-        const a = this.inter.evalExpr(expr[1], env);
-        if (typeof a !== "number") {
-            throw `Error: '*' requires a number. Given: ${a}`;
+            return 1;
         }
         if (expr.length === 2) {
-            return a;
+            const [num] = this.inter.evalArgs(["number"], expr, env);
+            return num;
         }
         if (expr.length === 3) {
-            if (a === 0) {
-                return 0;
-            }
-            const b = this.inter.evalExpr(expr[2], env);
-            if (typeof b !== "number") {
-                throw `Error: '*' requires numbers. Given: ${a}, ${b}`;
-            }
-            return a * b;
+            const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+            return num1 * num2;
         }
-        return a * this.evalMultiply(expr.slice(1), env);
+        let res = 1;
+        for (let i = 1; i < expr.length; i++) {
+            const num = this.inter.evalExpr(expr[i], env);
+            if (typeof num !== "number") {
+                throw `Error: '*' requires a number. Given: ${num}`;
+            }
+            res *= num;
+        }
+        return res;
     }
     evalDivide(expr, env) {
         const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
@@ -1160,11 +1145,15 @@ class CoreLib {
     }
     evalEqual(expr, env) {
         if (expr.length === 3) {
-            return this.inter.evalExpr(expr[1], env) === this.inter.evalExpr(expr[2], env);
+            const [obj1, obj2] = this.inter.evalArgs(["scalar", "scalar"], expr, env);
+            return obj1 === obj2;
         }
         if (expr.length > 3) {
             const first = this.inter.evalExpr(expr[1], env);
-            for (let i = 2; i < expr.length; i++) {
+            if (!this.inter.assertType(first, "scalar")) {
+                throw `Error: '*' requires a scalar value. Given: ${first}`;
+            }
+            for (let i = 1; i < expr.length; i++) {
                 if (this.inter.evalExpr(expr[i], env) !== first) {
                     return false;
                 }
@@ -1192,6 +1181,28 @@ class CoreLib {
     evalLowerOrEqual(expr, env) {
         const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
         return num1 <= num2;
+    }
+    evalAddStrings(expr, env) {
+        if (expr.length === 1) {
+            return "";
+        }
+        if (expr.length === 2) {
+            const [str] = this.inter.evalArgs(["string"], expr, env);
+            return str;
+        }
+        if (expr.length === 3) {
+            const [str1, str2] = this.inter.evalArgs(["string", "string"], expr, env);
+            return str1 + str2;
+        }
+        let sum = "";
+        for (let i = 1; i < expr.length; i++) {
+            const str = this.inter.evalExpr(expr[i], env);
+            if (typeof str !== "string") {
+                throw `Error: '~' requires a string. Given: ${str}`;
+            }
+            sum += str;
+        }
+        return sum;
     }
     evalNot(expr, env) {
         const [obj] = this.inter.evalArgs(["any"], expr, env);
