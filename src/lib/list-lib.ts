@@ -8,7 +8,7 @@ class ListLib implements ILib {
         "list.flatten" : this.listFlatten,
         "list.get"     : this.listGet,
         "list.has"     : this.listHas,
-        "list.index"   : this.listIndex,
+        "list.index-of": this.listIndex,
         "list.join"    : this.listJoin,
         "list.last"    : this.listLast,
         "list.length"  : this.listLength,
@@ -16,8 +16,8 @@ class ListLib implements ILib {
         "list.pop"     : this.listPop,
         "list.push"    : this.listPush,
         "list.range"   : this.listRange,
-        "list.reverse" : this.listReverse,
         "list.rest"    : this.listRest,
+        "list.reverse" : this.listReverse,
         "list.set"     : this.listSet,
         "list.shift"   : this.listShift,
         "list.slice"   : this.listSlice,
@@ -56,7 +56,7 @@ class ListLib implements ILib {
         return (lst as any[])[0];
     }
 
-    // [list.get lst]
+    // [list.flatten lst]
     private listFlatten(expr: any[], env: any): any[] {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
 
@@ -85,7 +85,7 @@ class ListLib implements ILib {
         return (lst as any[]).includes(elem);
     }
 
-    // [list.index lst elem]
+    // [list.index-of lst elem]
     private listIndex(expr: any[], env: any[]): number {
         const [lst, elem] = this.inter.evalArgs(["array", "scalar"], expr, env);
 

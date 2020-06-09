@@ -106,22 +106,22 @@ describe("list", function () {
     });
 
     describe("list.index", function () {
-        it("(list.index 1 2) → Error", function () {
-            assert.strictEqual(easl.evaluate(`   (list.index 1 2)          `),
-                "Error: 'list.index' requires array. Given: number 1");
+        it("(list.index-of 1 2) → Error", function () {
+            assert.strictEqual(easl.evaluate(`   (list.index-of 1 2)          `),
+                "Error: 'list.index-of' requires array. Given: number 1");
         });
-        it("(list.index null 1) → Error", function () {
-            assert.strictEqual(easl.evaluate(`   (list.index null 1)       `),
-                "Error: 'list.index' requires array. Given: object null");
+        it("(list.index-of null 1) → Error", function () {
+            assert.strictEqual(easl.evaluate(`   (list.index-of null 1)       `),
+                "Error: 'list.index-of' requires array. Given: object null");
         });
-        it("(list.index '() 1) → -1", function () {
-            assert.strictEqual(easl.evaluate(`   (list.index '() 1)         `), -1);
+        it("(list.index-of '() 1) → -1", function () {
+            assert.strictEqual(easl.evaluate(`   (list.index-of '() 1)         `), -1);
         });
-        it("existing element:  (list.index '(1 2 3) 2) → 1", function () {
-            assert.strictEqual(easl.evaluate(`   (list.index '(1 2 3) 2)    `), 1);
+        it("existing element:  (list.index-of '(1 2 3) 2) → 1", function () {
+            assert.strictEqual(easl.evaluate(`   (list.index-of '(1 2 3) 2)    `), 1);
         });
-        it("non existing element:  (list.index '(1 2) 3) → -1", function () {
-            assert.strictEqual(easl.evaluate(`   (list.index '(1 2) 3)      `), -1);
+        it("non existing element:  (list.index-of '(1 2) 3) → -1", function () {
+            assert.strictEqual(easl.evaluate(`   (list.index-of '(1 2) 3)      `), -1);
         });
     });
 

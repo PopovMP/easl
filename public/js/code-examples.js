@@ -875,14 +875,14 @@ exit :
 (let var-values (list)) ; Custom variables and labels values
 
 (let set-var (name val)
-   (let index (list.index var-names name))
+   (let index (list.index-of var-names name))
    (if (>= index 0)
        (list.set var-values index val)
        (block (list.push var-names  name)
               (list.push var-values val) )))
 
 (let get-var (name)
-   (let index (list.index var-names name))
+   (let index (list.index-of var-names name))
    (if (>= index 0)
        (list.get var-values index)
        (throw (str.concat "Variable not defined: " name)) ))
