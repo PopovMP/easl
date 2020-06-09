@@ -487,14 +487,19 @@ const examplesList = [
 (let person.new (fname lname age)
      (list fname lname age) )
 
-(let person.clone (person) (list.slice person) )
-(let person.grow  (person) (list.set person .age (+ (list.get person .age) 1)) )
-(let person.name  (person) (+ (list.get person .fname) " " (list.get person .lname)) )
+(let person.clone (person)
+    (list.slice person) )
+
+(let person.grow (person)
+    (list.set person .age (+ (list.get person .age) 1)))
+
+(let person.say (person)
+    (print (list.join person " ")))
 
 (let john (person.new "John" "Doe" 33))
-(print john)
+(person.say  john)
 (person.grow john)
-(print (list.get john .fname) "is now" (list.get john .age))
+(person.say  john)
 `
     },
 
@@ -507,15 +512,19 @@ const examplesList = [
 
 ;; Person factory
 (let make-person (first-name last-name)
-    (lambda ((action -1) (value -1))
+    (lambda ((action -1) (value ""))
         (cond
             ((= action .first-name) 
-                  (if value (make-person value  last-name) first-name))
+                  (if value
+                      (make-person value  last-name)
+                      first-name))
             ((= action .last-name)
-                  (if value (make-person first-name value) last-name ))
+                  (if value
+                      (make-person first-name value)
+                      last-name ))
             ((= action .clone)
-                  (make-person first-name last-name)                  )
-            (else (~ "I am " first-name " " last-name "!")            ) )))
+                  (make-person first-name last-name))
+            (else (~ "I am " first-name " " last-name "!")))))
 
 ;; Create a person: John Smith
 (let john-smith (make-person "John" "Smith"))
@@ -523,7 +532,7 @@ const examplesList = [
 ;; Get properties
 (print (john-smith))
 (print "My first name is:" (john-smith .first-name))
-(print "My last name is :" (john-smith .last-name ))
+(print "My last  name is:" (john-smith .last-name ))
 
 ;; When set a property, the factory returns a new object
 (let john-doe (john-smith .last-name "Doe"))
@@ -535,7 +544,6 @@ const examplesList = [
 ;; Change the first name of the clone
 (let jane-doe (john-doe-clone .first-name "Jane"))
 (print (jane-doe))
-
 `   },
 
     {
