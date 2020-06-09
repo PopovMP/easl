@@ -17,7 +17,7 @@
     (let res '())
 
     (while (< i len)
-        (list.add res (fn (list.get lst i) i))
+        (list.push res (fn (list.get lst i) i))
         (inc i) )
 
     res)
@@ -40,7 +40,7 @@
     (while (< i len)
         (let e (list.get lst i))
         (if (fn e i)
-            (list.add res e))
+            (list.push res e))
         (inc i) )
 
     res)

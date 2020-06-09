@@ -1349,26 +1349,26 @@ class ExtLib {
 class ListLib {
     constructor(interpreter) {
         this.methods = {
-            "list.add": this.listAdd,
             "list.concat": this.listConcat,
-            "list.dec": this.listDec,
             "list.first": this.listFirst,
             "list.flatten": this.listFlatten,
             "list.get": this.listGet,
             "list.has": this.listHas,
-            "list.inc": this.listInc,
             "list.index": this.listIndex,
             "list.join": this.listJoin,
             "list.last": this.listLast,
             "list.length": this.listLength,
             "list.less": this.listLess,
+            "list.pop": this.listPop,
             "list.push": this.listPush,
             "list.range": this.listRange,
             "list.reverse": this.listReverse,
             "list.rest": this.listRest,
             "list.set": this.listSet,
+            "list.shift": this.listShift,
             "list.slice": this.listSlice,
             "list.sort": this.listSort,
+            "list.unshift": this.listUnshift,
         };
         this.builtinHash = {};
         this.inter = interpreter;
@@ -1379,18 +1379,6 @@ class ListLib {
     }
     libEvalExpr(expr, env) {
         return this.methods[expr[0]].call(this, expr, env);
-    }
-    listAdd(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        const elm = this.inter.evalExpr(expr[2], env);
-        if (Array.isArray(lst)) {
-            lst.push(elm);
-            return lst;
-        }
-        if (lst === null) {
-            return [elm];
-        }
-        return [lst, elm];
     }
     listConcat(expr, env) {
         const [lst1, lst2] = this.inter.evalArgs(["array", "array"], expr, env);
@@ -1423,43 +1411,34 @@ class ListLib {
         const [lst, elem] = this.inter.evalArgs(["array", "scalar"], expr, env);
         return lst.indexOf(elem);
     }
-    listInc(expr, env) {
-        const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
-        Validator.assertArrayIndex("list.inc", lst, index);
-        return ++lst[index];
-    }
-    listDec(expr, env) {
-        const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
-        Validator.assertArrayIndex("list.dec", lst, index);
-        return --lst[index];
-    }
     listJoin(expr, env) {
         const [lst, sep] = this.inter.evalArgs(["array", ["string", ","]], expr, env);
         return lst.join(sep);
     }
     listLast(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        return Array.isArray(lst) && lst.length > 0 ? lst[lst.length - 1] : null;
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        return lst.length > 0
+            ? lst[lst.length - 1]
+            : null;
     }
     listLess(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        return Array.isArray(lst) && lst.length > 1 ? lst.slice(0, lst.length - 1) : [];
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        return lst.length > 1
+            ? lst.slice(0, lst.length - 1)
+            : [];
+    }
+    listPop(expr, env) {
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        return lst.pop();
     }
     listLength(expr, env) {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
         return lst.length;
     }
     listPush(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
-        const elm = this.inter.evalExpr(expr[2], env);
-        if (Array.isArray(lst)) {
-            lst.unshift(elm);
-            return lst;
-        }
-        if (lst === null) {
-            return [elm];
-        }
-        return [elm, lst];
+        const [lst, elem] = this.inter.evalArgs(["array", "any"], expr, env);
+        lst.push(elem);
+        return lst;
     }
     listRange(expr, env) {
         const [size, from] = this.inter.evalArgs(["number", ["number", 0]], expr, env);
@@ -1479,6 +1458,10 @@ class ListLib {
         lst[index] = elem;
         return lst;
     }
+    listShift(expr, env) {
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        return lst.shift();
+    }
     listSlice(expr, env) {
         const [lst, begin, end] = this.inter.evalArgs(["array", ["number", 0], ["number", Number.MAX_SAFE_INTEGER]], expr, env);
         return lst.slice(begin, end);
@@ -1486,6 +1469,11 @@ class ListLib {
     listSort(expr, env) {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
         return lst.sort();
+    }
+    listUnshift(expr, env) {
+        const [lst, elem] = this.inter.evalArgs(["array", "any"], expr, env);
+        lst.unshift(elem);
+        return lst;
     }
 }
 class MathLib {

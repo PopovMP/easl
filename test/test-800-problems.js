@@ -30,7 +30,7 @@ describe('problems', function () {
                     {let loop (lst i)
                         {if (= i length)
                             lst
-                            (loop (list.add lst (next (list.last lst))) (+ i 1)) }}
+                            (loop (list.push lst (next (list.last lst))) (+ i 1)) }}
                     (loop (list start) 1) }
             
               {make-sequence 3 10 {λ (cur) (* cur 3)} )

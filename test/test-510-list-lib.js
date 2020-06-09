@@ -8,35 +8,38 @@ const easl = new Easl();
 
 describe("list", function () {
 
-    describe("list.add", function () {
-        it("not a list:  (list.add 1 2) → '(1, 2)", function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add 1 2)            `), [1, 2]);
+    describe("list.push", function () {
+        it("(list.push 1 2) → Error", function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.push 1 2)            `),
+                "Error: 'list.push' requires array. Given: number 1");
         });
-        it("not a list:  (list.add '1' '2') ", function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add "1" "2")        `), ["1", "2"]);
+        it('(list.push "1" "2") Error', function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.push "1" "2")        `),
+                "Error: 'list.push' requires array. Given: string 1");
         });
-        it("empty list:  (list.add '() 2) → [2]", function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add '() 2)           `), [2]);
+        it("empty list:  (list.push '() 2) → [2]", function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.push '() 2)           `), [2]);
         });
-        it(`empty list:  (list.add '() "2") → ["2"]`, function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add '() "2")         `), ["2"]);
+        it(`empty list:  (list.push '() "2") → ["2"]`, function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.push '() "2")         `), ["2"]);
         });
-        it(`null:  (list.add null "2") → '("2")`, function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add null "2")       `), ["2"]);
+        it(`null:  (list.push null "2") → Error`, function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.push null "2")       `),
+                "Error: 'list.push' requires array. Given: object null");
         });
-        it("non empty list:  (list.add '(1 2) 3) → '(1, 2, 3)", function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add '(1 2) 3)         `), [1, 2, 3]);
+        it("non empty list:  (list.push '(1 2) 3) → '(1, 2, 3)", function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.push '(1 2) 3)         `), [1, 2, 3]);
         });
-        it(`non empty list:  (list.add '("1" "2") "3") → '("1", "2", "3")`, function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.add (list "1" "2") "3")   `), ["1", "2", "3"]);
+        it(`non empty list:  (list.push '("1" "2") "3") → '("1", "2", "3")`, function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.push (list "1" "2") "3")   `), ["1", "2", "3"]);
         });
-        it(`two list:  (list.add '("1" "2") '("3" "4")) → '("1", "2", '("3", "4"))`, function () {
-            assert.deepStrictEqual(easl.evaluate(`(list.add (list "1" "2") (list "3" "4"))`), ["1", "2", ["3", "4"]]);
+        it(`two list:  (list.push '("1" "2") '("3" "4")) → '("1", "2", '("3", "4"))`, function () {
+            assert.deepStrictEqual(easl.evaluate(`(list.push (list "1" "2") (list "3" "4"))`), ["1", "2", ["3", "4"]]);
         });
         it("it mutates the list", function () {
             assert.deepStrictEqual(easl.evaluate(`  
              {let lst '(1 2)}
-             (list.add lst 3)    `), [1, 2, 3]);
+             (list.push lst 3)    `), [1, 2, 3]);
         });
     });
 
@@ -135,8 +138,9 @@ describe("list", function () {
     });
 
     describe("list.last", function () {
-        it("not a list:  (list.last 42) → null", function () {
-            assert.strictEqual(easl.evaluate(`   (list.last 42)        `), null);
+        it("not a list:  (list.last 42) → Error", function () {
+            assert.strictEqual(easl.evaluate(`   (list.last 42)        `),
+                "Error: 'list.last' requires array. Given: number 42");
         });
         it("empty list:  (list.last '()) → null", function () {
             assert.strictEqual(easl.evaluate(`   (list.last '())        `), null);
@@ -148,7 +152,8 @@ describe("list", function () {
 
     describe("list.less", function () {
         it("not a list:  (list.less 42) → '()", function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.less 42)        `), []);
+            assert.deepStrictEqual(easl.evaluate(`   (list.less 42)        `),
+                "Error: 'list.less' requires array. Given: number 42");
         });
         it("empty list:  (list.less '()) → '()", function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.less '())        `), []);
@@ -177,26 +182,28 @@ describe("list", function () {
         });
     });
 
-    describe("list.push", function () {
-        it("not a list:  (list.push 2 1) → '(1, 2)", function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.push 2 1)            `), [1, 2]);
+    describe("list.unshift", function () {
+        it("not a list:  (list.unshift 2 1) → '(1, 2)", function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.unshift 2 1)            `),
+                "Error: 'list.unshift' requires array. Given: number 2");
         });
-        it("empty list:  (list.push '() 1) → '(1)", function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.push '() 1)           `), [1]);
+        it("empty list:  (list.unshift '() 1) → '(1)", function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.unshift '() 1)           `), [1]);
         });
-        it("null:  (list.push null 1) → '(1)", function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.push null 1)         `), [1]);
+        it("null:  (list.unshift null 1) → '(1)", function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.unshift null 1)         `),
+                "Error: 'list.unshift' requires array. Given: object null");
         });
-        it("non empty list:  (list.push '(2 3) 1) → '(1, 2, 3)", function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.push '(2 3) 1)        `), [1, 2, 3]);
+        it("non empty list:  (list.unshift '(2 3) 1) → '(1, 2, 3)", function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.unshift '(2 3) 1)        `), [1, 2, 3]);
         });
-        it("two list:  (list.push '(3 4) '(1 2)) → '('(1, 2), 3, 4)", function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.push '(3 4) '(1 2))    `), [[1, 2], 3, 4]);
+        it("two list:  (list.unshift '(3 4) '(1 2)) → '('(1, 2), 3, 4)", function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.unshift '(3 4) '(1 2))    `), [[1, 2], 3, 4]);
         });
         it("it mutates the list", function () {
             assert.deepStrictEqual(easl.evaluate(`  
              {let lst '(2 3)}
-             (list.push lst 1)
+             (list.unshift lst 1)
              lst                  `), [1, 2, 3]);
         });
     });

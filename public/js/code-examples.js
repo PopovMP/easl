@@ -18,18 +18,18 @@ const examplesList = [
 (let lst (list 0 1 2 3))
 
 (print "A list of numbers         :" lst)
-(print "The list length           :" (list.length lst))
-(print "The first element         :" (list.first  lst))
-(print "All but first one         :" (list.rest   lst))
-(print "The last element          :" (list.last   lst))
-(print "All but the last one      :" (list.less   lst))
-(print "The third element         :" (list.get    lst 2))
-(print "From the 2nd to the 4th   :" (list.slice  lst 1 4))
-(print "Add an element to the end :" (list.add    lst 4))
-(print "Set 1st element on place  :" (list.set    lst 0 2))
-(print "Push one elem in front    :" (list.push   lst 3))
-(print "Get a sorted list         :" (list.sort   lst))
-
+(print "The list length           :" (list.length  lst    ))
+(print "The first element         :" (list.first   lst    ))
+(print "All but first one         :" (list.rest    lst    ))
+(print "The last element          :" (list.last    lst    ))
+(print "All but the last one      :" (list.less    lst    ))
+(print "The third element         :" (list.get     lst 2  ))
+(print "From the 2nd to the 4th   :" (list.slice   lst 1 4))
+(print "Add an element to the end :" (list.push    lst 4  ))
+(print "Set 1st element on place  :" (list.set     lst 0 2))
+(print "Push one elem in front    :" (list.unshift lst 3  ))
+(print "Get a sorted list         :" (list.sort    lst    ))
+(print "List range                :" (list.range   10 1   ))
 `
     },
 
@@ -42,7 +42,7 @@ const examplesList = [
 (repeat 10                              ; cycle 10 times
     (let random  (* (math.random) 100)) ; generate a random number between 0 and 100
     (let rounded (math.round random)  ) ; round the number
-    (list.add lst rounded) )            ; add the number to the end of the list
+    (list.push lst rounded) )            ; add the number to the end of the list
     
 (print lst) ; print the list
 `
@@ -108,7 +108,7 @@ const examplesList = [
     (let res '())
 
     (while (< i len)
-         (list.add res (func (list.get lst i)))
+         (list.push res (func (list.get lst i)))
          (inc i) )
 
     res)
@@ -196,7 +196,7 @@ const examplesList = [
     (let loop (n res)
         (if (<= n max)
             (loop (+ n 1)
-                  (list.add res
+                  (list.push res
                             (get-fizz-buzz n)))
             res ))
     (loop 1 '()) )
@@ -300,7 +300,7 @@ const examplesList = [
              (if (= (list.first rest) (list.last acc))
                  (loop (list.rest rest) acc)
                  (loop (list.rest rest)
-                       (list.add acc (list.first rest))) )
+                       (list.push acc (list.first rest))) )
              acc ))
     (loop (list.rest lst) (list (list.first lst))) )
 
@@ -432,7 +432,7 @@ const examplesList = [
 (let make-sequence-rec (first length next)
     (let loop (i res)
         (if (< i length)
-            (loop (+ i 1) (list.add res (next (list.last res))))
+            (loop (+ i 1) (list.push res (next (list.last res))))
             res ))
     (loop 1 (list first)) )
 
@@ -440,7 +440,7 @@ const examplesList = [
 (let make-sequence-iter (first length next)
  	(let res (list first))
     (repeat (- length 1)
-    	(list.add res (next (list.last res))) )
+    	(list.push res (next (list.last res))) )
     res )
 
 (print "Recursive:" (make-sequence-rec  3 10 curr))
@@ -722,7 +722,7 @@ const examplesList = [
 (let code-list '())
 (for ch (str.split code-text)
    (if (list.has (list "+" "-" ">" "<" "," "." "[" "]") ch)
-       (list.add code-list ch) ))
+       (list.push code-list ch) ))
 
 (let code-index  0)
 (let code-len (list.length code-list))
@@ -746,7 +746,7 @@ const examplesList = [
         ;; Increment the pointer.
         ((">") (inc pointer)
              (if (= (list.length buffer) pointer)
-                 (list.add buffer 0) ))
+                 (list.push buffer 0) ))
 
         ;; Decrement the pointer.
         (("<") (if (> pointer 0)
@@ -878,8 +878,8 @@ exit :
    (let index (list.index var-names name))
    (if (>= index 0)
        (list.set var-values index val)
-       (block (list.add var-names  name)
-              (list.add var-values val) )))
+       (block (list.push var-names  name)
+              (list.push var-values val) )))
 
 (let get-var (name)
    (let index (list.index var-names name))
@@ -1089,14 +1089,14 @@ exit :
     (let non-empty-parts (list))
     (for element split-parts
         (unless (equal element "")
-                (list.add non-empty-parts element) ))
+                (list.push non-empty-parts element) ))
 
     (let command (list))
     (for par-txt non-empty-parts
         (let param (parse-param par-txt))
         (if (or (equal (type-of param) "string")
                 (equal (type-of param) "number"))
-            (list.add command param) ))
+            (list.push command param) ))
 
     command )
 
@@ -1113,7 +1113,7 @@ exit :
         (if (> (str.length code-line) 0) (block
             (let command (parse-code-line code-line))
             (if (> (list.length command) 0)
-                (list.add command-list command) ) )) )
+                (list.push command-list command) ) )) )
 
     command-list )
 
