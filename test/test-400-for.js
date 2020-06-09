@@ -52,9 +52,9 @@ describe('for loop', function () {
 
     it('the range can be an expression', function () {
         assert.strictEqual(easl.evaluate(` 
-                {let n 0 }
-                {for e (list.range 1 5)
-                    {set n (+ n e)} }
+                (let n 0)
+                (for e (list.range 5 1)
+                    (set n (+ n e)))
                 n                                      `), 15);
     });
 

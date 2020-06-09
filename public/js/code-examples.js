@@ -2,8 +2,8 @@
 
 const examplesList = [
     {
-        name: "Print numbers from 1 to 10",
-        code: `;; Print numbers from 1 to 10
+        name: "Print numbers from 1 to 5",
+        code: `;; Print numbers from 1 to 5
 
 (let n 1)       ; initialize a counter
 (while (< n 6)  ; evaluate the condition
@@ -113,7 +113,7 @@ const examplesList = [
 
     res)
 
-(let range (list.range 1 10))         ; Make a range form 1 to 10
+(let range (list.range 10 1))         ; Make a range form 1 to 10
 (let lst (map (λ (e) (* e 2)) range)) ; Double each element 
 (print lst)
 `
@@ -132,7 +132,7 @@ const examplesList = [
          (inc i) ))
 
 (let printer (λ (e) (print e)))
-(let range   (list.range 1 10))
+(let range   (list.range 10 1))
 
 (for-each printer range)
 `
@@ -174,7 +174,7 @@ const examplesList = [
 ; for the multiples of five print "Buzz".
 ; For numbers which are multiples of both three and five print "FizzBuzz".
 
-(for i (list.range 1 100)
+(for i (list.range 100 1)
     (print (or (~ (if (% i 3) "" "Fizz")
                   (if (% i 5) "" "Buzz"))
                i )) )
@@ -218,7 +218,7 @@ const examplesList = [
         (else (loop 2 1 1)) ))
 
 ;; Print
-(for i (list.range 1 10)
+(for i (list.range 10 1)
     (print "fibo" i ":" (fibo i)) )
 `   },
 
@@ -258,7 +258,7 @@ const examplesList = [
     (print "Using:" method "Res:" res "Time:" time) )
 
 ;; Make a list from 1 to N inclusively
-(let lst-nums (list.range 1 100)) ;; Try with 10, 100, or 1000 elements
+(let lst-nums (list.range 100 1)) ;; Try with 10, 100, or 1000 elements
 
 (let rounds 1000)
 

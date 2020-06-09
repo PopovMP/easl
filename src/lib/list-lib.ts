@@ -156,35 +156,11 @@ class ListLib implements ILib {
         return [elm, lst];
     }
 
-    // [list.range size]
+    // [list.range size from=0]
     private listRange(expr: any[], env: any[]): any[] {
-        const start: number | any = this.inter.evalExpr(expr[1], env);
-        const end:   number | any = this.inter.evalExpr(expr[2], env);
-        if (typeof start !== "number") throw "Error: The 'start' parameter must be a number in 'list.range'.";
-        if (typeof end   !== "number") throw "Error: The 'end' parameter must be a number in 'list.range'.";
-        if (start === end)  return [start];
+        const [size, from] = this.inter.evalArgs(["number", ["number", 0]], expr, env);
 
-        const step: number | any = expr.length === 4
-            ? this.inter.evalExpr(expr[3], env)
-            : end > start ? 1 : -1;
-
-        if (typeof step !== "number") throw "Error: The 'step' parameter must be a number in 'list.range'.";
-        if (step === 0)               throw "Error: The 'step' parameter cannot be 0 in 'list.range'.";
-        if (step > 0 && end < start)  throw "Error: The 'step' parameter cannot be lower than 0 in a rising list in 'list.range'.";
-        if (step < 0 && end > start)  throw "Error: The 'step' parameter cannot be higher than 0 in a lowering list 'list.range'.";
-
-        const res: number[] = [];
-        if (end > start) {
-            for (let i: number = start; i <= end; i += step) {
-                res.push(i);
-            }
-        } else {
-            for (let i: number = start; i >= end; i += step) {
-                res.push(i);
-            }
-        }
-
-        return res;
+        return [...Array(size).keys()].map(e => e + from);
     }
 
     private listRest(expr: any[], env: any[]): any[] {

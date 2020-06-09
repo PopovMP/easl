@@ -194,12 +194,12 @@ describe('call', function () {
 
     it('factorial 5', function () {
         assert.strictEqual(easl.evaluate(`
-            {call * (list.range 1 5)}               `), 120);
+            {call * (list.range 5 1)}               `), 120);
     });
 
     it('factorial 5 - 2', function () {
         assert.strictEqual(easl.evaluate(`
-            {let lst (list.range 1 5)}
-            {call * lst}                            `), 120);
+            (let lst (list.range 5 1))
+            (call * lst)                            `), 120);
     });
 });
