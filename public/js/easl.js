@@ -1059,6 +1059,7 @@ class CoreLib {
             "<": this.evalLower,
             "<=": this.evalLowerOrEqual,
             "~": this.evalAddStrings,
+            "equal": this.evalScalarEqual,
             "not": this.evalNot,
             "type-of": this.evalTypeOf,
             "to-string": this.evalToString,
@@ -1145,13 +1146,13 @@ class CoreLib {
     }
     evalEqual(expr, env) {
         if (expr.length === 3) {
-            const [obj1, obj2] = this.inter.evalArgs(["scalar", "scalar"], expr, env);
-            return obj1 === obj2;
+            const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+            return num1 === num2;
         }
         if (expr.length > 3) {
             const first = this.inter.evalExpr(expr[1], env);
-            if (!this.inter.assertType(first, "scalar")) {
-                throw `Error: '*' requires a scalar value. Given: ${first}`;
+            if (!this.inter.assertType(first, "number")) {
+                throw `Error: '=' requires number. Given: ${first}`;
             }
             for (let i = 1; i < expr.length; i++) {
                 if (this.inter.evalExpr(expr[i], env) !== first) {
@@ -1203,6 +1204,25 @@ class CoreLib {
             sum += str;
         }
         return sum;
+    }
+    evalScalarEqual(expr, env) {
+        if (expr.length === 3) {
+            const [obj1, obj2] = this.inter.evalArgs(["scalar", "scalar"], expr, env);
+            return obj1 === obj2;
+        }
+        if (expr.length > 3) {
+            const first = this.inter.evalExpr(expr[1], env);
+            if (!this.inter.assertType(first, "scalar")) {
+                throw `Error: 'equal' requires a scalar value. Given: ${first}`;
+            }
+            for (let i = 1; i < expr.length; i++) {
+                if (this.inter.evalExpr(expr[i], env) !== first) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        throw "Error: '=' requires 2 or more arguments. Given: " + (expr.length - 1);
     }
     evalNot(expr, env) {
         const [obj] = this.inter.evalArgs(["any"], expr, env);

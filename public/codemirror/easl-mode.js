@@ -5,7 +5,7 @@
     "use strict";
 
     CodeMirror.defineMode("easl-mode", function (options) {
-        const BUILTIN = "builtin", COMMENT = "comment", STRING = "string", CHARACTER = "string-2",
+        const BUILTIN = "builtin", COMMENT = "comment", STRING = "string",
             ATOM = "atom", NUMBER = "number", BRACKET = "bracket", KEYWORD = "keyword", VAR = "variable";
         const INDENT_WORD_SKIP   = options.indentUnit || 4;
         const NORMAL_INDENT_UNIT = options.indentUnit || 4;
@@ -24,7 +24,7 @@
 
         const builtinFunc = makeKeywords(
             // Core lib
-            "+ - * / = > < != >= <= % ~ not type-of to-string to-number to-boolean print parse eval display newline " +
+            "+ - * / = > < != >= <= % ~ equal not type-of to-string to-number to-boolean print parse eval display newline " +
 
             // list lib
             "list.has list.length list.dec list.first list.rest list.last list.less list.add list.push list.index " +
@@ -113,7 +113,7 @@
                 if (state.mode !== "string" && stream.eatSpace()) {
                     return null;
                 }
-                let returnType = null;
+                let returnType;
 
                 switch (state.mode) {
                     case "string": // multi-line string parsing mode

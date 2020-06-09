@@ -507,7 +507,7 @@ const examplesList = [
 
 ;; Person factory
 (let make-person (first-name last-name)
-    (lambda ((action null) (value null))
+    (lambda ((action -1) (value -1))
         (cond
             ((= action .first-name) 
                   (if value (make-person value  last-name) first-name))
@@ -761,7 +761,7 @@ const examplesList = [
         ((",") (let input (list.get input-list input-index))
              (inc input-index)
              (list.set buffer pointer
-                     (if (= (type-of input) "string")
+                     (if (equal (type-of input) "string")
                          (str.char-code-at input 0)
                          0 )))
 
@@ -888,7 +888,7 @@ exit :
         (else (set-var name val)) ))
 
 (let get-val (ref)
-    (if (= (type-of ref) "number")
+    (if (equal (type-of ref) "number")
         ref
         (case ref
             ((EAX AH AL AX) AX)
@@ -1066,12 +1066,12 @@ exit :
                   (else (throw (+ "Wrong command: " command " at IP: " IP)))   ))))
 
 (let eval-label (label command)
-    (if (= command ":")
+    (if (equal command ":")
         (set-var label IP) ))
 
 (let parse-param (par-txt)
     (let num-param (to-number par-txt))
-    (if (= (type-of num-param) "number")
+    (if (equal (type-of num-param) "number")
         num-param
         par-txt ))
 
@@ -1080,14 +1080,14 @@ exit :
     (let split-parts (str.split code-line " "))
     (let non-empty-parts (list))
     (for element split-parts
-        (unless (= element "")
+        (unless (equal element "")
                 (list.add non-empty-parts element) ))
 
     (let command (list))
     (for par-txt non-empty-parts
         (let param (parse-param par-txt))
-        (if (or (= (type-of param) "string")
-                (= (type-of param) "number"))
+        (if (or (equal (type-of param) "string")
+                (equal (type-of param) "number"))
             (list.add command param) ))
 
     command )
