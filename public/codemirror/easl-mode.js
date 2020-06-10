@@ -27,7 +27,7 @@
             "+ - * / = > < != >= <= % ~ equal not type-of to-string to-number to-boolean print parse eval display newline " +
 
             // list lib
-            "list.has list.length list.first list.rest list.last list.less list.pop list.push list.index-of " +
+            "list.has list.length list.first list.rest list.last list.less list.make list.pop list.push list.index-of " +
             "list.range list.reverse list.get list.set list.slice list.flatten list.join list.shift list.sort list.unshift " +
 
             // math lib

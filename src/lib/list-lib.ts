@@ -13,6 +13,7 @@ class ListLib implements ILib {
         "list.last"    : this.listLast,
         "list.length"  : this.listLength,
         "list.less"    : this.listLess,
+        "list.make"    : this.listMake,
         "list.pop"     : this.listPop,
         "list.push"    : this.listPush,
         "list.range"   : this.listRange,
@@ -30,8 +31,8 @@ class ListLib implements ILib {
 
     constructor(interpreter: Interpreter) {
         this.inter = interpreter;
-        this.builtinFunc = Object.keys(this.methods);
 
+        this.builtinFunc = Object.keys(this.methods);
         for (const func of this.builtinFunc) {
             this.builtinHash[func] = true;
         }
@@ -75,7 +76,7 @@ class ListLib implements ILib {
         const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
         Validator.assertArrayIndex("list.get", lst, index);
 
-        return lst[index];
+        return (lst as any[])[index];
     }
 
     // [list.has lst elem]
@@ -131,6 +132,13 @@ class ListLib implements ILib {
         return (lst as any[]).length;
     }
 
+    // [list.make size fill=0]
+    private listMake(expr: any[], env: any[]): any[] {
+        const [size, fill] = this.inter.evalArgs(["number", ["any", 0]], expr, env);
+
+        return [ ...Array(size).keys() ].map( () => fill );
+    }
+
     // [list.push lst elem]
     private listPush(expr: any[], env: any[]): any[] {
         const [lst, elem] = this.inter.evalArgs(["array", "any"], expr, env);
@@ -144,7 +152,7 @@ class ListLib implements ILib {
     private listRange(expr: any[], env: any[]): any[] {
         const [size, from] = this.inter.evalArgs(["number", ["number", 0]], expr, env);
 
-        return [...Array(size).keys()].map(e => e + from);
+        return [ ...Array(size).keys() ].map( (e: number) => e + from );
     }
 
     // [list.rest lst]
@@ -158,7 +166,7 @@ class ListLib implements ILib {
     private listReverse(expr: any[], env: any): any[] {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
 
-        return lst.reverse();
+        return (lst as any[]).reverse();
     }
 
     // [list.set lst index elem]
@@ -166,7 +174,7 @@ class ListLib implements ILib {
         const [lst, index, elem] = this.inter.evalArgs(["array", "number", "any"], expr, env);
         Validator.assertArrayIndex("list.set", lst, index);
 
-        lst[index] = elem;
+        (lst as any[])[index] = elem;
 
         return lst;
     }
@@ -178,19 +186,18 @@ class ListLib implements ILib {
         return (lst as any[]).shift();
     }
 
-    // [list.slice lst begin end]
+    // [list.slice lst begin=0 end=length]
     private listSlice(expr: any[], env: any[]): any[] {
-        const [lst, begin, end] = this.inter.evalArgs(["array", ["number", 0], ["number", Number.MAX_SAFE_INTEGER]],
-            expr, env);
+        const [lst, begin, end] = this.inter.evalArgs(["array", ["number", 0], ["number", 0]], expr, env);
 
-        return (lst as any[]).slice(begin, end);
+        return (lst as any[]).slice(begin, end || lst.length);
     }
 
     // [list.sort lst]
     private listSort(expr: any[], env: any[]): any[] {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
 
-        return lst.sort();
+        return (lst as any[]).sort();
     }
 
     // [list.unshift lst obj]

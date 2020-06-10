@@ -105,7 +105,7 @@ describe("list", function () {
         });
     });
 
-    describe("list.index", function () {
+    describe("list.index-of", function () {
         it("(list.index-of 1 2) → Error", function () {
             assert.strictEqual(easl.evaluate(`   (list.index-of 1 2)          `),
                 "Error: 'list.index-of' requires array. Given: number 1");
@@ -205,6 +205,15 @@ describe("list", function () {
              {let lst '(2 3)}
              (list.unshift lst 1)
              lst                  `), [1, 2, 3]);
+        });
+    });
+
+    describe("list.make", function () {
+        it("(list.make 3) → '(0 0 0)", function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.make 3)   `), [0, 0, 0]);
+        });
+        it("(list.make 3 1) → '(1 1 1)", function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.make 3 1)  `), [1, 1, 1]);
         });
     });
 

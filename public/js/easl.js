@@ -1344,6 +1344,7 @@ class ListLib {
             "list.last": this.listLast,
             "list.length": this.listLength,
             "list.less": this.listLess,
+            "list.make": this.listMake,
             "list.pop": this.listPop,
             "list.push": this.listPush,
             "list.range": this.listRange,
@@ -1420,6 +1421,10 @@ class ListLib {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
         return lst.length;
     }
+    listMake(expr, env) {
+        const [size, fill] = this.inter.evalArgs(["number", ["any", 0]], expr, env);
+        return [...Array(size).keys()].map(() => fill);
+    }
     listPush(expr, env) {
         const [lst, elem] = this.inter.evalArgs(["array", "any"], expr, env);
         lst.push(elem);
@@ -1427,7 +1432,7 @@ class ListLib {
     }
     listRange(expr, env) {
         const [size, from] = this.inter.evalArgs(["number", ["number", 0]], expr, env);
-        return [...Array(size).keys()].map(e => e + from);
+        return [...Array(size).keys()].map((e) => e + from);
     }
     listRest(expr, env) {
         const lst = this.inter.evalExpr(expr[1], env);
@@ -1448,8 +1453,8 @@ class ListLib {
         return lst.shift();
     }
     listSlice(expr, env) {
-        const [lst, begin, end] = this.inter.evalArgs(["array", ["number", 0], ["number", Number.MAX_SAFE_INTEGER]], expr, env);
-        return lst.slice(begin, end);
+        const [lst, begin, end] = this.inter.evalArgs(["array", ["number", 0], ["number", 0]], expr, env);
+        return lst.slice(begin, end || lst.length);
     }
     listSort(expr, env) {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
