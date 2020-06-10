@@ -551,24 +551,26 @@ const examplesList = [
         code: `;; OOP - Lambda Calculus style
 
 (let Person (name age)
+   (let grow (λ ()
+                (inc age)))
    (λ (f)
-      (f name age (λ ()
-                     (inc age) )) ))
+      (f name age grow)))
 
-(let name (name) name )
-(let age  (name age) age )
-(let who  (name age) (print name age))
+(let name (name age grow) name)
+(let age  (name age grow) age)
 (let grow (name age grow) (grow))
+(let who  (name age grow) (print name age))
 
 (let john (Person "John" 33))
 (john grow)
-; (john who)
 
 (let Singer (person)
-   (λ (f)
-      (f person (λ (song) (print "🎵" song))) ))
+    (let sing (λ (song)
+                 (print "🎵" song)))
+    (λ (f)
+       (f person sing)))
 
-(let person (person) person)
+(let person (person sing) person)
 (let sing   (person sing) sing)
 
 (let johnSinger (Singer john))
