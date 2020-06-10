@@ -282,8 +282,9 @@ class Interpreter {
         const symbol = expr[1];
         for (let i = env.length - 1; i > -1; i--) {
             const cellKey = env[i][0];
-            if (cellKey === "#scope")
+            if (cellKey === "#scope") {
                 throw `Error: 'delete' unbound identifier: ${symbol}`;
+            }
             if (cellKey === symbol) {
                 env.splice(i, 1);
                 return;
@@ -334,13 +335,20 @@ class Interpreter {
         return value;
     }
     evalBlock(expr, env) {
-        if (expr.length === 1)
+        if (expr.length === 1) {
             throw "Error: Empty block";
+        }
         env.push(["#scope", "block"]);
+        const scopeStart = env.length - 1;
         const res = expr.length === 2
             ? this.evalExpr(expr[1], env)
             : this.evalExprList(expr.slice(1), env);
-        this.clearEnv("#scope", env);
+        if (Array.isArray(res) && res[0] === "closure") {
+            env.splice(scopeStart, 1);
+        }
+        else {
+            this.clearEnv("#scope", env);
+        }
         return res;
     }
     clearEnv(tag, env) {

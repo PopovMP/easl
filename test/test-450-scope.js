@@ -33,10 +33,10 @@ describe('scope', function () {
 
     it("The vars defined in the function body doesn't override vars defined after the function", function () {
         assert.strictEqual(easl.evaluate(`
-            {let fun ()
-               {let a 2}
-               {let b a} }
-            {let a 1}
+            (let fun ()
+               (let a 2)
+               (let b a))
+            (let a 1)
             (fun) 
             a                    `), 1);
     });

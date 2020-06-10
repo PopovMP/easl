@@ -11,7 +11,18 @@ describe("lambda - closure", function () {
         assert.strictEqual(easl.evaluate(`
         (((lambda (a)
             (lambda (b)
-               (+ a b))) 1) 2)
+               (+ a b)))
+          1) 2)
+                                            `), 3);
+    });
+
+    it("closure - variable defined in body", function () {
+        assert.strictEqual(easl.evaluate(`
+        (((lambda ()
+            (let a 1)
+            (lambda (b)
+               (+ a b))))
+          2)
                                             `), 3);
     });
 });
