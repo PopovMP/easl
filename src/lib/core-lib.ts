@@ -45,7 +45,7 @@ class CoreLib implements ILib {
         return this.methods[expr[0]].call(this, expr, env);
     }
 
-    // [+, num1, num2, ..., num_n]
+    // [+, num1, num2, ...]
     private evalAdd(expr: any[], env: any[]): any {
         if (expr.length === 1) {
             return 0;
@@ -88,7 +88,7 @@ class CoreLib implements ILib {
         return num1 - num2;
     }
 
-    // [*, num1, num2, ..., num_n]
+    // [*, num1, num2, ...]
     private evalMultiply(expr: any[], env: any[]): any {
         if (expr.length === 1) {
             return 1;
@@ -165,69 +165,50 @@ class CoreLib implements ILib {
         throw "Error: '=' requires 2 or more arguments. Given: " + (expr.length - 1);
     }
 
-    // [>, obj1, obj2]
+    // [>, num1, num2]
     private evalGreater(expr: any[], env: any[]): boolean {
         const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
 
         return num1 > num2;
     }
 
-    // [<, obj1, obj2]
+    // [<, num1, num2]
     private evalLower(expr: any[], env: any[]): boolean {
         const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
 
         return num1 < num2;
     }
 
-    // [!=, obj1, obj2]
+    // [!=, num1, num2]
     private evalNotEqual(expr: any[], env: any[]): any {
-        const [val1, val2] = this.inter.evalArgs(["number", "number"], expr, env);
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
 
-        return val1 !== val2;
+        return num1 !== num2;
     }
 
-    // [>=, obj1, obj2]
+    // [>=, num1, num2]
     private evalGreaterOrEqual(expr: any[], env: any[]): any {
         const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
 
         return num1 >= num2;
     }
 
-    // [<=, obj1, obj2]
+    // [<=, num1, num2]
     private evalLowerOrEqual(expr: any[], env: any[]): any {
         const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
 
         return num1 <= num2;
     }
 
-    // [~, str1, str2, ...]
+    // [~, obj1, obj2, ...]
     private evalAddStrings(expr: any[], env: any[]): string {
-        if (expr.length === 1) {
-            return "";
-        }
+        let text: string = "";
 
-        if (expr.length === 2) {
-            const [str] = this.inter.evalArgs(["string"], expr, env);
-
-            return str;
-        }
-
-        if (expr.length === 3) {
-            const [str1, str2] = this.inter.evalArgs(["string", "string"], expr, env);
-
-            return str1 + str2;
-        }
-
-        let sum: string = "";
         for (let i: number = 1; i < expr.length; i++) {
-            const str = this.inter.evalExpr(expr[i], env);
-            if (typeof str !== "string") {
-                throw `Error: '~' requires a string. Given: ${str}`;
-            }
-            sum += str;
+            text += Printer.stringify( this.inter.evalExpr(expr[i], env) );
         }
 
-        return sum;
+        return text;
     }
 
     // [equal, obj1, obj2, ...]

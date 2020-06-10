@@ -1172,8 +1172,8 @@ class CoreLib {
         return num1 < num2;
     }
     evalNotEqual(expr, env) {
-        const [val1, val2] = this.inter.evalArgs(["number", "number"], expr, env);
-        return val1 !== val2;
+        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        return num1 !== num2;
     }
     evalGreaterOrEqual(expr, env) {
         const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
@@ -1184,26 +1184,11 @@ class CoreLib {
         return num1 <= num2;
     }
     evalAddStrings(expr, env) {
-        if (expr.length === 1) {
-            return "";
-        }
-        if (expr.length === 2) {
-            const [str] = this.inter.evalArgs(["string"], expr, env);
-            return str;
-        }
-        if (expr.length === 3) {
-            const [str1, str2] = this.inter.evalArgs(["string", "string"], expr, env);
-            return str1 + str2;
-        }
-        let sum = "";
+        let text = "";
         for (let i = 1; i < expr.length; i++) {
-            const str = this.inter.evalExpr(expr[i], env);
-            if (typeof str !== "string") {
-                throw `Error: '~' requires a string. Given: ${str}`;
-            }
-            sum += str;
+            text += Printer.stringify(this.inter.evalExpr(expr[i], env));
         }
-        return sum;
+        return text;
     }
     evalScalarEqual(expr, env) {
         if (expr.length === 3) {
@@ -1656,14 +1641,9 @@ class StringLib {
         return code;
     }
     strConcat(expr, env) {
-        const args = this.inter.mapExprList(expr.slice(1), env);
-        const strList = args.map((e) => {
-            return String(e);
-        });
-        const res = strList.reduce((acc, e) => {
-            return acc + e;
-        }, "");
-        return res;
+        return this.inter.mapExprList(expr.slice(1), env)
+            .map(Printer.stringify)
+            .reduce((acc, e) => acc + e);
     }
     strEndsWith(expr, env) {
         const [str, search] = this.inter.evalArgs(["string", "string"], expr, env);

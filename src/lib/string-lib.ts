@@ -64,17 +64,9 @@ class StringLib implements ILib {
 
     // [str.concat, str1, str2, ..., strN]
     private strConcat(expr: any[], env: any): string {
-        const args: any[] = this.inter.mapExprList(expr.slice(1), env);
-
-        const strList: string[] = args.map((e: any) => {
-            return String(e);
-        });
-
-        const res: string = strList.reduce((acc: string, e: string) => {
-            return acc + e;
-        }, "");
-
-        return res;
+        return this.inter.mapExprList( expr.slice(1), env )
+            .map( Printer.stringify )
+            .reduce( (acc: string, e: string) => acc + e );
     }
 
     // [str.ends-with, str, search]

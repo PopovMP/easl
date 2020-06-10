@@ -47,7 +47,7 @@
         );
 
         const indentKeys = makeKeywords(
-            "function let lambda if cond case for while do try block"
+            "let lambda if cond case for repeat while do try block when"
         );
 
         const tests = {
@@ -189,7 +189,9 @@
             },
 
             indent: function (state) {
-                if (state.indentStack == null) return state.indentation;
+                if (state.indentStack == null) {
+                    return state.indentation;
+                }
                 return state.indentStack.indent;
             },
 
