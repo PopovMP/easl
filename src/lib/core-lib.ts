@@ -75,7 +75,7 @@ class CoreLib implements ILib {
         return sum;
     }
 
-    // (- num1 num20
+    // (- num1 num2)
     private evalSubtract(expr: any[], env: any[]): number {
         if (expr.length === 2) {
             const [num] = <[number]>this.inter.evalArgs(["number"], expr, env);

@@ -8,19 +8,19 @@ const easl = new Easl();
 
 describe('when', function () {
 
-    it('{when true} → "Error: Empty when block"', function () {
-        assert.strictEqual(easl.evaluate("{when true}"), "Error: Empty 'when' block");
+    it("(when true) → Error", function () {
+        assert.strictEqual(easl.evaluate("(when true)"), "Error: Empty 'when' body");
     });
 
-    it('(when true 1) → undefined', function () {
+    it("(when true 1) → undefined", function () {
         assert.strictEqual(easl.evaluate("(when true 1)"), undefined);
     });
 
-    it('(when true 1 2) → undefined', function () {
+    it("(when true 1 2) → undefined", function () {
         assert.strictEqual(easl.evaluate("(when true 1 2)"), undefined);
     });
 
-    it('nested when', function () {
+    it("nested when", function () {
         assert.strictEqual(easl.evaluate(`
             (let res 0)
             (when true

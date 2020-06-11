@@ -104,9 +104,9 @@ class Interpreter {
             case "let": return this.evalLet(expr, env);
             case "repeat": return this.evalRepeat(expr, env);
             case "set": return this.evalSet(expr, env);
-            case "when": return this.evalWhen(expr, env);
-            case "unless": return this.evalUnless(expr, env);
             case "throw": return this.evalThrow(expr, env);
+            case "unless": return this.evalUnless(expr, env);
+            case "when": return this.evalWhen(expr, env);
             case "while": return this.evalWhile(expr, env);
         }
         for (const lib of this.libs) {
@@ -200,9 +200,7 @@ class Interpreter {
             ? this.lookup(proc, env)
             : this.evalExpr(proc, env);
         if (typeof closure === "string") {
-            const newExpr = expr.slice();
-            newExpr[0] = closure;
-            return this.evalExpr(newExpr, env);
+            return this.evalExpr([closure, ...expr.slice(1)], env);
         }
         if (!Array.isArray(closure)) {
             throw `Error: Improper function: ${closure}`;
@@ -381,7 +379,7 @@ class Interpreter {
             throw "Error: Empty 'unless'";
         }
         if (expr.length === 2) {
-            throw "Error: Empty 'unless' block";
+            throw "Error: Empty 'unless' body";
         }
         if (this.isTruthy(this.evalExpr(expr[1], env))) {
             return;
@@ -400,7 +398,7 @@ class Interpreter {
             throw "Error: Empty 'when'";
         }
         if (expr.length === 2) {
-            throw "Error: Empty 'when' block";
+            throw "Error: Empty 'when' body";
         }
         if (!this.isTruthy(this.evalExpr(expr[1], env))) {
             return;
@@ -418,7 +416,7 @@ class Interpreter {
         const clauses = expr.slice(1);
         env.push(["#scope", "cond"]);
         for (const clause of clauses) {
-            if (clause[0] === "else" || this.evalExpr(clause[0], env)) {
+            if (clause[0] === "else" || this.isTruthy(this.evalExpr(clause[0], env))) {
                 const res = clause.length === 2
                     ? this.evalExpr(clause[1], env)
                     : this.evalExprList(clause.slice(1), env);
@@ -478,7 +476,7 @@ class Interpreter {
     evalWhile(expr, env) {
         const testExpr = expr[1];
         const loopBody = expr.slice(2);
-        while (this.evalExpr(testExpr, env)) {
+        while (this.isTruthy(this.evalExpr(testExpr, env))) {
             env.push(["#scope", "while"]);
             for (const bodyExpr of loopBody) {
                 const res = this.evalExpr(bodyExpr, env);
@@ -507,12 +505,11 @@ class Interpreter {
                 }
             }
             this.clearEnv("#scope", env);
-        } while (this.evalExpr(testExpr, env));
+        } while (this.isTruthy(this.evalExpr(testExpr, env)));
     }
     evalEnum(expr, env) {
         for (let i = 1; i < expr.length; i++) {
-            const symbol = expr[i];
-            this.addToEnv(symbol, i - 1, env);
+            this.addToEnv(expr[i], i - 1, env);
         }
     }
     evalRepeat(expr, env) {
@@ -565,10 +562,14 @@ class Interpreter {
         }
         if (expr.length === 3) {
             const val = this.evalExpr(expr[1], env);
-            return this.isTruthy(val) ? this.evalExpr(expr[2], env) : val;
+            return this.isTruthy(val)
+                ? this.evalExpr(expr[2], env)
+                : val;
         }
         const val = this.evalExpr(expr[1], env);
-        return this.isTruthy(val) ? this.evalAnd(expr.slice(1), env) : val;
+        return this.isTruthy(val)
+            ? this.evalAnd(expr.slice(1), env)
+            : val;
     }
     evalQuote(expr) {
         if (expr.length !== 2) {
