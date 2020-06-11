@@ -45,20 +45,20 @@ class CoreLib implements ILib {
         return this.methods[expr[0]].call(this, expr, env);
     }
 
-    // [+, num1, num2, ...]
+    // (+ num1 num2 ...)
     private evalAdd(expr: any[], env: any[]): any {
         if (expr.length === 1) {
             return 0;
         }
 
         if (expr.length === 2) {
-            const [num] = this.inter.evalArgs(["number"], expr, env);
+            const [num] = <[number]>this.inter.evalArgs(["number"], expr, env);
 
             return num;
         }
 
         if (expr.length === 3) {
-            const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+            const [num1, num2] = <[number, number]>this.inter.evalArgs(["number", "number"], expr, env);
 
             return num1 + num2;
         }
@@ -75,33 +75,33 @@ class CoreLib implements ILib {
         return sum;
     }
 
-    // [-, num1, num2]
+    // (- num1 num20
     private evalSubtract(expr: any[], env: any[]): number {
         if (expr.length === 2) {
-            const [num] = this.inter.evalArgs(["number"], expr, env);
+            const [num] = <[number]>this.inter.evalArgs(["number"], expr, env);
 
             return -num;
         }
 
-        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        const [num1, num2] = <[number, number]>this.inter.evalArgs(["number", "number"], expr, env);
 
         return num1 - num2;
     }
 
-    // [*, num1, num2, ...]
+    // (* num1 num2 ...)
     private evalMultiply(expr: any[], env: any[]): any {
         if (expr.length === 1) {
             return 1;
         }
 
         if (expr.length === 2) {
-            const [num] = this.inter.evalArgs(["number"], expr, env);
+            const [num] = <[number]>this.inter.evalArgs(["number"], expr, env);
 
             return num;
         }
 
         if (expr.length === 3) {
-            const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+            const [num1, num2] = <[number, number]>this.inter.evalArgs(["number", "number"], expr, env);
 
             return num1 * num2;
         }
@@ -120,9 +120,9 @@ class CoreLib implements ILib {
         return res;
     }
 
-    // [/, num1, num2]
+    // (/ num1 num2)
     private evalDivide(expr: any[], env: any[]): any {
-        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        const [num1, num2] = <[number, number]>this.inter.evalArgs(["number", "number"], expr, env);
 
         if (num2 === 0) {
             throw "Error: '/' division by zero.";
@@ -131,17 +131,17 @@ class CoreLib implements ILib {
         return num1 / num2;
     }
 
-    // [%, num1, num2]
+    // (% num1 num2)
     private evalModulo(expr: any[], env: any[]): any {
-        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        const [num1, num2] = <[number, number]>this.inter.evalArgs(["number", "number"], expr, env);
 
         return num1 % num2;
     }
 
-    // [=, num1, num2, ...]
+    // (= num1 num2 ...)
     private evalEqual(expr: any[], env: any[]): any {
         if (expr.length === 3) {
-            const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+            const [num1, num2] = <[number, number]>this.inter.evalArgs(["number", "number"], expr, env);
 
             return num1 === num2;
         }
@@ -165,42 +165,42 @@ class CoreLib implements ILib {
         throw "Error: '=' requires 2 or more arguments. Given: " + (expr.length - 1);
     }
 
-    // [>, num1, num2]
+    // (> num1 num2)
     private evalGreater(expr: any[], env: any[]): boolean {
-        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        const [num1, num2] = <[number, number]>this.inter.evalArgs(["number", "number"], expr, env);
 
         return num1 > num2;
     }
 
-    // [<, num1, num2]
+    // (< num1 num2)
     private evalLower(expr: any[], env: any[]): boolean {
-        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        const [num1, num2] = <[number, number]>this.inter.evalArgs(["number", "number"], expr, env);
 
         return num1 < num2;
     }
 
-    // [!=, num1, num2]
+    // (!= num1 num2)
     private evalNotEqual(expr: any[], env: any[]): any {
-        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        const [num1, num2] = <[number, number]>this.inter.evalArgs(["number", "number"], expr, env);
 
         return num1 !== num2;
     }
 
-    // [>=, num1, num2]
+    // (>= num1 num2)
     private evalGreaterOrEqual(expr: any[], env: any[]): any {
-        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        const [num1, num2] = <[number, number]>this.inter.evalArgs(["number", "number"], expr, env);
 
         return num1 >= num2;
     }
 
-    // [<=, num1, num2]
+    // (<= num1 num2)
     private evalLowerOrEqual(expr: any[], env: any[]): any {
-        const [num1, num2] = this.inter.evalArgs(["number", "number"], expr, env);
+        const [num1, num2] = <[number, number]>this.inter.evalArgs(["number", "number"], expr, env);
 
         return num1 <= num2;
     }
 
-    // [~, obj1, obj2, ...]
+    // (~ obj1 obj2 ...)
     private evalAddStrings(expr: any[], env: any[]): string {
         let text: string = "";
 
@@ -211,10 +211,10 @@ class CoreLib implements ILib {
         return text;
     }
 
-    // [equal, obj1, obj2, ...]
+    // (equal obj1 obj2 ...)
     private evalScalarEqual(expr: any[], env: any[]): any {
         if (expr.length === 3) {
-            const [obj1, obj2] = this.inter.evalArgs(["scalar", "scalar"], expr, env);
+            const [obj1, obj2] = <[any, any]>this.inter.evalArgs(["scalar", "scalar"], expr, env);
 
             return obj1 === obj2;
         }
@@ -238,14 +238,14 @@ class CoreLib implements ILib {
         throw "Error: '=' requires 2 or more arguments. Given: " + (expr.length - 1);
     }
 
-    // [not, obj]
+    // (not obj)
     private evalNot(expr: any[], env: any[]): boolean {
-        const [obj] = this.inter.evalArgs(["any"], expr, env);
+        const [obj] = <[any]>this.inter.evalArgs(["any"], expr, env);
 
         return Array.isArray(obj) && obj.length === 0 || !Boolean(obj);
     }
 
-    // [type-of, obj]
+    // (type-of obj)
    private evalTypeOf(expr: any[], env: any[]): string {
         if (expr.length !== 2) {
             throw "Error: 'type-of' requires 1 argument. Given: " + (expr.length - 1);
@@ -286,37 +286,37 @@ class CoreLib implements ILib {
         return typeof value;
     }
 
-    // [to-boolean, obj]
+    // (to-boolean obj)
     private evalToBoolean(expr: any[], env: any[]): boolean {
-        const [obj] = this.inter.evalArgs(["any"], expr, env);
+        const [obj] = <[any]>this.inter.evalArgs(["any"], expr, env);
 
         return  Array.isArray(obj) && obj.length === 0 ? false : Boolean(obj);
     }
 
-    // [to-number, obj]
+    // (to-number obj)
     private evalToNumber(expr: any[], env: any[]): number | null {
-        const [obj] = this.inter.evalArgs(["any"], expr, env);
+        const [obj] = <[any]>this.inter.evalArgs(["any"], expr, env);
         const number = Number(obj);
 
         return isNaN(number) ? null : number;
     }
 
-    // [parse, src]
+    // (parse src)
     private evalParse(expr: any[], env: any[]): any[] {
-        const [scr] = this.inter.evalArgs(["string"], expr, env);
+        const [scr] = <[string]>this.inter.evalArgs(["string"], expr, env);
         const parser: Parser = new Parser();
 
         return parser.parse(scr);
     }
 
-    // [eval, src]
+    // (eval src)
     private evalEval(expr: any[], env: any[]): any[] {
-        const [obj] = this.inter.evalArgs(["any"], expr, env);
+        const [obj] = <[any]>this.inter.evalArgs(["any"], expr, env);
 
         return this.inter.evalCodeTree(obj, this.inter.options);
     }
 
-    // [print, expr1, expr2, ...]
+    // (print expr1 expr2 ...)
     private evalPrint(expr: any[], env: any[]): void {
         if (expr.length === 1) {
             this.inter.options.printer("\r\n");
@@ -331,23 +331,23 @@ class CoreLib implements ILib {
         }
     }
 
-    // [display, expr]
+    // (display expr)
     private evalDisplay(expr: any[], env: any[]): void {
-        const [obj] = this.inter.evalArgs(["any"], expr, env);
+        const [obj] = <[any]>this.inter.evalArgs(["any"], expr, env);
 
         this.inter.options.printer( Printer.stringify(obj) );
     }
 
-    // [newline]
+    // (newline)
     private evalNewline(expr: any[], env: any[]): void {
         this.inter.evalArgs([], expr, env);
 
         this.inter.options.printer("\r\n");
     }
 
-    // [to-string, expr]
+    // to-string expr)
     private evalToString(expr: any[], env: any[]): string {
-        const [obj] = this.inter.evalArgs(["any"], expr, env);
+        const [obj] = <[any]>this.inter.evalArgs(["any"], expr, env);
 
         return Printer.stringify(obj);
     }

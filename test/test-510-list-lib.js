@@ -246,8 +246,9 @@ describe("list", function () {
     });
 
     describe("list.rest", function () {
-        it("not a list:  (list.rest 42) → null", function () {
-            assert.deepStrictEqual(easl.evaluate(`   (list.rest 42)        `), []);
+        it("not a list:  (list.rest 42) → Error", function () {
+            assert.deepStrictEqual(easl.evaluate(`   (list.rest 42)        `),
+                "Error: 'list.rest' requires array. Given: number 42");
         });
         it("empty list:  (list.rest (list)) → null", function () {
             assert.deepStrictEqual(easl.evaluate(`   (list.rest '())        `), []);

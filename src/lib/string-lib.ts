@@ -42,16 +42,16 @@ class StringLib implements ILib {
         return this.methods[expr[0]].call(this, expr, env);
     }
 
-    // [str.char-at, str, pos]
+    // (str.char-at str pos)
     private strCharAt(expr: any[], env: any): string {
-        const [str, pos] = this.inter.evalArgs(["string", "number"], expr, env);
+        const [str, pos] = <[string, number]>this.inter.evalArgs(["string", "number"], expr, env);
 
         return str.charAt(pos);
     }
 
-    // [str.char-code-at, str, index]
+    // (str.char-code-at str index)
     private strCharCodeAt(expr: any[], env: any): number {
-        const [str, index] = this.inter.evalArgs(["string", "number"], expr, env);
+        const [str, index] = <[string, number]>this.inter.evalArgs(["string", "number"], expr, env);
 
         const code: number = str.charCodeAt(index);
 
@@ -62,134 +62,139 @@ class StringLib implements ILib {
         return code;
     }
 
-    // [str.concat, str1, str2, ..., strN]
+    // (str.concat str1 str2 ...)
     private strConcat(expr: any[], env: any): string {
         return this.inter.mapExprList( expr.slice(1), env )
             .map( Printer.stringify )
             .reduce( (acc: string, e: string) => acc + e );
     }
 
-    // [str.ends-with, str, search]
+    // (str.ends-with str search)
     private strEndsWith(expr: any[], env: any): boolean {
-        const [str, search] = this.inter.evalArgs(["string", "string"], expr, env);
+        const [str, search] = <[string, string]>this.inter.evalArgs(["string", "string"], expr, env);
 
-        return (str as string).endsWith(search);
+        return str.endsWith(search);
     }
 
-    // [str.from-char-code, code]
+    // (str.from-char-code code)
     private strFromCharCode(expr: any[], env: any): string {
-        const [code] = this.inter.evalArgs(["number"], expr, env);
+        const [code] = <[number]>this.inter.evalArgs(["number"], expr, env);
 
         return String.fromCharCode(code);
     }
 
-    // [str.includes, str, search, pos=0]
+    // (str.includes str search pos=0)
     private strIncludes(expr: any[], env: any): boolean {
-        const [str, search, pos] = this.inter.evalArgs(["string", "string", ["number", 0]], expr, env);
+        const [str, search, pos] = <[string, string, number]>
+            this.inter.evalArgs(["string", "string", ["number", 0]], expr, env);
 
-        return (str as string).includes(search, pos);
+        return str.includes(search, pos);
     }
 
-    // [str.index-of, str, search, pos=0]
+    // (str.index-of str search pos=0)
     private strIndexOf(expr: any[], env: any): number {
-        const [str, search, pos] = this.inter.evalArgs(["string", "string", ["number", 0]], expr, env);
+        const [str, search, pos] = <[string, string, number]>
+            this.inter.evalArgs(["string", "string", ["number", 0]], expr, env);
 
-        return (str as string).indexOf(search, pos);
+        return str.indexOf(search, pos);
     }
 
-    // [str.last-index-of, str, search, pos=0]
+    // (str.last-index-of str search pos=0)
     private strLastIndexOf(expr: any[], env: any): number {
-        const [str, search, pos] = this.inter.evalArgs(["string", "string", ["number", 0]], expr, env);
+        const [str, search, pos] = <[string, string, number]>
+            this.inter.evalArgs(["string", "string", ["number", 0]], expr, env);
 
-        return (str as string).lastIndexOf(search, pos);
+        return str.lastIndexOf(search, pos);
     }
 
-    // [str.length, str]
+    // (str.length str)
     private strLength(expr: any[], env: any): number {
         const [str] = this.inter.evalArgs(["string"], expr, env);
 
-        return (str as string).length;
+        return str.length;
     }
 
-    // [str.match, str, pattern, flags=""]
+    // (str.match str pattern flags="")
     private strMatch(expr: any[], env: any): string[] | null {
-        const [str, pattern, flags] = this.inter.evalArgs(["string", "string", ["string", ""]], expr, env);
+        const [str, pattern, flags] = <[string, string, string]>
+            this.inter.evalArgs(["string", "string", ["string", ""]], expr, env);
 
         const regExp = new RegExp(pattern, flags);
 
-        return (str as string).match(regExp);
+        return str.match(regExp);
     }
 
-    // [str.repeat, str, count]
+    // (str.repeat str count)
     private strRepeat(expr: any[], env: any): string {
-        const [str, count] = this.inter.evalArgs(["string", "number"], expr, env);
+        const [str, count] = <[string, number]>this.inter.evalArgs(["string", "number"], expr, env);
 
-        return (str as string).repeat(count);
+        return str.repeat(count);
     }
 
-    // [str.replace, str, pattern, replace, flags=""]
+    // (str.replace str pattern replace flags="")
     private strReplace(expr: any[], env: any): string {
-        const [str, pattern, replace, flags] = this.inter.evalArgs(["string", "string", "string", ["string", ""]],
-            expr, env);
+        const [str, pattern, replace, flags] = <[string, string, string, string]>
+            this.inter.evalArgs(["string", "string", "string", ["string", ""]], expr, env);
 
         const regExp = new RegExp(pattern, flags);
 
-        return (str as string).replace(regExp, replace);
+        return str.replace(regExp, replace);
     }
 
-    // [str.split, str, sep=""]
+    // (str.split str sep="")
     private strSplit(expr: any[], env: any): any[] {
-        const [str, sep] = this.inter.evalArgs(["string", ["string", ""]], expr, env);
+        const [str, sep] = <[string, string]>this.inter.evalArgs(["string", ["string", ""]], expr, env);
 
-        return (str as string).split(sep);
+        return str.split(sep);
     }
 
-    // [str.starts-with, str, search]
+    // (str.starts-with str search)
     private strStartsWith(expr: any[], env: any): boolean {
-        const [str, search] = this.inter.evalArgs(["string", "string"], expr, env);
+        const [str, search] = <[string ,string]>this.inter.evalArgs(["string", "string"], expr, env);
 
-        return (str as string).startsWith(search);
+        return str.startsWith(search);
     }
 
-    // [str.sub-string, str, start, end]
+    // (str.sub-string str start end)
     private strSubString(expr: any[], env: any): string {
-        const [str, start, end] = this.inter.evalArgs(["string", "number", ["number", 0]], expr, env);
+        const [str, start, end] = <[string, number, number]>
+            this.inter.evalArgs(["string", "number", ["number", 0]], expr, env);
 
-        return (str as string).substring(start, end);
+        return str.substring(start, end);
     }
 
-    // [str.trim, str]
+    // (str.trim str)
     private strTrim(expr: any[], env: any): string {
-        const [str] = this.inter.evalArgs(["string"], expr, env);
+        const [str] = <[string]>this.inter.evalArgs(["string"], expr, env);
 
-        return (str as string).trim();
+        return str.trim();
     }
 
-    // [str.trim-left, str]
+    // (str.trim-left str)
     private strTrimLeft(expr: any[], env: any): string {
-        const [str] = this.inter.evalArgs(["string"], expr, env);
+        const [str] = <[string]>this.inter.evalArgs(["string"], expr, env);
 
-        return (str as string).trimLeft();
+        return str.trimLeft();
     }
 
-    // [str.trim-right, str]
+    // (str.trim-right str)
     private strTrimRight(expr: any[], env: any): string {
-        const [str] = this.inter.evalArgs(["string"], expr, env);
+        const [str] = <[string]>this.inter.evalArgs(["string"], expr, env);
 
-        return (str as string).trimRight();
+        return str.trimRight();
     }
 
-    // [str.to-lowercase, str]
+    // (str.to-lowercase str)
     private strToLowercase(expr: any[], env: any): string {
-        const [str] = this.inter.evalArgs(["string"], expr, env);
+        const [str] = <[string]>this.inter.evalArgs(["string"], expr, env);
 
-        return (str as string).toLowerCase();
+        return str.toLowerCase();
     }
 
-    // [str.to-uppercase, str]
+    // (str.to-uppercase str)
     private strToUppercase(expr: any[], env: any): string {
-        const [str] = this.inter.evalArgs(["string"], expr, env);
+        const [str] = <[string]>this.inter.evalArgs(["string"], expr, env);
 
-        return (str as string).toUpperCase();
+        return str.toUpperCase();
     }
 }

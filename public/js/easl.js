@@ -1362,6 +1362,7 @@ class ListLib {
             "list.shift": this.listShift,
             "list.slice": this.listSlice,
             "list.sort": this.listSort,
+            "list.splice": this.listSplice,
             "list.unshift": this.listUnshift,
         };
         this.builtinHash = {};
@@ -1385,12 +1386,10 @@ class ListLib {
     }
     listFlatten(expr, env) {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
-        return this.listFlattenLoop(lst);
-    }
-    listFlattenLoop(arr) {
-        return arr.reduce((flat, toFlatten) => flat.concat(Array.isArray(toFlatten)
-            ? this.listFlattenLoop(toFlatten)
-            : toFlatten), []);
+        const flatten = (arr) => arr.reduce((acc, elem) => acc.concat(Array.isArray(elem)
+            ? flatten(elem)
+            : elem), []);
+        return flatten(lst);
     }
     listGet(expr, env) {
         const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
@@ -1411,15 +1410,11 @@ class ListLib {
     }
     listLast(expr, env) {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
-        return lst.length > 0
-            ? lst[lst.length - 1]
-            : null;
+        return lst.length > 0 ? lst[lst.length - 1] : null;
     }
     listLess(expr, env) {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
-        return lst.length > 1
-            ? lst.slice(0, lst.length - 1)
-            : [];
+        return lst.length > 1 ? lst.slice(0, lst.length - 1) : [];
     }
     listPop(expr, env) {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
@@ -1443,7 +1438,7 @@ class ListLib {
         return [...Array(size).keys()].map((e) => e + from);
     }
     listRest(expr, env) {
-        const lst = this.inter.evalExpr(expr[1], env);
+        const [lst] = this.inter.evalArgs(["array"], expr, env);
         return Array.isArray(lst) && lst.length > 1 ? lst.slice(1) : [];
     }
     listReverse(expr, env) {
@@ -1461,12 +1456,19 @@ class ListLib {
         return lst.shift();
     }
     listSlice(expr, env) {
-        const [lst, begin, end] = this.inter.evalArgs(["array", ["number", 0], ["number", 0]], expr, env);
-        return lst.slice(begin, end || lst.length);
+        const [lst, start, end] = this.inter.evalArgs(["array", ["number", 0], ["number", 0]], expr, env);
+        Validator.assertArrayIndex("list.slice", lst, start);
+        return lst.slice(start, end || lst.length);
     }
     listSort(expr, env) {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
         return lst.sort();
+    }
+    listSplice(expr, env) {
+        const [lst, start, count] = this.inter.evalArgs(["array", "number", ["number", 1]], expr, env);
+        Validator.assertArrayIndex("list.splice", lst, start);
+        lst.splice(start, count);
+        return lst;
     }
     listUnshift(expr, env) {
         const [lst, elem] = this.inter.evalArgs(["array", "any"], expr, env);
