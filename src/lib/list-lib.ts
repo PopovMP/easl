@@ -23,6 +23,7 @@ class ListLib implements ILib {
         "list.shift"   : this.listShift,
         "list.slice"   : this.listSlice,
         "list.sort"    : this.listSort,
+        "list.splice"  : this.listSplice,
         "list.unshift" : this.listUnshift,
     };
 
@@ -42,169 +43,176 @@ class ListLib implements ILib {
         return this.methods[expr[0]].call(this, expr, env);
     }
 
-    // [list.concat lst1 lst2]
+    // (list.concat lst1 lst2)
     private listConcat(expr: any[], env: any): any[] {
-        const [lst1, lst2] = this.inter.evalArgs(["array", "array"], expr, env);
+        const [lst1, lst2] = <[any[], any[]]>this.inter.evalArgs(["array", "array"], expr, env);
 
-        return (lst1 as any[]).concat(lst2 as any[]);
+        return lst1.concat(lst2);
     }
 
-    // [list.first lst]
+    // (list.first lst)
     private listFirst(expr: any[], env: any[]): any {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
         Validator.assertArrayIndex("list.first", lst, 0);
 
-        return (lst as any[])[0];
+        return lst[0];
     }
 
-    // [list.flatten lst]
+    // (list.flatten lst)
     private listFlatten(expr: any[], env: any): any[] {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
 
-        return this.listFlattenLoop(lst);
+        const flatten = (arr: any[]): any[] =>
+                arr.reduce( (acc: any[], elem: any) =>
+                                acc.concat( Array.isArray(elem)
+                                                ? flatten(elem)
+                                                : elem ),
+                             []);
+
+        return flatten(lst);
     }
 
-    private listFlattenLoop(arr: any[]): any[] {
-        return arr.reduce((flat, toFlatten) =>
-            flat.concat(Array.isArray(toFlatten)
-                ? this.listFlattenLoop(toFlatten)
-                : toFlatten), []);
-    }
-
-    // [list.get lst index]
+    // (list.get lst index)
     private listGet(expr: any[], env: any): any {
-        const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
+        const [lst, index] = <[any[], number]>this.inter.evalArgs(["array", "number"], expr, env);
         Validator.assertArrayIndex("list.get", lst, index);
 
-        return (lst as any[])[index];
+        return lst[index];
     }
 
-    // [list.has lst elem]
+    // (list.has lst elem)
     private listHas(expr: any[], env: any[]): boolean {
-        const [lst, elem] = this.inter.evalArgs(["array", "scalar"], expr, env);
+        const [lst, elem] = <[any[], any]>this.inter.evalArgs(["array", "scalar"], expr, env);
 
-        return (lst as any[]).includes(elem);
+        return lst.includes(elem);
     }
 
-    // [list.index-of lst elem]
+    // (list.index-of lst elem)
     private listIndex(expr: any[], env: any[]): number {
-        const [lst, elem] = this.inter.evalArgs(["array", "scalar"], expr, env);
+        const [lst, elem] = <[any[], any]>this.inter.evalArgs(["array", "scalar"], expr, env);
 
-        return (lst as any[]).indexOf(elem);
+        return lst.indexOf(elem);
     }
 
-    // [list.join lst sep=","]
+    // (list.join lst sep=",")
     private listJoin(expr: any[], env: any): string {
-        const [lst, sep] = this.inter.evalArgs(["array", ["string", ","]], expr, env);
+        const [lst, sep] = <[any[], string]>this.inter.evalArgs(["array", ["string", ","]], expr, env);
 
         return lst.join(sep);
     }
 
-    // [list.last lst]
+    // (list.last lst)
     private listLast(expr: any[], env: any[]): any {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
 
-        return (lst as any[]).length > 0
-            ? (lst as any[])[(lst as any[]).length - 1]
-            : null;
+        return lst.length > 0 ? lst[lst.length - 1] : null;
     }
 
-    // [list.less lst]
+    // (list.less lst)
     private listLess(expr: any[], env: any[]): any[] {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
 
-        return (lst as any[]).length > 1
-            ? (lst as any[]).slice(0, (lst as any[]).length - 1)
-            : [];
+        return lst.length > 1 ? lst.slice(0, lst.length - 1) : [];
     }
 
-    // [list.pop lst]
+    // (list.pop lst)
     private listPop(expr: any[], env: any[]): any[] {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
 
-        return (lst as any[]).pop();
+        return lst.pop();
     }
 
-    // [list.length lst]
+    // (list.length lst)
     private listLength(expr: any[], env: any[]): number {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
 
-        return (lst as any[]).length;
+        return lst.length;
     }
 
-    // [list.make size fill=0]
+    // (list.make size fill=0)
     private listMake(expr: any[], env: any[]): any[] {
-        const [size, fill] = this.inter.evalArgs(["number", ["any", 0]], expr, env);
+        const [size, fill] = <[number, any]>this.inter.evalArgs(["number", ["any", 0]], expr, env);
 
         return [ ...Array(size).keys() ].map( () => fill );
     }
 
-    // [list.push lst elem]
+    // (list.push lst elem)
     private listPush(expr: any[], env: any[]): any[] {
-        const [lst, elem] = this.inter.evalArgs(["array", "any"], expr, env);
+        const [lst, elem] = <[any[], any]>this.inter.evalArgs(["array", "any"], expr, env);
 
-        (lst as any[]).push(elem);
+        lst.push(elem);
 
         return lst;
     }
 
-    // [list.range size from=0]
+    // (list.range size from=0)
     private listRange(expr: any[], env: any[]): any[] {
-        const [size, from] = this.inter.evalArgs(["number", ["number", 0]], expr, env);
+        const [size, from] = <[number, number]>this.inter.evalArgs(["number", ["number", 0]], expr, env);
 
         return [ ...Array(size).keys() ].map( (e: number) => e + from );
     }
 
-    // [list.rest lst]
+    // (list.rest lst)
     private listRest(expr: any[], env: any[]): any[] {
-        const lst: any[] = this.inter.evalExpr(expr[1], env);
+        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
 
         return Array.isArray(lst) && lst.length > 1 ? lst.slice(1) : [];
     }
 
-    // [list.reverse lst]
+    // (list.reverse lst)
     private listReverse(expr: any[], env: any): any[] {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
 
-        return (lst as any[]).reverse();
+        return lst.reverse();
     }
 
-    // [list.set lst index elem]
+    // (list.set lst index elem)
     private listSet(expr: any[], env: any): any[] {
-        const [lst, index, elem] = this.inter.evalArgs(["array", "number", "any"], expr, env);
+        const [lst, index, elem] = <[any[], number, any]>this.inter.evalArgs(["array", "number", "any"], expr, env);
         Validator.assertArrayIndex("list.set", lst, index);
 
-        (lst as any[])[index] = elem;
+        lst[index] = elem;
 
         return lst;
     }
 
-    // [list.shift lst]
+    // (list.shift lst)
     private listShift(expr: any[], env: any[]): any[] {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
 
-        return (lst as any[]).shift();
+        return lst.shift();
     }
 
-    // [list.slice lst begin=0 end=length]
+    // (list.slice lst start=0 end=length)
     private listSlice(expr: any[], env: any[]): any[] {
-        const [lst, begin, end] = this.inter.evalArgs(["array", ["number", 0], ["number", 0]], expr, env);
+        const [lst, start, end] = <[any[], number, number]>this.inter.evalArgs(["array", ["number", 0], ["number", 0]], expr, env);
+        Validator.assertArrayIndex("list.slice", lst, start);
 
-        return (lst as any[]).slice(begin, end || lst.length);
+        return lst.slice(start, end || lst.length);
     }
 
-    // [list.sort lst]
+    // (list.sort lst)
     private listSort(expr: any[], env: any[]): any[] {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
+        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
 
-        return (lst as any[]).sort();
+        return lst.sort();
     }
 
-    // [list.unshift lst obj]
-    private listUnshift(expr: any[], env: any[]): any[] {
-        const [lst, elem] = this.inter.evalArgs(["array", "any"], expr, env);
+    // (list.splice lst start count=1)
+    private listSplice(expr: any[], env: any[]): any[] {
+        const [lst, start, count] = <[any[], number, number]>this.inter.evalArgs(["array", "number", ["number", 1]], expr, env);
+        Validator.assertArrayIndex("list.splice", lst, start);
 
-        (lst as any[]).unshift(elem);
+        lst.splice(start, count);
+
+        return lst;
+    }
+
+    // (list.unshift lst elem)
+    private listUnshift(expr: any[], env: any[]): any[] {
+        const [lst, elem] = <[any[], any]>this.inter.evalArgs(["array", "any"], expr, env);
+
+        lst.unshift(elem);
 
         return lst;
     }
