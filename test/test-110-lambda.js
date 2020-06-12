@@ -36,7 +36,11 @@ describe("lambda", function () {
     });
 
     it("(((lambda () (lambda (a b) (+ a b)))) 2 3) → 5", function () {
-        assert.strictEqual(easl.evaluate("(((lambda () (lambda (a b) (+ a b)))) 2 3)"), 5);
+        assert.strictEqual(easl.evaluate(`
+            (((lambda ()
+                  (lambda (a b)
+                      (+ a b))))
+                2 3)`), 5);
     });
 
     it("lambda func-name", function () {
@@ -56,7 +60,8 @@ describe("lambda", function () {
     });
 
     it("Improper function", function () {
-        assert.strictEqual(easl.evaluate("( (lambda () (5)) )"), "Error: Improper function: 5");
+        assert.strictEqual(easl.evaluate("( (lambda () (5)) )"),
+            "Error: Improper function application. Given: 5");
     });
 
     it("No params function", function () {

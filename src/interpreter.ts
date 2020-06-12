@@ -3,6 +3,38 @@
 class Interpreter {
     private isDebug: boolean;
     private readonly libs: ILib[];
+    private readonly builtinHash: any = {};
+    private readonly specialForms: any = {
+        "and"        : this.evalAnd,
+        "block"      : this.evalBlock,
+        "break"      : this.evalBreak,
+        "call"       : this.evalCall,
+        "case"       : this.evalCase,
+        "cond"       : this.evalCond,
+        "continue"   : this.evalContinue,
+        "debug"      : this.evalDebug,
+        "dec"        : this.evalDecrement,
+        "delete"     : this.evalDelete,
+        "do"         : this.evalDo,
+        "enum"       : this.evalEnum,
+        "for"        : this.evalFor,
+        "if"         : this.evalIf,
+        "inc"        : this.evalIncrement,
+        "lambda"     : this.evalLambda,
+        "let"        : this.evalLet,
+        "list"       : this.evalList,
+        "or"         : this.evalOr,
+        "quasiquote" : this.evalQuasiquote,
+        "quote"      : this.evalQuote,
+        "repeat"     : this.evalRepeat,
+        "set"        : this.evalSet,
+        "string"     : this.evalString,
+        "throw"      : this.evalThrow,
+        "try"        : this.evalTry,
+        "unless"     : this.evalUnless,
+        "when"       : this.evalWhen,
+        "while"      : this.evalWhile,
+    };
 
     public options: Options;
 
@@ -10,6 +42,11 @@ class Interpreter {
         this.isDebug = false;
         this.libs    = [];
         this.options = new Options();
+
+        const forms = Object.keys(this.specialForms);
+        for (const form of forms) {
+            this.builtinHash[form] = true;
+        }
     }
 
     public evalCodeTree(codeTree: any[], options: Options, callback?: Function): any {
@@ -22,10 +59,6 @@ class Interpreter {
         } else {
             return this.evalExprList(codeTree, []);
         }
-    }
-
-    private manageImport_ready(callback: Function, codeTree: any[]): any {
-        callback( this.evalExprList(codeTree, []) );
     }
 
     public evalExprList(exprLst: any[], env: any[]): any {
@@ -48,35 +81,18 @@ class Interpreter {
         return res;
     }
 
-    public evalExpr(expr: any, env: any[]): any {
-
+    public evalExpr(expr: any | any[], env: any[]): any {
         // Constants
         switch (expr) {
-            case "null"     : return null;
-            case "true"     : return true;
-            case "false"    : return false;
+            case "null"  : return null;
+            case "true"  : return true;
+            case "false" : return false;
         }
 
         // Types
         switch (typeof expr) {
-            case "number"   : return expr;
-            case "string"   : return this.lookup(expr, env);
-        }
-
-        if (expr[0] === undefined) {
-            throw "Error: Improper function application. Probably: ()";
-        }
-
-        // Constructors
-        switch (expr[0]) {
-            case "list"     : return this.mapExprList(expr.slice(1), env);
-            case "string"   : return this.evalString(expr);
-        }
-
-        // Loop controls
-        switch (expr[0]) {
-            case "break"    : return "break";
-            case "continue" : return "continue";
+            case "number" : return expr;
+            case "string" : return this.lookup(expr, env);
         }
 
         if (this.isDebug) {
@@ -84,46 +100,27 @@ class Interpreter {
             this.dumpExpression(expr);
         }
 
-        // Special forms
-        switch (expr[0]) {
-            case "and"        : return this.evalAnd(expr, env);
-            case "block"      : return this.evalBlock(expr, env);
-            case "call"       : return this.evalCall(expr, env);
-            case "case"       : return this.evalCase(expr, env);
-            case "cond"       : return this.evalCond(expr, env);
-            case "dec"        : return this.evalDecrement(expr, env);
-            case "if"         : return this.evalIf(expr, env);
-            case "inc"        : return this.evalIncrement(expr, env);
-            case "lambda"     : return this.evalLambda(expr, env);
-            case "or"         : return this.evalOr(expr, env);
-            case "quote"      : return this.evalQuote(expr);
-            case "quasiquote" : return this.evalQuasiquote(expr, env);
-            case "try"        : return this.evalTry(expr, env);
+        const form: string | any[] = expr[0];
+
+        if (form === undefined) {
+            throw "Error: Improper function application. Probably: ()";
         }
 
-        // Special void forms
-        switch (expr[0]) {
-            case "debug"  : return this.evalDebug(env);
-            case "delete" : return this.evalDelete(expr, env);
-            case "do"     : return this.evalDo(expr, env);
-            case "enum"   : return this.evalEnum(expr, env);
-            case "for"    : return this.evalFor(expr, env);
-            case "let"    : return this.evalLet(expr, env);
-            case "repeat" : return this.evalRepeat(expr, env);
-            case "set"    : return this.evalSet(expr, env);
-            case "throw"  : return this.evalThrow(expr, env);
-            case "unless" : return this.evalUnless(expr, env);
-            case "when"   : return this.evalWhen(expr, env);
-            case "while"  : return this.evalWhile(expr, env);
-        }
+        // Special form or a builtin proc
+        if (typeof form === "string") {
+            if (this.builtinHash[form]) {
+                return this.specialForms[form].call(this, expr, env);
+            }
 
-        for (const lib of this.libs) {
-            if ( lib.builtinHash[expr[0]] ) {
-                return lib.libEvalExpr(expr, env);
+            for (const lib of this.libs) {
+                if (lib.builtinHash[form]) {
+                    return lib.libEvalExpr(expr, env);
+                }
             }
         }
 
-        return this.callProc(expr, env);
+        // User proc
+        return this.evalApplication(expr, env);
     }
 
     public isTruthy(value: any): boolean {
@@ -137,11 +134,11 @@ class Interpreter {
     }
 
     public evalArgs(argTypes: (string | [string, any])[], expr: any[], env: any[]): any[] {
-        const optionalCount: number = argTypes.filter( e => Array.isArray(e) ).length;
+        const optionalCount: number = argTypes.filter(Array.isArray).length;
         this.assertArity(expr, argTypes.length, optionalCount);
 
         return argTypes.map( (argType: string | [string, any], index: number) => {
-            const isRequired =  !Array.isArray(argType);
+            const isRequired = !Array.isArray(argType);
             const arg: any = isRequired || index + 1 < expr.length
                 ? this.evalExpr(expr[index + 1], env)
                 : argTypes[index][1];
@@ -166,20 +163,24 @@ class Interpreter {
         }
     }
 
-    private lookup(symbol: string, env: any[]): any {
+    private addToEnv(symbol: string, value: any, env: any[]): void {
+        if (typeof value === "undefined") {
+            throw `Error: cannot set unspecified value to symbol: ${symbol}.`;
+        }
+
         for (let i = env.length - 1; i > -1; i--) {
-            if (symbol === env[i][0]) {
-                return env[i][1];
+            const cellKey = env[i][0];
+
+            if (cellKey === "#scope") {
+                break;
+            }
+
+            if (cellKey === symbol) {
+                throw `Error: Identifier already defined: ${symbol}`;
             }
         }
 
-        for (const lib of this.libs) {
-            if (lib.builtinHash[symbol]) {
-                return symbol;
-            }
-        }
-
-        throw `Error: Unbound identifier: ${symbol}`;
+        env.push([symbol, value]);
     }
 
     private setInEnv(symbol: string, value: any, env: any[]): void {
@@ -197,36 +198,35 @@ class Interpreter {
         throw `Error: Unbound identifier: ${symbol}`;
     }
 
-    private addToEnv(symbol: string, value: any, env: any[]): void {
-        this.throwOnExistingDef(symbol, env);
-
-        if (typeof value === "undefined") {
-            throw `Error: cannot set unspecified value to symbol: ${symbol}.`;
+    private lookup(symbol: string, env: any[]): any {
+        for (let i = env.length - 1; i > -1; i--) {
+            if (symbol === env[i][0]) {
+                return env[i][1];
+            }
         }
 
-        env.push([symbol, value]);
+        for (const lib of this.libs) {
+            if (lib.builtinHash[symbol]) {
+                return symbol;
+            }
+        }
+
+        throw `Error: Unbound identifier: ${symbol}`;
     }
 
-    private throwOnExistingDef(symbol: string, env: any[]): void {
-        for (let i = env.length - 1; i > -1; i--) {
-            const cellKey = env[i][0];
-
-            if (cellKey === "#scope") {
-                return;
-            }
-
-            if (cellKey === symbol) {
-                throw `Error: Identifier already defined: ${symbol}`;
-            }
-        }
+    private clearEnv(tag: string, env: any[]): void {
+        let cell: [string, any];
+        do {
+            cell = env.pop();
+        } while (cell[0] !== tag);
     }
 
     // (proc-id arg*)
     // ((lambda (par*) expr+) arg*)
-    private callProc(expr: any[], env: any[]): any {
+    private evalApplication(expr: any[], env: any[]): any {
         const proc: string | any[] = expr[0];
         const isNamed: boolean = typeof proc === "string";
-        const funcName: string = isNamed ? proc as string : proc[0];
+        const procId: string = isNamed ? proc as string : proc[0];
         const closure: any[] | string = isNamed
             ? this.lookup(proc as string, env)
             : this.evalExpr(proc, env);
@@ -235,24 +235,20 @@ class Interpreter {
             return this.evalExpr([closure, ...expr.slice(1)], env);
         }
 
-        if ( !Array.isArray(closure) )  {
-            throw `Error: Improper function: ${closure}`;
+        if ( !Array.isArray(closure) || closure[0] !== "closure") {
+            throw `Error: Improper function application. Given: ${ Printer.stringify(closure) }`;
         }
 
-        if (closure[0] !== "closure") {
-            throw `Error: Improper function application`;
-        }
-
-        return this.callClosure(expr, env, closure, funcName);
+        return this.callClosure(expr, env, closure, procId);
     }
 
-    private callClosure(expr: any[], env: any[], closure: any[], funcName: string) {
+    private callClosure(expr: any[], env: any[], closure: any[], procId: string) {
         const args: any[] = expr.length === 1 ? [] : expr.length === 2
             ? [this.evalExpr(expr[1], env)]
             : this.mapExprList(expr.slice(1), env);
 
         const closureBody: any   = closure[2];
-        const closureEnv:  any[] = this.makeClosureEnv(funcName, closure[1], args, closure[3]);
+        const closureEnv:  any[] = this.makeClosureEnv(procId, closure[1], args, closure[3]);
 
         return this.evalExpr(closureBody, closureEnv);
     }
@@ -324,6 +320,11 @@ class Interpreter {
 
             this.addToEnv(param, value, env);
         }
+    }
+
+    // (list expr*)
+    private evalList(expr: any[], env: any[]): any[] {
+        return this.mapExprList(expr.slice(1), env);
     }
 
     // (set symbol expr)
@@ -445,11 +446,14 @@ class Interpreter {
         return res;
     }
 
-    private clearEnv(tag: string, env: any[]): void {
-        let cell: [string, any];
-        do {
-            cell = env.pop();
-        } while (cell[0] !== tag);
+    // (break)
+    private evalBreak(): string {
+        return "break";
+    }
+
+    // (continue)
+    private evalContinue(): string {
+        return "continue";
     }
 
     // (lambda (par*)
@@ -830,12 +834,12 @@ class Interpreter {
             }
 
             // Call function
-            return this.callProc([catchExpr, ["string", errorMessage]], env);
+            return this.evalApplication([catchExpr, ["string", errorMessage]], env);
         }
 
         if (Array.isArray(catchExpr)) {
             if (catchExpr[0] === "lambda") {
-                return this.callProc([catchExpr, ["string", errorMessage]], env);
+                return this.evalApplication([catchExpr, ["string", errorMessage]], env);
             }
 
             if (catchExpr[0] === "string") {
@@ -910,5 +914,9 @@ class Interpreter {
         return argText.length > maxLength
             ? argText.substring(0, maxLength) + "..."
             : argText;
+    }
+
+    private manageImport_ready(callback: Function, codeTree: any[]): any {
+        callback( this.evalExprList(codeTree, []) );
     }
 }

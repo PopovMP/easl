@@ -12,17 +12,20 @@ describe("function", function () {
         it("function with an empty body", function () {
             assert.strictEqual(easl.evaluate(`
               (let foo ())
-              (foo)                             `), "Error: Improper function application. Probably: ()");
+              (foo)                             `),
+                "Error: Improper function application. Probably: ()");
         });
         it("function without params 1", function () {
             assert.strictEqual(easl.evaluate(`
-              {let foo 5}
-              (foo)                             `), "Error: Improper function: 5");
+              (let foo 5)
+              (foo)                             `),
+                "Error: Improper function application. Given: 5");
         });
         it("function without params 2", function () {
             assert.strictEqual(easl.evaluate(`
-              {let foo (+ 2 3)}
-              (foo)                             `), "Error: Improper function: 5");
+              (let foo (+ 2 3))
+              (foo)                             `),
+                "Error: Improper function application. Given: 5");
         });
         it("we can define function only once", function () {
             assert.strictEqual(easl.evaluate(`
@@ -51,7 +54,7 @@ describe("function", function () {
             ({lambda (n) (* 2 n)} 5)                            `), 10);
         });
         it("not a function", function () {
-            assert.strictEqual(easl.evaluate(`  (42)     `), "Error: Improper function: 42");
+            assert.strictEqual(easl.evaluate(`  (42)     `), "Error: Improper function application. Given: 42");
         });
         it("unknown function", function () {
             assert.strictEqual(easl.evaluate(` (foo 42)  `), "Error: Unbound identifier: foo");

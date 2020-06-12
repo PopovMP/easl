@@ -62,12 +62,9 @@ describe('let', function () {
 
         it('two lists', function () {
             assert.deepStrictEqual(easl.evaluate(`   
-             
                 (let lst1 '(1 2))
                 (let lst2 '(3 4)) 
-        
                 (let new-list (list.concat lst1 lst2))
-        
                 new-list                                     `), [1, 2, 3, 4]);
         });
     });
@@ -75,7 +72,7 @@ describe('let', function () {
     describe('let lambda', function () {
         it('no arguments', function () {
             assert.strictEqual(easl.evaluate(` 
-                    {let answer {lambda () 42}}
+                    (let answer (lambda () 42))
                     (answer)                                `), 42);
         });
 
@@ -91,7 +88,8 @@ describe('let', function () {
         });
         it('let does not return the lambda', function () {
             assert.strictEqual(easl.evaluate(`    
-                    ({let sum {lambda (a b) (+ a b)}} 2 3)  `), 'Error: Improper function: undefined');
+                    ((let sum (lambda (a b) (+ a b))) 2 3)  `),
+                "Error: Improper function application. Given: undefined");
         });
 
         it('let with lambda with multiple expressions', function () {
@@ -122,7 +120,8 @@ describe('let', function () {
 
         it('let does not return the proc', function () {
             assert.strictEqual(easl.evaluate(`    
-                    ((let sum (a b) (+ a b)) 2 3)  `), 'Error: Improper function: undefined');
+                    ((let sum (a b) (+ a b)) 2 3)  `),
+                'Error: Improper function application. Given: undefined');
         });
 
         it('let with proc with multiple expressions', function () {

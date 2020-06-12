@@ -15,22 +15,22 @@ describe("Validate application", function () {
 
     it("((list)) -> error", function () {
         assert.strictEqual(easl.evaluate(` 
-                ((list) )              `), "Error: Improper function application");
+                ((list))              `), "Error: Improper function application. Given: ()");
     });
 
     it("((list 1)) -> error", function () {
         assert.strictEqual(easl.evaluate(` 
-                ((list 1) )              `), "Error: Improper function application");
+                ((list 1) )              `), "Error: Improper function application. Given: (1)");
     });
 
     it("((list 'a)) -> error", function () {
         assert.strictEqual(easl.evaluate(` 
-                ((list 'a) )              `), "Error: Improper function application");
+                ((list 'a) )              `), "Error: Improper function application. Given: (a)");
     });
 
     it("((list + 1)) -> error", function () {
         assert.strictEqual(easl.evaluate(` 
-                ((list + 1) )              `), "Error: Improper function application");
+                ((list + 1) )              `), "Error: Improper function application. Given: (+ 1)");
     });
 
 });
