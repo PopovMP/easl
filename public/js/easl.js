@@ -93,6 +93,7 @@ class Interpreter {
             case "lambda": return this.evalLambda(expr, env);
             case "or": return this.evalOr(expr, env);
             case "quote": return this.evalQuote(expr);
+            case "quasiquote": return this.evalQuasiquote(expr, env);
             case "try": return this.evalTry(expr, env);
         }
         switch (expr[0]) {
@@ -577,6 +578,27 @@ class Interpreter {
         }
         return expr[1];
     }
+    evalQuasiquote(expr, env) {
+        if (expr.length !== 2) {
+            throw "Error: 'quasiquote' requires 1 argument. Given: " + (expr.length - 1);
+        }
+        const isUnquote = (obj) => obj === ",";
+        const isUnquoteSplicing = (obj) => obj === "@";
+        const datum = expr[1];
+        const output = [];
+        for (let i = 0; i < datum.length; i++) {
+            if (i > 0 && isUnquote(datum[i - 1])) {
+                output.push(this.evalExpr(datum[i], env));
+            }
+            else if (i > 0 && isUnquoteSplicing(datum[i - 1])) {
+                output.push(...this.evalExpr(datum[i], env));
+            }
+            else if (!isUnquote(datum[i]) && !isUnquoteSplicing(datum[i])) {
+                output.push(datum[i]);
+            }
+        }
+        return output;
+    }
     evalOr(expr, env) {
         switch (expr.length) {
             case 1:
@@ -820,10 +842,9 @@ class Options {
 }
 class Parser {
     constructor() {
-        this.isParen = (ch) => this.isOpenParen(ch) || this.isCloseParen(ch);
         this.isOpenParen = (ch) => ["(", "[", "{"].includes(ch);
         this.isCloseParen = (ch) => [")", "]", "}"].includes(ch);
-        this.isQuoteAbbrev = (ch) => ch === "'";
+        this.isDelimiter = (ch) => ["(", ")", "[", "]", "{", "}", "'", "`", ","].includes(ch);
         this.isWhiteSpace = (ch) => [" ", "\t", "\r", "\n"].includes(ch);
         this.isLineComment = (ch) => ch === ";";
         this.isTextNumber = (tx) => /^[-+]?\d+(?:\.\d+)*$/.test(tx);
@@ -836,11 +857,20 @@ class Parser {
             .replace(/\\n/g, "\n")
             .replace(/\\t/g, "\t")
             .replace(/\\"/g, '""');
+        const abbrevList = [["'", "quote"], ["`", "quasiquote"]];
         const codeList = this.tokenize(fixedText);
-        const expandedQSymbols = this.expandQuotedSymbol(codeList);
-        const expandedQLists = this.expandQuotedList(expandedQSymbols);
-        const ilTree = this.nest(expandedQLists);
+        const expanded = this.expandAbbreviations(codeList, abbrevList);
+        const ilTree = this.nest(expanded);
         return ilTree;
+    }
+    expandAbbreviations(codeList, abbrevList) {
+        if (abbrevList.length === 0) {
+            return codeList;
+        }
+        const abbrev = abbrevList[0];
+        const expandedSymbols = this.expandSymbolAbbreviation(codeList, abbrev[0], abbrev[1]);
+        const expandedLists = this.expandListAbbreviation(expandedSymbols, abbrev[0], abbrev[1]);
+        return this.expandAbbreviations(expandedLists, abbrevList.slice(1));
     }
     tokenize(code) {
         const isInFile = (i) => i < code.length;
@@ -889,7 +919,7 @@ class Parser {
                 lexeme = "";
                 continue;
             }
-            if (this.isParen(ch) || this.isQuoteAbbrev(ch)) {
+            if (this.isDelimiter(ch)) {
                 pushLexeme(lexeme);
                 lexeme = "";
                 output.push(ch);
@@ -903,13 +933,13 @@ class Parser {
         }
         return output;
     }
-    expandQuotedSymbol(input) {
+    expandSymbolAbbreviation(input, abbrevChar, fullForm) {
         const output = [];
         for (let i = 0; i < input.length; i++) {
             const curr = input[i];
             const next = input[i + 1];
-            if (this.isQuoteAbbrev(curr) && !this.isOpenParen(next) && !this.isQuoteAbbrev(next)) {
-                output.push("(", "quote", next, ")");
+            if (curr === abbrevChar && !this.isOpenParen(next) && next !== abbrevChar) {
+                output.push("(", fullForm, next, ")");
                 i++;
             }
             else {
@@ -918,13 +948,13 @@ class Parser {
         }
         return output;
     }
-    expandQuotedList(input) {
+    expandListAbbreviation(input, abbrevChar, fullForm) {
         const output = [];
         for (let i = 0, paren = 0, flag = false; i < input.length; i++) {
             const curr = input[i];
             const next = input[i + 1];
-            if (!flag && this.isQuoteAbbrev(curr) && this.isOpenParen(next)) {
-                output.push("(", "quote");
+            if (!flag && curr === abbrevChar && this.isOpenParen(next)) {
+                output.push("(", fullForm);
                 flag = true;
                 continue;
             }
@@ -941,7 +971,7 @@ class Parser {
             }
         }
         return output.length > input.length
-            ? this.expandQuotedList(output)
+            ? this.expandListAbbreviation(output, abbrevChar, fullForm)
             : output;
     }
     nest(input) {

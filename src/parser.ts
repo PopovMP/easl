@@ -1,10 +1,9 @@
 "use strict";
 
 class Parser {
-    private isParen       = (ch: string): boolean => this.isOpenParen(ch) || this.isCloseParen(ch);
     private isOpenParen   = (ch: string): boolean => ["(", "[", "{"].includes(ch);
     private isCloseParen  = (ch: string): boolean => [")", "]", "}"].includes(ch);
-    private isQuoteAbbrev = (ch: string): boolean => ch === "'";
+    private isDelimiter   = (ch: string): boolean => ["(", ")", "[", "]", "{", "}", "'", "`", ","].includes(ch);
     private isWhiteSpace  = (ch: string): boolean => [" ", "\t", "\r", "\n"].includes(ch);
     private isLineComment = (ch: string): boolean => ch === ";";
     private isTextNumber  = (tx: string): boolean => /^[-+]?\d+(?:\.\d+)*$/.test(tx);
@@ -18,12 +17,24 @@ class Parser {
             .replace(/\\t/g,                  "\t")
             .replace(/\\"/g,                  '""');
 
-        const codeList: any[]         = this.tokenize(fixedText);
-        const expandedQSymbols: any[] = this.expandQuotedSymbol(codeList);
-        const expandedQLists: any[]   = this.expandQuotedList(expandedQSymbols);
-        const ilTree: any[]           = this.nest(expandedQLists);
+        const abbrevList: [string, string][] = [["'", "quote"], ["`", "quasiquote"]];
+
+        const codeList: any[] = this.tokenize(fixedText);
+        const expanded: any[] = this.expandAbbreviations(codeList, abbrevList);
+        const ilTree: any[]   = this.nest(expanded);
 
         return ilTree;
+    }
+
+    private expandAbbreviations(codeList: any[], abbrevList: [string, string][]): any[] {
+        if (abbrevList.length === 0) {
+            return codeList;
+        }
+
+        const abbrev: [string, string] = abbrevList[0];
+        const expandedSymbols: any[] = this.expandSymbolAbbreviation(codeList, abbrev[0], abbrev[1]);
+        const expandedLists: any[]   = this.expandListAbbreviation(expandedSymbols, abbrev[0], abbrev[1]);
+        return this.expandAbbreviations(expandedLists, abbrevList.slice(1));
     }
 
     public tokenize(code: string): any[] {
@@ -83,7 +94,7 @@ class Parser {
                 continue;
             }
 
-            if ( this.isParen(ch) || this.isQuoteAbbrev(ch) ) {
+            if ( this.isDelimiter(ch) ) {
                 pushLexeme(lexeme);
                 lexeme = "";
                 output.push(ch);
@@ -101,15 +112,15 @@ class Parser {
         return output;
     }
 
-    public expandQuotedSymbol(input: any[]): any[] {
+    public expandSymbolAbbreviation(input: any[], abbrevChar: string, fullForm: string): any[] {
         const output: any[] = [];
 
         for (let i = 0; i < input.length; i++) {
             const curr: string = input[i];
             const next: string = input[i + 1];
 
-            if (this.isQuoteAbbrev(curr) && !this.isOpenParen(next) && !this.isQuoteAbbrev(next) ) {
-                output.push("(", "quote", next, ")");
+            if (curr === abbrevChar && !this.isOpenParen(next) && next !== abbrevChar) {
+                output.push("(", fullForm, next, ")");
                 i++;
             } else {
                 output.push(curr);
@@ -119,15 +130,15 @@ class Parser {
         return output;
     }
 
-    public expandQuotedList(input: any[]): any[] {
+    public expandListAbbreviation(input: any[], abbrevChar: string, fullForm: string): any[] {
         const output: any[] = [];
 
         for (let i: number = 0, paren: number = 0, flag: boolean = false; i < input.length; i++) {
             const curr: string = input[i];
             const next: string = input[i + 1];
 
-            if (!flag && this.isQuoteAbbrev(curr) && this.isOpenParen(next)  ) {
-                output.push("(", "quote");
+            if (!flag && curr === abbrevChar && this.isOpenParen(next)  ) {
+                output.push("(", fullForm);
                 flag = true;
                 continue;
             }
@@ -149,7 +160,7 @@ class Parser {
         }
 
         return output.length > input.length
-            ? this.expandQuotedList(output)
+            ? this.expandListAbbreviation(output, abbrevChar, fullForm)
             : output;
     }
 

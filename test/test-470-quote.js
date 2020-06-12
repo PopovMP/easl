@@ -20,8 +20,8 @@ describe("quote", function () {
         assert.deepStrictEqual(easl.evaluate(` {quote (a 1)} `), ["a", 1]);
     });
 
-    it("{quote [a 1]} -> (list a 1)", function () {
-        assert.deepStrictEqual(easl.evaluate(` {quote (list a 1)} `), ["list", "a", 1]);
+    it("(quote (list a 1)) -> (list a 1)", function () {
+        assert.deepStrictEqual(easl.evaluate(` (quote (list a 1)) `), ["list", "a", 1]);
     });
 
     it("(quote ((quote a) 2))", function () {
@@ -86,14 +86,14 @@ describe("nested quote abbrev", function () {
     });
 
     it("'('(1) 2) text", function () {
-        assert.strictEqual(parser.expandQuotedList( parser.tokenize(
-            ` '('(1) 2) `) ).join(" "),
+        assert.strictEqual(parser.expandListAbbreviation( parser.tokenize(
+            ` '('(1) 2) `), "'", "quote" ).join(" "),
             "( quote ( ( quote ( 1 ) ) 2 ) )" );
     });
 
     it("'('(1 2 3) 2) text", function () {
-        assert.strictEqual(parser.expandQuotedList( parser.tokenize(
-            ` '('(1 2 3) 2) `) ).join(" "),
+        assert.strictEqual(parser.expandListAbbreviation( parser.tokenize(
+            ` '('(1 2 3) 2) `), "'", "quote" ).join(" "),
             "( quote ( ( quote ( 1 2 3 ) ) 2 ) )" );
     });
 
@@ -133,14 +133,14 @@ describe("to-string quote", function () {
     it("fibo", function () {
         assert.strictEqual(easl.evaluate(`
 (to-string 
-    '{function fibo (n)
-        {function loop (i prev cur)
-            {if (= i n)
+    '(function fibo (n)
+        (function loop (i prev cur)
+            (if (= i n)
                 cur
-                (loop (+ i 1) cur (+ prev cur)) }}
-        {case n
-            {(1 2) 1} 
-            {else (loop 2 1 1)} }} )
+                (loop (+ i 1) cur (+ prev cur)) ))
+        (case n
+            ((1 2) 1) 
+            (else (loop 2 1 1)) )) )
         `),
             "(function fibo (n) (function loop (i prev cur) (if (= i n) cur (loop (+ i 1) cur (+ prev cur)))) (case n ((1 2) 1) (else (loop 2 1 1))))");
     });

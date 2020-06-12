@@ -86,34 +86,35 @@ class Interpreter {
 
         // Special forms
         switch (expr[0]) {
-            case "and"      : return this.evalAnd(expr, env);
-            case "block"    : return this.evalBlock(expr, env);
-            case "call"     : return this.evalCall(expr, env);
-            case "case"     : return this.evalCase(expr, env);
-            case "cond"     : return this.evalCond(expr, env);
-            case "dec"      : return this.evalDecrement(expr, env);
-            case "if"       : return this.evalIf(expr, env);
-            case "inc"      : return this.evalIncrement(expr, env);
-            case "lambda"   : return this.evalLambda(expr, env);
-            case "or"       : return this.evalOr(expr, env);
-            case "quote"    : return this.evalQuote(expr);
-            case "try"      : return this.evalTry(expr, env);
+            case "and"        : return this.evalAnd(expr, env);
+            case "block"      : return this.evalBlock(expr, env);
+            case "call"       : return this.evalCall(expr, env);
+            case "case"       : return this.evalCase(expr, env);
+            case "cond"       : return this.evalCond(expr, env);
+            case "dec"        : return this.evalDecrement(expr, env);
+            case "if"         : return this.evalIf(expr, env);
+            case "inc"        : return this.evalIncrement(expr, env);
+            case "lambda"     : return this.evalLambda(expr, env);
+            case "or"         : return this.evalOr(expr, env);
+            case "quote"      : return this.evalQuote(expr);
+            case "quasiquote" : return this.evalQuasiquote(expr, env);
+            case "try"        : return this.evalTry(expr, env);
         }
 
         // Special void forms
         switch (expr[0]) {
-            case "debug"    : return this.evalDebug(env);
-            case "delete"   : return this.evalDelete(expr, env);
-            case "do"       : return this.evalDo(expr, env);
-            case "enum"     : return this.evalEnum(expr, env);
-            case "for"      : return this.evalFor(expr, env);
-            case "let"      : return this.evalLet(expr, env);
-            case "repeat"   : return this.evalRepeat(expr, env);
-            case "set"      : return this.evalSet(expr, env);
-            case "throw"    : return this.evalThrow(expr, env);
-            case "unless"   : return this.evalUnless(expr, env);
-            case "when"     : return this.evalWhen(expr, env);
-            case "while"    : return this.evalWhile(expr, env);
+            case "debug"  : return this.evalDebug(env);
+            case "delete" : return this.evalDelete(expr, env);
+            case "do"     : return this.evalDo(expr, env);
+            case "enum"   : return this.evalEnum(expr, env);
+            case "for"    : return this.evalFor(expr, env);
+            case "let"    : return this.evalLet(expr, env);
+            case "repeat" : return this.evalRepeat(expr, env);
+            case "set"    : return this.evalSet(expr, env);
+            case "throw"  : return this.evalThrow(expr, env);
+            case "unless" : return this.evalUnless(expr, env);
+            case "when"   : return this.evalWhen(expr, env);
+            case "while"  : return this.evalWhile(expr, env);
         }
 
         for (const lib of this.libs) {
@@ -747,6 +748,33 @@ class Interpreter {
         }
 
         return expr[1];
+    }
+
+    // (quasiquote obj) => obj
+    private evalQuasiquote(expr: any[], env: any[]): any {
+        if (expr.length !== 2) {
+            throw "Error: 'quasiquote' requires 1 argument. Given: " + (expr.length - 1);
+        }
+
+        const isUnquote         = (obj: any): boolean => obj === ",";
+        const isUnquoteSplicing = (obj: any): boolean => obj === "@";
+
+        const datum: any    = expr[1];
+        const output: any[] = [];
+
+        for (let i: number = 0; i < datum.length; i++) {
+            if (i > 0 && isUnquote(datum[i - 1]) ) {
+                output.push( this.evalExpr(datum[i], env) );
+            }
+            else if (i > 0 && isUnquoteSplicing(datum[i - 1]) ) {
+                output.push( ... this.evalExpr(datum[i], env) );
+            }
+            else if ( !isUnquote(datum[i]) && !isUnquoteSplicing(datum[i]) ) {
+                output.push(datum[i]);
+            }
+        }
+
+        return output;
     }
 
     // (or)            => false
