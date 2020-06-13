@@ -35,12 +35,12 @@
             "math-sign math-sqrt math-trunc " +
 
             // number lib
-            "numb-max-value numb-min-value numb-parse-float numb-parse-int numb-is-finite numb-is-integer numb-to-fixed numb-to-string " +
+            "number-max-value number-min-value number-parse-float number-parse-int number-is-finite number-is-integer number-to-fixed number-to-string " +
 
             // string
-            "str-char-at str-char-code-at str-concat str-ends-with str-from-char-code str-includes str-index-of " +
-            "str-last-index-of str-length str-match str-repeat str-replace str-split str-starts-with str-sub-string " +
-            "str-trim str-trim-left str-trim-right str-to-lowercase str-to-uppercase " +
+            "string-char-at string-char-code-at string-concat string-ends-with string-from-char-code string-includes string-index-of " +
+            "string-last-index-of string-length string-match string-repeat string-replace string-split string-starts-with string-sub-string " +
+            "string-trim string-trim-left string-trim-right string-to-lower string-to-upper " +
 
             // date
             "date-now date-to-string"

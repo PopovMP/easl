@@ -329,7 +329,7 @@ const examplesList = [
 (print "doubled" doubled)
 
 ; (list-for-each lst (λ (element index) (...)))
-(list-for-each lst (λ (e i) (print (str-repeat " " (- (list-length lst) i)) e)))
+(list-for-each lst (λ (e i) (print (string-repeat " " (- (list-length lst) i)) e)))
 
 
 ; (list-filter lst (λ (element index) (...)))
@@ -722,7 +722,7 @@ const examplesList = [
 (let input-text "34")
 
 (let code-list '())
-(for ch (str-split code-text)
+(for ch (string-split code-text)
    (if (list-has (list "+" "-" ">" "<" "," "." "[" "]") ch)
        (list-push code-list ch) ))
 
@@ -730,7 +730,7 @@ const examplesList = [
 (let code-len (list-length code-list))
 
 (let input-index 0)
-(let input-list (str-split input-text))
+(let input-list (string-split input-text))
 
 (let buffer '(0))
 (let pointer  0)
@@ -765,14 +765,14 @@ const examplesList = [
 
         ;; Output the byte at the pointer.
         ((".") (set output (~ output
-                            (str-from-char-code (list-get buffer pointer))) ))
+                            (string-from-char-code (list-get buffer pointer))) ))
 
         ;; Input a byte and store it in the byte at the pointer.
         ((",") (let input (list-get input-list input-index))
              (inc input-index)
              (list-set buffer pointer
                      (if (equal (type-of input) "string")
-                         (str-char-code-at input 0)
+                         (string-char-code-at input 0)
                          0 )))
 
         ;; Jump forward past the matching ] if the byte at the pointer is zero.
@@ -887,7 +887,7 @@ exit :
    (let index (list-index-of var-names name))
    (if (>= index 0)
        (list-get var-values index)
-       (throw (str-concat "Variable not defined: " name)) ))
+       (throw (string-concat "Variable not defined: " name)) ))
 
 (let set-val (name val)
     (case name
@@ -1087,7 +1087,7 @@ exit :
 
 (let parse-code-line (code-line)
     ; Parse a command line
-    (let split-parts (str-split code-line " "))
+    (let split-parts (string-split code-line " "))
     (let non-empty-parts (list))
     (for element split-parts
         (unless (equal element "")
@@ -1103,16 +1103,16 @@ exit :
     command )
 
 (let parse-code (code-txt)
-    (let src-list (str-split code-txt "\\n"))
+    (let src-list (string-split code-txt "\\n"))
     (let command-list '())
 
     (for code-line src-list
-        (let comment-index (str-index-of code-line ";"))
+        (let comment-index (string-index-of code-line ";"))
         (if (>= comment-index 0)
-            (set code-line (str-sub-string code-line 0 comment-index)) )
-        (set code-line (str-trim code-line))
+            (set code-line (string-sub-string code-line 0 comment-index)) )
+        (set code-line (string-trim code-line))
 
-        (if (> (str-length code-line) 0) (block
+        (if (> (string-length code-line) 0) (block
             (let command (parse-code-line code-line))
             (if (> (list-length command) 0)
                 (list-push command-list command) ) )) )

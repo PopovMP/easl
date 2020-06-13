@@ -213,7 +213,7 @@ describe('core-lib', function () {
 
         it('using the string "string"', function () {
             assert.strictEqual(easl.evaluate(` 
-            (str-length "string")      `), 6);
+            (string-length "string")      `), 6);
         });
     });
 

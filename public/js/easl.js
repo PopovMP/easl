@@ -1559,14 +1559,14 @@ class MathLib {
 class NumberLib {
     constructor(interpreter) {
         this.methods = {
-            "numb-max-int": this.evalMaxInt,
-            "numb-min-int": this.evalMinInt,
-            "numb-parse-float": this.evalParseFloat,
-            "numb-parse-int": this.evalParseInt,
-            "numb-is-finite": this.evalIsFinite,
-            "numb-is-integer": this.evalIsInteger,
-            "numb-to-fixed": this.evalToFixed,
-            "numb-to-string": this.evalToString,
+            "number-max-int": this.evalMaxInt,
+            "number-min-int": this.evalMinInt,
+            "number-parse-float": this.evalParseFloat,
+            "number-parse-int": this.evalParseInt,
+            "number-is-finite": this.evalIsFinite,
+            "number-is-integer": this.evalIsInteger,
+            "number-to-fixed": this.evalToFixed,
+            "number-to-string": this.evalToString,
         };
         this.builtinHash = {};
         this.inter = interpreter;
@@ -1590,7 +1590,7 @@ class NumberLib {
         const [str] = this.inter.evalArgs(["string"], expr, env);
         const res = parseFloat(str);
         if (isNaN(res)) {
-            throw "Error: 'numb-parse-float' argument not a number: " + str;
+            throw "Error: 'number-parse-float' argument not a number: " + str;
         }
         return res;
     }
@@ -1598,7 +1598,7 @@ class NumberLib {
         const [str] = this.inter.evalArgs(["string"], expr, env);
         const res = parseInt(str);
         if (isNaN(res)) {
-            throw "Error: 'numb-parse-int' argument not a number: " + str;
+            throw "Error: 'number-parse-int' argument not a number: " + str;
         }
         return res;
     }
@@ -1622,26 +1622,26 @@ class NumberLib {
 class StringLib {
     constructor(interpreter) {
         this.methods = {
-            "str-char-at": this.strCharAt,
-            "str-char-code-at": this.strCharCodeAt,
-            "str-concat": this.strConcat,
-            "str-ends-with": this.strEndsWith,
-            "str-from-char-code": this.strFromCharCode,
-            "str-includes": this.strIncludes,
-            "str-index-of": this.strIndexOf,
-            "str-last-index-of": this.strLastIndexOf,
-            "str-length": this.strLength,
-            "str-match": this.strMatch,
-            "str-repeat": this.strRepeat,
-            "str-replace": this.strReplace,
-            "str-split": this.strSplit,
-            "str-starts-with": this.strStartsWith,
-            "str-sub-string": this.strSubString,
-            "str-trim": this.strTrim,
-            "str-trim-left": this.strTrimLeft,
-            "str-trim-right": this.strTrimRight,
-            "str-to-lowercase": this.strToLowercase,
-            "str-to-uppercase": this.strToUppercase,
+            "string-char-at": this.strCharAt,
+            "string-char-code-at": this.strCharCodeAt,
+            "string-concat": this.strConcat,
+            "string-ends-with": this.strEndsWith,
+            "string-from-char-code": this.strFromCharCode,
+            "string-includes": this.strIncludes,
+            "string-index-of": this.strIndexOf,
+            "string-last-index-of": this.strLastIndexOf,
+            "string-length": this.strLength,
+            "string-match": this.strMatch,
+            "string-repeat": this.strRepeat,
+            "string-replace": this.strReplace,
+            "string-split": this.strSplit,
+            "string-starts-with": this.strStartsWith,
+            "string-sub-string": this.strSubString,
+            "string-trim": this.strTrim,
+            "string-trim-left": this.strTrimLeft,
+            "string-trim-right": this.strTrimRight,
+            "string-to-lower": this.strToLower,
+            "string-to-upper": this.strToUpper,
         };
         this.builtinHash = {};
         this.inter = interpreter;
@@ -1661,7 +1661,7 @@ class StringLib {
         const [str, index] = this.inter.evalArgs(["string", "number"], expr, env);
         const code = str.charCodeAt(index);
         if (isNaN(code)) {
-            throw `Error: 'str-char-code-at' index out of range.`;
+            throw `Error: 'string-char-code-at' index out of range.`;
         }
         return code;
     }
@@ -1732,11 +1732,11 @@ class StringLib {
         const [str] = this.inter.evalArgs(["string"], expr, env);
         return str.trimRight();
     }
-    strToLowercase(expr, env) {
+    strToLower(expr, env) {
         const [str] = this.inter.evalArgs(["string"], expr, env);
         return str.toLowerCase();
     }
-    strToUppercase(expr, env) {
+    strToUpper(expr, env) {
         const [str] = this.inter.evalArgs(["string"], expr, env);
         return str.toUpperCase();
     }
