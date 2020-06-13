@@ -64,7 +64,7 @@ describe('let', function () {
             assert.deepStrictEqual(easl.evaluate(`   
                 (let lst1 '(1 2))
                 (let lst2 '(3 4)) 
-                (let new-list (list.concat lst1 lst2))
+                (let new-list (list-concat lst1 lst2))
                 new-list                                     `), [1, 2, 3, 4]);
         });
     });

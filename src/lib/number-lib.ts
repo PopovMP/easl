@@ -3,14 +3,14 @@
 class NumberLib implements ILib {
     private readonly inter: Interpreter;
     private readonly methods: any = {
-        "numb.max-int"     : this.evalMaxInt,
-        "numb.min-int"     : this.evalMinInt,
-        "numb.parse-float" : this.evalParseFloat,
-        "numb.parse-int"   : this.evalParseInt,
-        "numb.is-finite"   : this.evalIsFinite,
-        "numb.is-integer"  : this.evalIsInteger,
-        "numb.to-fixed"    : this.evalToFixed,
-        "numb.to-string"   : this.evalToString,
+        "numb-max-int"     : this.evalMaxInt,
+        "numb-min-int"     : this.evalMinInt,
+        "numb-parse-float" : this.evalParseFloat,
+        "numb-parse-int"   : this.evalParseInt,
+        "numb-is-finite"   : this.evalIsFinite,
+        "numb-is-integer"  : this.evalIsInteger,
+        "numb-to-fixed"    : this.evalToFixed,
+        "numb-to-string"   : this.evalToString,
     };
 
     public readonly builtinFunc: string[];
@@ -51,7 +51,7 @@ class NumberLib implements ILib {
         const res: number = parseFloat(str);
 
         if ( isNaN(res) ) {
-            throw "Error: 'numb.parse-float' argument not a number: " + str;
+            throw "Error: 'numb-parse-float' argument not a number: " + str;
         }
 
         return res;
@@ -64,7 +64,7 @@ class NumberLib implements ILib {
         const res: number = parseInt(str);
 
         if ( isNaN(res) ) {
-            throw "Error: 'numb.parse-int' argument not a number: " + str;
+            throw "Error: 'numb-parse-int' argument not a number: " + str;
         }
 
         return res;

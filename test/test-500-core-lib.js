@@ -213,7 +213,7 @@ describe('core-lib', function () {
 
         it('using the string "string"', function () {
             assert.strictEqual(easl.evaluate(` 
-            (str.length "string")      `), 6);
+            (str-length "string")      `), 6);
         });
     });
 
@@ -272,7 +272,7 @@ describe('core-lib', function () {
         it('element of string list', function () {
             assert.strictEqual(easl.evaluate(`
                (let lst (list "42"))
-               (let elm (list.get lst 0))
+               (let elm (list-get lst 0))
                (to-number elm)                                         `), 42);
         });
         it('true', function () {

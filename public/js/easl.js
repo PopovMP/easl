@@ -1336,8 +1336,8 @@ class CoreLib {
 class DateLib {
     constructor(interpreter) {
         this.methods = {
-            "date.now": this.evalDateNow,
-            "date.to-string": this.evalDateToString,
+            "date-now": this.evalDateNow,
+            "date-to-string": this.evalDateToString,
         };
         this.builtinHash = {};
         this.inter = interpreter;
@@ -1378,24 +1378,24 @@ class ListLib {
     constructor(interpreter) {
         this.methods = {
             "list": this.list,
-            "list.make": this.listMake,
-            "list.range": this.listRange,
-            "list.concat": this.listConcat,
-            "list.flat": this.listFlat,
-            "list.get": this.listGet,
-            "list.has": this.listHas,
-            "list.index-of": this.listIndex,
-            "list.join": this.listJoin,
-            "list.length": this.listLength,
-            "list.pop": this.listPop,
-            "list.push": this.listPush,
-            "list.reverse": this.listReverse,
-            "list.set": this.listSet,
-            "list.shift": this.listShift,
-            "list.slice": this.listSlice,
-            "list.sort": this.listSort,
-            "list.splice": this.listSplice,
-            "list.unshift": this.listUnshift,
+            "list-make": this.listMake,
+            "list-range": this.listRange,
+            "list-concat": this.listConcat,
+            "list-flat": this.listFlat,
+            "list-get": this.listGet,
+            "list-has": this.listHas,
+            "list-index-of": this.listIndex,
+            "list-join": this.listJoin,
+            "list-length": this.listLength,
+            "list-pop": this.listPop,
+            "list-push": this.listPush,
+            "list-reverse": this.listReverse,
+            "list-set": this.listSet,
+            "list-shift": this.listShift,
+            "list-slice": this.listSlice,
+            "list-sort": this.listSort,
+            "list-splice": this.listSplice,
+            "list-unshift": this.listUnshift,
         };
         this.builtinHash = {};
         this.inter = interpreter;
@@ -1428,7 +1428,7 @@ class ListLib {
     }
     listGet(expr, env) {
         const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
-        Validator.assertArrayIndex("list.get", lst, index);
+        Validator.assertArrayIndex("list-get", lst, index);
         return lst[index];
     }
     listHas(expr, env) {
@@ -1461,7 +1461,7 @@ class ListLib {
     }
     listSet(expr, env) {
         const [lst, index, elem] = this.inter.evalArgs(["array", "number", "any"], expr, env);
-        Validator.assertArrayIndex("list.set", lst, index);
+        Validator.assertArrayIndex("list-set", lst, index);
         return lst[index] = elem;
     }
     listShift(expr, env) {
@@ -1478,7 +1478,7 @@ class ListLib {
     }
     listSplice(expr, env) {
         const [lst, start, count] = this.inter.evalArgs(["array", "number", ["number", 1]], expr, env);
-        Validator.assertArrayIndex("list.splice", lst, start);
+        Validator.assertArrayIndex("list-splice", lst, start);
         return lst.splice(start, count);
     }
     listUnshift(expr, env) {
@@ -1489,17 +1489,17 @@ class ListLib {
 class MathLib {
     constructor(interpreter) {
         this.methods = {
-            "math.pi": this.evalMathPi,
-            "math.abs": this.evalMathAbs,
-            "math.ceil": this.evalMathCeil,
-            "math.floor": this.evalMathFloor,
-            "math.log": this.evalMathLog,
-            "math.max": this.evalMathMax,
-            "math.min": this.evalMathMin,
-            "math.pow": this.evalMathPow,
-            "math.random": this.evalMathRandom,
-            "math.round": this.evalMathRound,
-            "math.sqrt": this.evalMathSqrt,
+            "math-pi": this.evalMathPi,
+            "math-abs": this.evalMathAbs,
+            "math-ceil": this.evalMathCeil,
+            "math-floor": this.evalMathFloor,
+            "math-log": this.evalMathLog,
+            "math-max": this.evalMathMax,
+            "math-min": this.evalMathMin,
+            "math-pow": this.evalMathPow,
+            "math-random": this.evalMathRandom,
+            "math-round": this.evalMathRound,
+            "math-sqrt": this.evalMathSqrt,
         };
         this.builtinHash = {};
         this.inter = interpreter;
@@ -1559,14 +1559,14 @@ class MathLib {
 class NumberLib {
     constructor(interpreter) {
         this.methods = {
-            "numb.max-int": this.evalMaxInt,
-            "numb.min-int": this.evalMinInt,
-            "numb.parse-float": this.evalParseFloat,
-            "numb.parse-int": this.evalParseInt,
-            "numb.is-finite": this.evalIsFinite,
-            "numb.is-integer": this.evalIsInteger,
-            "numb.to-fixed": this.evalToFixed,
-            "numb.to-string": this.evalToString,
+            "numb-max-int": this.evalMaxInt,
+            "numb-min-int": this.evalMinInt,
+            "numb-parse-float": this.evalParseFloat,
+            "numb-parse-int": this.evalParseInt,
+            "numb-is-finite": this.evalIsFinite,
+            "numb-is-integer": this.evalIsInteger,
+            "numb-to-fixed": this.evalToFixed,
+            "numb-to-string": this.evalToString,
         };
         this.builtinHash = {};
         this.inter = interpreter;
@@ -1590,7 +1590,7 @@ class NumberLib {
         const [str] = this.inter.evalArgs(["string"], expr, env);
         const res = parseFloat(str);
         if (isNaN(res)) {
-            throw "Error: 'numb.parse-float' argument not a number: " + str;
+            throw "Error: 'numb-parse-float' argument not a number: " + str;
         }
         return res;
     }
@@ -1598,7 +1598,7 @@ class NumberLib {
         const [str] = this.inter.evalArgs(["string"], expr, env);
         const res = parseInt(str);
         if (isNaN(res)) {
-            throw "Error: 'numb.parse-int' argument not a number: " + str;
+            throw "Error: 'numb-parse-int' argument not a number: " + str;
         }
         return res;
     }
@@ -1622,26 +1622,26 @@ class NumberLib {
 class StringLib {
     constructor(interpreter) {
         this.methods = {
-            "str.char-at": this.strCharAt,
-            "str.char-code-at": this.strCharCodeAt,
-            "str.concat": this.strConcat,
-            "str.ends-with": this.strEndsWith,
-            "str.from-char-code": this.strFromCharCode,
-            "str.includes": this.strIncludes,
-            "str.index-of": this.strIndexOf,
-            "str.last-index-of": this.strLastIndexOf,
-            "str.length": this.strLength,
-            "str.match": this.strMatch,
-            "str.repeat": this.strRepeat,
-            "str.replace": this.strReplace,
-            "str.split": this.strSplit,
-            "str.starts-with": this.strStartsWith,
-            "str.sub-string": this.strSubString,
-            "str.trim": this.strTrim,
-            "str.trim-left": this.strTrimLeft,
-            "str.trim-right": this.strTrimRight,
-            "str.to-lowercase": this.strToLowercase,
-            "str.to-uppercase": this.strToUppercase,
+            "str-char-at": this.strCharAt,
+            "str-char-code-at": this.strCharCodeAt,
+            "str-concat": this.strConcat,
+            "str-ends-with": this.strEndsWith,
+            "str-from-char-code": this.strFromCharCode,
+            "str-includes": this.strIncludes,
+            "str-index-of": this.strIndexOf,
+            "str-last-index-of": this.strLastIndexOf,
+            "str-length": this.strLength,
+            "str-match": this.strMatch,
+            "str-repeat": this.strRepeat,
+            "str-replace": this.strReplace,
+            "str-split": this.strSplit,
+            "str-starts-with": this.strStartsWith,
+            "str-sub-string": this.strSubString,
+            "str-trim": this.strTrim,
+            "str-trim-left": this.strTrimLeft,
+            "str-trim-right": this.strTrimRight,
+            "str-to-lowercase": this.strToLowercase,
+            "str-to-uppercase": this.strToUppercase,
         };
         this.builtinHash = {};
         this.inter = interpreter;
@@ -1661,7 +1661,7 @@ class StringLib {
         const [str, index] = this.inter.evalArgs(["string", "number"], expr, env);
         const code = str.charCodeAt(index);
         if (isNaN(code)) {
-            throw `Error: 'str.char-code-at' index out of range.`;
+            throw `Error: 'str-char-code-at' index out of range.`;
         }
         return code;
     }

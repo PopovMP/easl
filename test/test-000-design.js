@@ -92,7 +92,7 @@ b"                                                   `), "\na\nb");
                                                     num                     `), 5);
         });
         it("from function call", function () {
-            assert.strictEqual(easl.evaluate(`      (let len (list.length '(4 5 6)))
+            assert.strictEqual(easl.evaluate(`      (let len (list-length '(4 5 6)))
                                                     len                     `), 3);
         });
         it("cannot define variable twice", function () {

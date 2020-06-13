@@ -78,7 +78,7 @@ describe('scope', function () {
 
     it("'for' is a scope", function () {
         assert.strictEqual(easl.evaluate(`
-            {for i (list.range 1 2)
+            {for i (list-range 1 2)
                 {let a 1} }
             a                 `), "Error: Unbound identifier: a");
     });

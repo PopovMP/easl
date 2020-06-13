@@ -27,23 +27,23 @@
             "+ - * / = > < != >= <= % ~ equal not type-of to-string to-number to-boolean print parse eval display newline " +
 
             // list lib
-            "list list.make list.range list.has list.length list.pop list.push list.index-of list.reverse " +
-            "list.get list.set list.slice list.flat list.join list.shift list.sort list.unshift " +
+            "list list-make list-range list-has list-length list-pop list-push list-index-of list-reverse " +
+            "list-get list-set list-slice list-flat list-join list-shift list-sort list-unshift " +
 
             // math lib
-            "math.pi math.abs math.ceil math.floor math.log math.max math.min math.pow math.random math.round " +
-            "math.sign math.sqrt math.trunc " +
+            "math-pi math-abs math-ceil math-floor math-log math-max math-min math-pow math-random math-round " +
+            "math-sign math-sqrt math-trunc " +
 
             // number lib
-            "numb.max-value numb.min-value numb.parse-float numb.parse-int numb.is-finite numb.is-integer numb.to-fixed numb.to-string " +
+            "numb-max-value numb-min-value numb-parse-float numb-parse-int numb-is-finite numb-is-integer numb-to-fixed numb-to-string " +
 
             // string
-            "str.char-at str.char-code-at str.concat str.ends-with str.from-char-code str.includes str.index-of " +
-            "str.last-index-of str.length str.match str.repeat str.replace str.split str.starts-with str.sub-string " +
-            "str.trim str.trim-left str.trim-right str.to-lowercase str.to-uppercase " +
+            "str-char-at str-char-code-at str-concat str-ends-with str-from-char-code str-includes str-index-of " +
+            "str-last-index-of str-length str-match str-repeat str-replace str-split str-starts-with str-sub-string " +
+            "str-trim str-trim-left str-trim-right str-to-lowercase str-to-uppercase " +
 
             // date
-            "date.now date.to-string"
+            "date-now date-to-string"
         );
 
         const indentKeys = makeKeywords(

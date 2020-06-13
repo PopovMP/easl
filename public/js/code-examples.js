@@ -15,22 +15,22 @@ const examplesList = [
     {
         name: "Working with lists",
         code: `;; We define a list in square brackets.
-(print "Range of size 8 starting from 1 :" (list.range 8 1))
-(print "List with size 8 filled with 1  :" (list.make 8 1))
+(print "Range of size 8 starting from 1 :" (list-range 8 1))
+(print "List with size 8 filled with 1  :" (list-make 8 1))
 (print "Declare and define a new list   :" '(list 0 1 2 3))
 (let lst (list 0 1 2 3))
 (print "A list of numbers               :" lst)
-(print "The list length                 :" (list.length  lst    ))
-(print "The first element               :" (list.get     lst 0  ))
-(print "All but first one               :" (list.slice   lst 1  ))
-(print "The last element                :" (list.get     lst   (- (list.length lst) 1)) )
-(print "All but the last one            :" (list.slice   lst 0 (- (list.length lst) 1)) )
-(print "The third element               :" (list.get     lst 2  ))
-(print "From the 2nd to the 4th         :" (list.slice   lst 1 4))
-(print "Add an element to the end       :" (list.push    lst 4  )) ; Returns the new length of the list
-(print "Set 1st element on place        :" (list.set     lst 0 2)) ; Returns the new element
-(print "Push one elem in front          :" (list.unshift lst 3  )) ; Returns the new length of the list
-(print "Sort a list on place and get it :" (list.sort    lst    ))
+(print "The list length                 :" (list-length  lst    ))
+(print "The first element               :" (list-get     lst 0  ))
+(print "All but first one               :" (list-slice   lst 1  ))
+(print "The last element                :" (list-get     lst   (- (list-length lst) 1)) )
+(print "All but the last one            :" (list-slice   lst 0 (- (list-length lst) 1)) )
+(print "The third element               :" (list-get     lst 2  ))
+(print "From the 2nd to the 4th         :" (list-slice   lst 1 4))
+(print "Add an element to the end       :" (list-push    lst 4  )) ; Returns the new length of the list
+(print "Set 1st element on place        :" (list-set     lst 0 2)) ; Returns the new element
+(print "Push one elem in front          :" (list-unshift lst 3  )) ; Returns the new length of the list
+(print "Sort a list on place and get it :" (list-sort    lst    ))
 
 `
     },
@@ -42,9 +42,9 @@ const examplesList = [
 (let lst '())                            ; make an empty list
 
 (repeat 10                              ; cycle 10 times
-    (let random  (* (math.random) 100)) ; generate a random number between 0 and 100
-    (let rounded (math.round random)  ) ; round the number
-    (list.push lst rounded) )            ; add the number to the end of the list
+    (let random  (* (math-random) 100)) ; generate a random number between 0 and 100
+    (let rounded (math-round random)  ) ; round the number
+    (list-push lst rounded) )            ; add the number to the end of the list
     
 (print lst) ; print the list
 `
@@ -55,7 +55,7 @@ const examplesList = [
         code: `;; Odd or even with 'case'
 
 ; Generate a random number between 0 and 9
-(let n (math.floor (* 10 (math.random))) )
+(let n (math-floor (* 10 (math-random))) )
 
 ; Checks which list of options contains the value of 'n' and returns the text.
 (let type (case n
@@ -106,16 +106,16 @@ const examplesList = [
 
 (let map (func lst)
     (let i    0)    
-    (let len (list.length lst))
+    (let len (list-length lst))
     (let res '())
 
     (while (< i len)
-         (list.push res (func (list.get lst i)))
+         (list-push res (func (list-get lst i)))
          (inc i) )
 
     res)
 
-(let range (list.range 10 1))         ; Make a range form 1 to 10
+(let range (list-range 10 1))         ; Make a range form 1 to 10
 (let lst (map (λ (e) (* e 2)) range)) ; Double each element 
 (print lst)
 `
@@ -126,15 +126,15 @@ const examplesList = [
         code: `;; Implementation of 'for-each' in EASL
 
 (let for-each (func lst)
-    (let len (list.length lst))
+    (let len (list-length lst))
     (let i   0)
 
     (while (< i len)
-         (func (list.get lst i))
+         (func (list-get lst i))
          (inc i) ))
 
 (let printer (λ (e) (print e)))
-(let range   (list.range 10 1))
+(let range   (list-range 10 1))
 
 (for-each printer range)
 `
@@ -146,9 +146,9 @@ const examplesList = [
     `;; Swap list elements
 
 (let swap-on-place (lst i1 i2)
-    (let temp (list.get lst i1))
-    (list.set lst i1 (list.get lst i2))
-    (list.set lst i2 temp))
+    (let temp (list-get lst i1))
+    (list-set lst i1 (list-get lst i2))
+    (list-set lst i2 temp))
 
 (let lst '(1 2 3 4))
 (print "Original:" lst)
@@ -176,7 +176,7 @@ const examplesList = [
 ; for the multiples of five print "Buzz".
 ; For numbers which are multiples of both three and five print "FizzBuzz".
 
-(for i (list.range 100 1)
+(for i (list-range 100 1)
     (print (or (~ (if (% i 3) "" "Fizz")
                   (if (% i 5) "" "Buzz"))
                i )) )
@@ -198,7 +198,7 @@ const examplesList = [
     (let res '())
     (let loop (n)
         (when (<= n max)
-            (list.push res (get-fizz-buzz n))
+            (list-push res (get-fizz-buzz n))
             (loop (+ n 1))))
     (loop 1)
     res)
@@ -220,7 +220,7 @@ const examplesList = [
         (else (loop 2 1 1)) ))
 
 ;; Print
-(for i (list.range 10 1)
+(for i (list-range 10 1)
     (print "fibo" i ":" (fibo i)) )
 `   },
 
@@ -245,22 +245,22 @@ const examplesList = [
     (let loop (index acc)
         (if index
             (loop (- index 1)
-                  (+ acc (list.get lst index)))
-            (+ acc (list.get lst 0))))
-    (loop (- (list.length lst) 1) 0))
+                  (+ acc (list-get lst index)))
+            (+ acc (list-get lst 0))))
+    (loop (- (list-length lst) 1) 0))
 
 ;; Benchmark function
 (let benchmark (func lst times method)
-    (let start-time (date.now))
+    (let start-time (date-now))
 
     (repeat times (func lst))
  
-    (let time (/ (- (date.now) start-time) 1000))
+    (let time (/ (- (date-now) start-time) 1000))
     (let res  (func lst))
     (print "Using:" method "Res:" res "Time:" time) )
 
 ;; Make a list from 1 to N inclusively
-(let lst-nums (list.range 100 1)) ;; Try with 10, 100, or 1000 elements
+(let lst-nums (list-range 100 1)) ;; Try with 10, 100, or 1000 elements
 
 (let rounds 1000)
 
@@ -275,16 +275,16 @@ const examplesList = [
         code: `;; Find the maximum of a list recursively
 
 (let list-max (lst)
-    (let len (list.length lst))
+    (let len (list-length lst))
 
     (let loop (index max)
         (if (= index len)
             max
             (loop (+ index 1)
-                  (math.max max
-                            (list.get lst index)))))
+                  (math-max max
+                            (list-get lst index)))))
 
-    (loop 0 (list.get lst 0)) )
+    (loop 0 (list-get lst 0)) )
 
 (let lst '(42 34 12 5 62 2))
 (print "List :" lst)
@@ -302,7 +302,7 @@ const examplesList = [
     (for e lst
         (unless (equal last e)
             (set last e)
-            (list.push res e)))
+            (list-push res e)))
     res)
 
 (print (clean '(0 1 1 2 3 4 5 5 5 6 7 7 8 8 8 9 9 9)))
@@ -318,34 +318,34 @@ const examplesList = [
 
 (let lst '(1 2 3 4 5))
 
-; (list.reduce lst (λ (element accumulator index) (...)) initial-value) 
-(let sum (list.reduce lst (λ (e acc) (+ e acc))  0) )
+; (list-reduce lst (λ (element accumulator index) (...)) initial-value) 
+(let sum (list-reduce lst (λ (e acc) (+ e acc))  0) )
 (print "sum elem" sum)
 
 
-; (list.map lst (λ (element index) (...)))
-(let doubled (list.map lst (λ (e) (* 2 e))))
+; (list-map lst (λ (element index) (...)))
+(let doubled (list-map lst (λ (e) (* 2 e))))
 
 (print "doubled" doubled)
 
-; (list.for-each lst (λ (element index) (...)))
-(list.for-each lst (λ (e i) (print (str.repeat " " (- (list.length lst) i)) e)))
+; (list-for-each lst (λ (element index) (...)))
+(list-for-each lst (λ (e i) (print (str-repeat " " (- (list-length lst) i)) e)))
 
 
-; (list.filter lst (λ (element index) (...)))
-(let odd (list.filter lst (λ (e) (and (% e 2) e))))
+; (list-filter lst (λ (element index) (...)))
+(let odd (list-filter lst (λ (e) (and (% e 2) e))))
 
 (print "odd elem" odd)
 
 
-; (list.any lst (λ (element index) (...)))
-(let has-gt-3 (list.any lst (λ (e) (> e 3))))
+; (list-any lst (λ (element index) (...)))
+(let has-gt-3 (list-any lst (λ (e) (> e 3))))
 
 (print "has elem > 3" has-gt-3)
 
 
-; (list.all lst (λ (element index) (...)))
-(let all-gt-3 (list.all lst (λ (e) (> e 3))))
+; (list-all lst (λ (element index) (...)))
+(let all-gt-3 (list-all lst (λ (e) (> e 3))))
 
 (print "all elem > 3" all-gt-3)
  
@@ -386,7 +386,7 @@ const examplesList = [
         'even))
 
 (repeat 10
-    (let n (math.ceil (* 100 (math.random))))
+    (let n (math-ceil (* 100 (math-random))))
     (print n 'is (odd-even n)))
 `
     },
@@ -431,7 +431,7 @@ const examplesList = [
     (let loop (index prev)
         (when (< index length)
             (let new (next prev))
-            (list.push res new)
+            (list-push res new)
             (loop (+ index 1) new)))
     (loop 1 first)
     res)
@@ -460,7 +460,7 @@ const examplesList = [
         code: `;; EASL source code in a string
 (let src "
     (let lst '(1 2 3 4 5 6 7))
-    (let len (list.length lst))
+    (let len (list-length lst))
     (* 6 len)
 " )
 
@@ -481,13 +481,13 @@ const examplesList = [
      (list fname lname age) )
 
 (let person.clone (person)
-    (list.slice person) )
+    (list-slice person) )
 
 (let person.grow (person)
-    (list.set person .age (+ (list.get person .age) 1)))
+    (list-set person .age (+ (list-get person .age) 1)))
 
 (let person.say (person)
-    (print (list.join person " ")))
+    (print (list-join person " ")))
 
 (let john (person.new "John" "Doe" 33))
 (person.say  john)
@@ -715,15 +715,15 @@ const examplesList = [
 (let input-text "34")
 
 (let code-list '())
-(for ch (str.split code-text)
-   (if (list.has (list "+" "-" ">" "<" "," "." "[" "]") ch)
-       (list.push code-list ch) ))
+(for ch (str-split code-text)
+   (if (list-has (list "+" "-" ">" "<" "," "." "[" "]") ch)
+       (list-push code-list ch) ))
 
 (let code-index  0)
-(let code-len (list.length code-list))
+(let code-len (list-length code-list))
 
 (let input-index 0)
-(let input-list (str.split input-text))
+(let input-list (str-split input-text))
 
 (let buffer '(0))
 (let pointer  0)
@@ -733,15 +733,15 @@ const examplesList = [
 
 (while (< code-index code-len)
     ;; Read the current command.
-    (set command (list.get code-list code-index))
+    (set command (list-get code-list code-index))
     (inc code-index)
     (inc steps)
  
     (case command
         ;; Increment the pointer.
         ((">") (inc pointer)
-             (if (= (list.length buffer) pointer)
-                 (list.push buffer 0) ))
+             (if (= (list-length buffer) pointer)
+                 (list-push buffer 0) ))
 
         ;; Decrement the pointer.
         (("<") (if (> pointer 0)
@@ -749,52 +749,52 @@ const examplesList = [
                  (print "Error: pointer < 0")))
 
         ;; Increment the byte at the pointer.
-        (("+") (list.set buffer pointer
-                     (+ (list.get buffer pointer) 1) ))
+        (("+") (list-set buffer pointer
+                     (+ (list-get buffer pointer) 1) ))
 
         ;; Decrement the byte at the pointer.
-        (("-") (list.set buffer pointer
-                     (- (list.get buffer pointer) 1) ))
+        (("-") (list-set buffer pointer
+                     (- (list-get buffer pointer) 1) ))
 
         ;; Output the byte at the pointer.
         ((".") (set output (~ output
-                            (str.from-char-code (list.get buffer pointer))) ))
+                            (str-from-char-code (list-get buffer pointer))) ))
 
         ;; Input a byte and store it in the byte at the pointer.
-        ((",") (let input (list.get input-list input-index))
+        ((",") (let input (list-get input-list input-index))
              (inc input-index)
-             (list.set buffer pointer
+             (list-set buffer pointer
                      (if (equal (type-of input) "string")
-                         (str.char-code-at input 0)
+                         (str-char-code-at input 0)
                          0 )))
 
         ;; Jump forward past the matching ] if the byte at the pointer is zero.
-        ("[" (when (= (list.get buffer pointer) 0)
+        ("[" (when (= (list-get buffer pointer) 0)
                    (let depth 1)
                    (while (> depth 0)
-                          (set command (list.get code-list code-index))
+                          (set command (list-get code-list code-index))
                           (inc code-index)
                           (case command
                               ("[" (inc depth))
                               ("]" (dec depth)) ))))
 
         ;; Jump backward to the matching [ unless the byte at the pointer is zero.
-        ("]" (when (not (= (list.get buffer pointer) 0))
+        ("]" (when (not (= (list-get buffer pointer) 0))
                    (let depth 1)
                    (dec code-index 2)
                    (while (> depth 0)
-                          (set command (list.get code-list code-index))
+                          (set command (list-get code-list code-index))
                           (dec code-index)
                           (case command
                               ("]" (inc depth))
                               ("[" (dec depth)) ))
                    (inc code-index) )) ))
 
-(print "Buffer: " (list.join buffer ""))
+(print "Buffer: " (list-join buffer ""))
 (print "Pointer:"  pointer)
 (print "Steps:  "  steps)
 (print ".....................")
-(print "Input:  " (list.join input-list ""))
+(print "Input:  " (list-join input-list ""))
 (print "Output: "  output)
 `
     },
@@ -870,17 +870,17 @@ exit :
 (let var-values (list)) ; Custom variables and labels values
 
 (let set-var (name val)
-   (let index (list.index-of var-names name))
+   (let index (list-index-of var-names name))
    (if (>= index 0)
-       (list.set var-values index val)
-       (block (list.push var-names  name)
-              (list.push var-values val) )))
+       (list-set var-values index val)
+       (block (list-push var-names  name)
+              (list-push var-values val) )))
 
 (let get-var (name)
-   (let index (list.index-of var-names name))
+   (let index (list-index-of var-names name))
    (if (>= index 0)
-       (list.get var-values index)
-       (throw (str.concat "Variable not defined: " name)) ))
+       (list-get var-values index)
+       (throw (str-concat "Variable not defined: " name)) ))
 
 (let set-val (name val)
     (case name
@@ -1080,41 +1080,41 @@ exit :
 
 (let parse-code-line (code-line)
     ; Parse a command line
-    (let split-parts (str.split code-line " "))
+    (let split-parts (str-split code-line " "))
     (let non-empty-parts (list))
     (for element split-parts
         (unless (equal element "")
-                (list.push non-empty-parts element) ))
+                (list-push non-empty-parts element) ))
 
     (let command (list))
     (for par-txt non-empty-parts
         (let param (parse-param par-txt))
         (if (or (equal (type-of param) "string")
                 (equal (type-of param) "number"))
-            (list.push command param) ))
+            (list-push command param) ))
 
     command )
 
 (let parse-code (code-txt)
-    (let src-list (str.split code-txt "\\n"))
+    (let src-list (str-split code-txt "\\n"))
     (let command-list '())
 
     (for code-line src-list
-        (let comment-index (str.index-of code-line ";"))
+        (let comment-index (str-index-of code-line ";"))
         (if (>= comment-index 0)
-            (set code-line (str.sub-string code-line 0 comment-index)) )
-        (set code-line (str.trim code-line))
+            (set code-line (str-sub-string code-line 0 comment-index)) )
+        (set code-line (str-trim code-line))
 
-        (if (> (str.length code-line) 0) (block
+        (if (> (str-length code-line) 0) (block
             (let command (parse-code-line code-line))
-            (if (> (list.length command) 0)
-                (list.push command-list command) ) )) )
+            (if (> (list-length command) 0)
+                (list-push command-list command) ) )) )
 
     command-list )
 
 (let eval-asm (code-txt)
     (let lst-commands     (parse-code code-txt))
-    (let lst-commands-len (list.length lst-commands))
+    (let lst-commands-len (list-length lst-commands))
 
     (set IP 0)
     (for command lst-commands
@@ -1125,7 +1125,7 @@ exit :
     (let max-cycles 10000)
     (let cycle 0)
     (while (< IP lst-commands-len)
-        (let command (list.get lst-commands IP))
+        (let command (list-get lst-commands IP))
         (call eval-op command)
         (inc IP)
         (inc cycle)

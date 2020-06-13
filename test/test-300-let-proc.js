@@ -36,7 +36,7 @@ describe("function", function () {
 
     describe("function call", function () {
         it("builtin function", function () {
-            assert.strictEqual(easl.evaluate(`  (math.pi)                      `), 3.141592653589793);
+            assert.strictEqual(easl.evaluate(`  (math-pi)                      `), 3.141592653589793);
         });
         it("user function", function () {
             assert.strictEqual(easl.evaluate(`

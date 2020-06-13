@@ -173,31 +173,31 @@ describe('ext library', function () {
         it('num element', function () {
             const options = {extContext: this, extFunctions: {"ext.getList": () => [1]}};
 
-            assert.strictEqual(easl.evaluate(`  (type-of (list.get (ext.getList) 0))  `, options), "number");
+            assert.strictEqual(easl.evaluate(`  (type-of (list-get (ext.getList) 0))  `, options), "number");
         });
 
         it('string element', function () {
             const options = {extContext: this, extFunctions: {"ext.getList": () => ["a", "b"]}};
 
-            assert.strictEqual(easl.evaluate(`  (type-of (list.get (ext.getList) 1))  `, options), "string");
+            assert.strictEqual(easl.evaluate(`  (type-of (list-get (ext.getList) 1))  `, options), "string");
         });
 
         it('null element', function () {
             const options = {extContext: this, extFunctions: {"ext.getList": () => [null]}};
 
-            assert.strictEqual(easl.evaluate(`  (type-of (list.get (ext.getList) 0))  `, options), "null");
+            assert.strictEqual(easl.evaluate(`  (type-of (list-get (ext.getList) 0))  `, options), "null");
         });
 
         it('boolean element', function () {
             const options = {extContext: this, extFunctions: {"ext.getList": () => [true]}};
 
-            assert.strictEqual(easl.evaluate(`  (type-of (list.get (ext.getList) 0))  `, options), "boolean");
+            assert.strictEqual(easl.evaluate(`  (type-of (list-get (ext.getList) 0))  `, options), "boolean");
         });
 
         it('list length', function () {
             const options = {extContext: this, extFunctions: {"ext.getList": () => [1, 2, 3]}};
 
-            assert.strictEqual(easl.evaluate(`  (list.length (ext.getList))  `, options), 3);
+            assert.strictEqual(easl.evaluate(`  (list-length (ext.getList))  `, options), 3);
         });
 
         it('list sum', function () {
@@ -215,7 +215,7 @@ describe('ext library', function () {
         it('num list by ref', function () {
             const lst = [1, 2, 3];
             const options = {extContext: this, extFunctions: {"ext.getList": () => lst}};
-            easl.evaluate(`  (list.set (ext.getList) 0 42)              `, options);
+            easl.evaluate(`  (list-set (ext.getList) 0 42)              `, options);
 
             assert.deepStrictEqual(lst, [42, 2, 3]);
         });
@@ -223,7 +223,7 @@ describe('ext library', function () {
         it('string list by ref', function () {
             const lst = ["a", "b"];
             const options = {extContext: this, extFunctions: {"ext.getList": () => lst}};
-            easl.evaluate(`  (list.set (ext.getList) 1 "x")             `, options);
+            easl.evaluate(`  (list-set (ext.getList) 1 "x")             `, options);
 
             assert.deepStrictEqual(lst, ["a", "x"]);
         });

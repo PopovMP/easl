@@ -4,25 +4,25 @@ class ListLib implements ILib {
     private readonly inter: Interpreter;
     private readonly methods: any = {
         "list"         : this.list,
-        "list.make"    : this.listMake,
-        "list.range"   : this.listRange,
+        "list-make"    : this.listMake,
+        "list-range"   : this.listRange,
 
-        "list.concat"  : this.listConcat,
-        "list.flat"    : this.listFlat,
-        "list.get"     : this.listGet,
-        "list.has"     : this.listHas,
-        "list.index-of": this.listIndex,
-        "list.join"    : this.listJoin,
-        "list.length"  : this.listLength,
-        "list.pop"     : this.listPop,
-        "list.push"    : this.listPush,
-        "list.reverse" : this.listReverse,
-        "list.set"     : this.listSet,
-        "list.shift"   : this.listShift,
-        "list.slice"   : this.listSlice,
-        "list.sort"    : this.listSort,
-        "list.splice"  : this.listSplice,
-        "list.unshift" : this.listUnshift,
+        "list-concat"  : this.listConcat,
+        "list-flat"    : this.listFlat,
+        "list-get"     : this.listGet,
+        "list-has"     : this.listHas,
+        "list-index-of": this.listIndex,
+        "list-join"    : this.listJoin,
+        "list-length"  : this.listLength,
+        "list-pop"     : this.listPop,
+        "list-push"    : this.listPush,
+        "list-reverse" : this.listReverse,
+        "list-set"     : this.listSet,
+        "list-shift"   : this.listShift,
+        "list-slice"   : this.listSlice,
+        "list-sort"    : this.listSort,
+        "list-splice"  : this.listSplice,
+        "list-unshift" : this.listUnshift,
     };
 
     public readonly builtinFunc: string[];
@@ -78,7 +78,7 @@ class ListLib implements ILib {
     // (list.get lst index)
     private listGet(expr: any[], env: any): any {
         const [lst, index] = <[any[], number]>this.inter.evalArgs(["array", "number"], expr, env);
-        Validator.assertArrayIndex("list.get", lst, index);
+        Validator.assertArrayIndex("list-get", lst, index);
 
         return lst[index];
     }
@@ -136,7 +136,7 @@ class ListLib implements ILib {
     // (list.set lst index elem)
     private listSet(expr: any[], env: any): any[] {
         const [lst, index, elem] = <[any[], number, any]>this.inter.evalArgs(["array", "number", "any"], expr, env);
-        Validator.assertArrayIndex("list.set", lst, index);
+        Validator.assertArrayIndex("list-set", lst, index);
 
         return lst[index] = elem;
     }
@@ -167,7 +167,7 @@ class ListLib implements ILib {
     // Deletes elements from a list. Returns a list of the deleted elements.
     private listSplice(expr: any[], env: any[]): any[] {
         const [lst, start, count] = <[any[], number, number]>this.inter.evalArgs(["array", "number", ["number", 1]], expr, env);
-        Validator.assertArrayIndex("list.splice", lst, start);
+        Validator.assertArrayIndex("list-splice", lst, start);
 
         return lst.splice(start, count);
     }

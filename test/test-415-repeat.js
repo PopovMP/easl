@@ -27,7 +27,7 @@ describe('repeat loop', function () {
     it('the count can be an expression', function () {
         assert.strictEqual(easl.evaluate(` 
                 (let n 0)
-                (repeat (list.length (list.range 5))
+                (repeat (list-length (list-range 5))
                     (inc n))
                 n                                      `), 5);
     });

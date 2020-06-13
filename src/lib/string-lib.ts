@@ -3,26 +3,26 @@
 class StringLib implements ILib {
     private readonly inter: Interpreter;
     private readonly methods: any = {
-        "str.char-at"       : this.strCharAt,
-        "str.char-code-at"  : this.strCharCodeAt,
-        "str.concat"        : this.strConcat,
-        "str.ends-with"     : this.strEndsWith,
-        "str.from-char-code": this.strFromCharCode,
-        "str.includes"      : this.strIncludes,
-        "str.index-of"      : this.strIndexOf,
-        "str.last-index-of" : this.strLastIndexOf,
-        "str.length"        : this.strLength,
-        "str.match"         : this.strMatch,
-        "str.repeat"        : this.strRepeat,
-        "str.replace"       : this.strReplace,
-        "str.split"         : this.strSplit,
-        "str.starts-with"   : this.strStartsWith,
-        "str.sub-string"    : this.strSubString,
-        "str.trim"          : this.strTrim,
-        "str.trim-left"     : this.strTrimLeft,
-        "str.trim-right"    : this.strTrimRight,
-        "str.to-lowercase"  : this.strToLowercase,
-        "str.to-uppercase"  : this.strToUppercase,
+        "str-char-at"       : this.strCharAt,
+        "str-char-code-at"  : this.strCharCodeAt,
+        "str-concat"        : this.strConcat,
+        "str-ends-with"     : this.strEndsWith,
+        "str-from-char-code": this.strFromCharCode,
+        "str-includes"      : this.strIncludes,
+        "str-index-of"      : this.strIndexOf,
+        "str-last-index-of" : this.strLastIndexOf,
+        "str-length"        : this.strLength,
+        "str-match"         : this.strMatch,
+        "str-repeat"        : this.strRepeat,
+        "str-replace"       : this.strReplace,
+        "str-split"         : this.strSplit,
+        "str-starts-with"   : this.strStartsWith,
+        "str-sub-string"    : this.strSubString,
+        "str-trim"          : this.strTrim,
+        "str-trim-left"     : this.strTrimLeft,
+        "str-trim-right"    : this.strTrimRight,
+        "str-to-lowercase"  : this.strToLowercase,
+        "str-to-uppercase"  : this.strToUppercase,
     };
 
     public readonly builtinFunc: string[];
@@ -56,7 +56,7 @@ class StringLib implements ILib {
         const code: number = str.charCodeAt(index);
 
         if ( isNaN(code) ) {
-            throw `Error: 'str.char-code-at' index out of range.`;
+            throw `Error: 'str-char-code-at' index out of range.`;
         }
 
         return code;

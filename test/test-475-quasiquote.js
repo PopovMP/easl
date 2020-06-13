@@ -28,7 +28,7 @@ describe("quasiquote", function () {
 
     it("qq with unquote-spread 2", function () {
         assert.strictEqual(easl.evaluate(` 
-            (to-string \`(1 ,(math.sqrt 4) 3 @(list.range 3 4) 7)) 
+            (to-string \`(1 ,(math-sqrt 4) 3 @(list-range 3 4) 7)) 
          `), "(1 2 3 4 5 6 7)");
     });
 

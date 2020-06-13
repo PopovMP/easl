@@ -3,8 +3,8 @@
 class DateLib implements ILib {
     private readonly inter: Interpreter;
     private readonly methods: any = {
-        "date.now"       : this.evalDateNow,
-        "date.to-string" : this.evalDateToString,
+        "date-now"       : this.evalDateNow,
+        "date-to-string" : this.evalDateToString,
     };
 
     public readonly builtinFunc: string[];

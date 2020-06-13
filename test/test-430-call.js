@@ -104,7 +104,7 @@ describe('call', function () {
 
     it('call builtin function with an array', function () {
         assert.strictEqual(easl.evaluate(`
-            {call list.length (list (list 2 3 4 5 6))}        `), 5);
+            {call list-length (list (list 2 3 4 5 6))}        `), 5);
     });
 
     it('call builtin function with defined empty list', function () {
@@ -184,22 +184,22 @@ describe('call', function () {
 
     it('call with expression, which produces num list', function () {
         assert.strictEqual(easl.evaluate(`
-            (call + (list.range 4 1))           `), 10);
+            (call + (list-range 4 1))           `), 10);
     });
 
     it('call with expression, which produces string list', function () {
         assert.strictEqual(easl.evaluate(`
-            (call ~ (list.concat '(a b) '(c)))       `), "abc");
+            (call ~ (list-concat '(a b) '(c)))       `), "abc");
     });
 
     it('factorial 5', function () {
         assert.strictEqual(easl.evaluate(`
-            {call * (list.range 5 1)}               `), 120);
+            {call * (list-range 5 1)}               `), 120);
     });
 
     it('factorial 5 - 2', function () {
         assert.strictEqual(easl.evaluate(`
-            (let lst (list.range 5 1))
+            (let lst (list-range 5 1))
             (call * lst)                            `), 120);
     });
 });

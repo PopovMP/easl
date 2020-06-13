@@ -31,7 +31,7 @@ describe('problems', function () {
             (let loop (index prev)
                 (when (< index length)
                     (let new (next prev))
-                    (list.push res new)
+                    (list-push res new)
                     (loop (+ index 1) new)))
             (loop 1 first)
             res)
@@ -44,9 +44,9 @@ describe('problems', function () {
     it('Swap elements of a list', function () {
         assert.deepStrictEqual(easl.evaluate(`   
             (let swap-on-place (lst i1 i2)
-                (let temp (list.get lst i1))
-                (list.set lst i1 (list.get lst i2))
-                (list.set lst i2 temp))
+                (let temp (list-get lst i1))
+                (list-set lst i1 (list-get lst i2))
+                (list-set lst i2 temp))
 
             (let lst '(1 2 3 4))
             (swap-on-place lst 0 3)
@@ -59,10 +59,10 @@ describe('problems', function () {
             (let list-max (lst)
                 (let loop (lst max)
                     (if lst
-                        (loop (list.slice lst 1)
-                              (math.max max (list.get lst 0)))
+                        (loop (list-slice lst 1)
+                              (math-max max (list-get lst 0)))
                         max))
-                (loop lst (list.get lst 0)))
+                (loop lst (list-get lst 0)))
             
             (list-max '(42 34 12 5 62 2))
                                                              `), 62);

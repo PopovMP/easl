@@ -73,13 +73,13 @@ describe('Parser', function () {
         });
 
         it("empty string", function () {
-            assert.deepStrictEqual(parser.tokenize("(str.length \"\")"),
-                ["(", "str.length", "(", "string", "", ")", ")"]);
+            assert.deepStrictEqual(parser.tokenize("(str-length \"\")"),
+                ["(", "str-length", "(", "string", "", ")", ")"]);
         });
 
         it("two strings", function () {
-            assert.deepStrictEqual(parser.tokenize("(str.concat \"Hello \" \"world!\")"),
-                ["(", "str.concat", "(", "string", "Hello ", ")", "(", "string", "world!", ")", ")"]);
+            assert.deepStrictEqual(parser.tokenize("(str-concat \"Hello \" \"world!\")"),
+                ["(", "str-concat", "(", "string", "Hello ", ")", "(", "string", "world!", ")", ")"]);
         });
 
         it("string with quotes", function () {
