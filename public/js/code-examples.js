@@ -395,12 +395,19 @@ const examplesList = [
         name: "Closure adder",
         code: `;; Closure adder
 
-(let make-adder (a)
-    (λ (b) (+ a b) ))
+(let add ((n null))
+    (let sum (or n 0))
+    (if (equal n null) 
+        sum
+        (λ ((n null))
+            (if (equal n null)
+                sum
+                (add (+ n sum))))))
 
-(let add2 (make-adder 2))
-
-(print (add2 3))
+(print '(add)             "=>" (add)             )
+(print '((add 3))         "=>" ((add 3))         )
+(print '(((add 3) 4))     "=>" (((add 3) 4))     )
+(print '((((add 3) 4) 5)) "=>" ((((add 3) 4) 5)) )
 `
     },
 
