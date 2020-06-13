@@ -3,21 +3,19 @@
 class ListLib implements ILib {
     private readonly inter: Interpreter;
     private readonly methods: any = {
+        "list"         : this.list,
+        "list.make"    : this.listMake,
+        "list.range"   : this.listRange,
+
         "list.concat"  : this.listConcat,
-        "list.first"   : this.listFirst,
-        "list.flatten" : this.listFlatten,
+        "list.flat"    : this.listFlat,
         "list.get"     : this.listGet,
         "list.has"     : this.listHas,
         "list.index-of": this.listIndex,
         "list.join"    : this.listJoin,
-        "list.last"    : this.listLast,
         "list.length"  : this.listLength,
-        "list.less"    : this.listLess,
-        "list.make"    : this.listMake,
         "list.pop"     : this.listPop,
         "list.push"    : this.listPush,
-        "list.range"   : this.listRange,
-        "list.rest"    : this.listRest,
         "list.reverse" : this.listReverse,
         "list.set"     : this.listSet,
         "list.shift"   : this.listShift,
@@ -43,6 +41,25 @@ class ListLib implements ILib {
         return this.methods[expr[0]].call(this, expr, env);
     }
 
+    // (list expr*)
+    private list(expr: any[], env: any[]): any[] {
+        return this.inter.mapExprList(expr.slice(1), env);
+    }
+
+    // (list.make size fill=0)
+    private listMake(expr: any[], env: any[]): any[] {
+        const [size, fill] = <[number, any]>this.inter.evalArgs(["number", ["any", 0]], expr, env);
+
+        return [ ...Array(size).keys() ].map( () => fill );
+    }
+
+    // (list.range size from=0)
+    private listRange(expr: any[], env: any[]): any[] {
+        const [size, from] = <[number, number]>this.inter.evalArgs(["number", ["number", 0]], expr, env);
+
+        return [ ...Array(size).keys() ].map( (e: number) => e + from );
+    }
+
     // (list.concat lst1 lst2)
     private listConcat(expr: any[], env: any): any[] {
         const [lst1, lst2] = <[any[], any[]]>this.inter.evalArgs(["array", "array"], expr, env);
@@ -50,26 +67,12 @@ class ListLib implements ILib {
         return lst1.concat(lst2);
     }
 
-    // (list.first lst)
-    private listFirst(expr: any[], env: any[]): any {
-        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
-        Validator.assertArrayIndex("list.first", lst, 0);
+    // (list.flat lst depth=1)
+    // Returns a new array with all sub-array elements concatenated into it recursively up to the specified depth.
+    private listFlat(expr: any[], env: any[]): any {
+        const [lst, depth] = <[any[], number]>this.inter.evalArgs(["array", ["number", 1]], expr, env);
 
-        return lst[0];
-    }
-
-    // (list.flatten lst)
-    private listFlatten(expr: any[], env: any): any[] {
-        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
-
-        const flatten = (arr: any[]): any[] =>
-                arr.reduce( (acc: any[], elem: any) =>
-                                acc.concat( Array.isArray(elem)
-                                                ? flatten(elem)
-                                                : elem ),
-                             []);
-
-        return flatten(lst);
+        return lst.flat(depth);
     }
 
     // (list.get lst index)
@@ -101,20 +104,6 @@ class ListLib implements ILib {
         return lst.join(sep);
     }
 
-    // (list.last lst)
-    private listLast(expr: any[], env: any[]): any {
-        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
-
-        return lst.length > 0 ? lst[lst.length - 1] : null;
-    }
-
-    // (list.less lst)
-    private listLess(expr: any[], env: any[]): any[] {
-        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
-
-        return lst.length > 1 ? lst.slice(0, lst.length - 1) : [];
-    }
-
     // (list.pop lst)
     private listPop(expr: any[], env: any[]): any[] {
         const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
@@ -129,34 +118,12 @@ class ListLib implements ILib {
         return lst.length;
     }
 
-    // (list.make size fill=0)
-    private listMake(expr: any[], env: any[]): any[] {
-        const [size, fill] = <[number, any]>this.inter.evalArgs(["number", ["any", 0]], expr, env);
-
-        return [ ...Array(size).keys() ].map( () => fill );
-    }
-
     // (list.push lst elem)
-    private listPush(expr: any[], env: any[]): any[] {
+    //  Appends new elements to an array, and returns the new length of the array.
+    private listPush(expr: any[], env: any[]): number {
         const [lst, elem] = <[any[], any]>this.inter.evalArgs(["array", "any"], expr, env);
 
-        lst.push(elem);
-
-        return lst;
-    }
-
-    // (list.range size from=0)
-    private listRange(expr: any[], env: any[]): any[] {
-        const [size, from] = <[number, number]>this.inter.evalArgs(["number", ["number", 0]], expr, env);
-
-        return [ ...Array(size).keys() ].map( (e: number) => e + from );
-    }
-
-    // (list.rest lst)
-    private listRest(expr: any[], env: any[]): any[] {
-        const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
-
-        return Array.isArray(lst) && lst.length > 1 ? lst.slice(1) : [];
+        return lst.push(elem);
     }
 
     // (list.reverse lst)
@@ -171,12 +138,11 @@ class ListLib implements ILib {
         const [lst, index, elem] = <[any[], number, any]>this.inter.evalArgs(["array", "number", "any"], expr, env);
         Validator.assertArrayIndex("list.set", lst, index);
 
-        lst[index] = elem;
-
-        return lst;
+        return lst[index] = elem;
     }
 
     // (list.shift lst)
+    // Removes the first element from an array and returns that removed element ot undefined.
     private listShift(expr: any[], env: any[]): any[] {
         const [lst] = <[any[]]>this.inter.evalArgs(["array"], expr, env);
 
@@ -186,7 +152,6 @@ class ListLib implements ILib {
     // (list.slice lst start=0 end=length)
     private listSlice(expr: any[], env: any[]): any[] {
         const [lst, start, end] = <[any[], number, number]>this.inter.evalArgs(["array", ["number", 0], ["number", 0]], expr, env);
-        Validator.assertArrayIndex("list.slice", lst, start);
 
         return lst.slice(start, end || lst.length);
     }
@@ -199,21 +164,19 @@ class ListLib implements ILib {
     }
 
     // (list.splice lst start count=1)
+    // Deletes elements from a list. Returns a list of the deleted elements.
     private listSplice(expr: any[], env: any[]): any[] {
         const [lst, start, count] = <[any[], number, number]>this.inter.evalArgs(["array", "number", ["number", 1]], expr, env);
         Validator.assertArrayIndex("list.splice", lst, start);
 
-        lst.splice(start, count);
-
-        return lst;
+        return lst.splice(start, count);
     }
 
     // (list.unshift lst elem)
-    private listUnshift(expr: any[], env: any[]): any[] {
+    // Add an element to the beginning of an array and return the new length of the array.
+    private listUnshift(expr: any[], env: any[]): number {
         const [lst, elem] = <[any[], any]>this.inter.evalArgs(["array", "any"], expr, env);
 
-        lst.unshift(elem);
-
-        return lst;
+        return lst.unshift(elem);
     }
 }

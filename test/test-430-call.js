@@ -184,12 +184,12 @@ describe('call', function () {
 
     it('call with expression, which produces num list', function () {
         assert.strictEqual(easl.evaluate(`
-            {call + (list.push '(1 2 3) 4)}           `), 10);
+            (call + (list.range 4 1))           `), 10);
     });
 
     it('call with expression, which produces string list', function () {
         assert.strictEqual(easl.evaluate(`
-            {call ~ (list.push '(a b) "c")}       `), "abc");
+            (call ~ (list.concat '(a b) '(c)))       `), "abc");
     });
 
     it('factorial 5', function () {

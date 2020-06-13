@@ -44,7 +44,6 @@ class Interpreter {
             "inc": this.evalIncrement,
             "lambda": this.evalLambda,
             "let": this.evalLet,
-            "list": this.evalList,
             "or": this.evalOr,
             "quasiquote": this.evalQuasiquote,
             "quote": this.evalQuote,
@@ -268,9 +267,6 @@ class Interpreter {
                 : args.slice(restIndex);
             this.addToEnv(param, value, env);
         }
-    }
-    evalList(expr, env) {
-        return this.mapExprList(expr.slice(1), env);
     }
     evalSet(expr, env) {
         if (expr.length !== 3) {
@@ -1381,21 +1377,18 @@ class ExtLib {
 class ListLib {
     constructor(interpreter) {
         this.methods = {
+            "list": this.list,
+            "list.make": this.listMake,
+            "list.range": this.listRange,
             "list.concat": this.listConcat,
-            "list.first": this.listFirst,
-            "list.flatten": this.listFlatten,
+            "list.flat": this.listFlat,
             "list.get": this.listGet,
             "list.has": this.listHas,
             "list.index-of": this.listIndex,
             "list.join": this.listJoin,
-            "list.last": this.listLast,
             "list.length": this.listLength,
-            "list.less": this.listLess,
-            "list.make": this.listMake,
             "list.pop": this.listPop,
             "list.push": this.listPush,
-            "list.range": this.listRange,
-            "list.rest": this.listRest,
             "list.reverse": this.listReverse,
             "list.set": this.listSet,
             "list.shift": this.listShift,
@@ -1414,21 +1407,24 @@ class ListLib {
     libEvalExpr(expr, env) {
         return this.methods[expr[0]].call(this, expr, env);
     }
+    list(expr, env) {
+        return this.inter.mapExprList(expr.slice(1), env);
+    }
+    listMake(expr, env) {
+        const [size, fill] = this.inter.evalArgs(["number", ["any", 0]], expr, env);
+        return [...Array(size).keys()].map(() => fill);
+    }
+    listRange(expr, env) {
+        const [size, from] = this.inter.evalArgs(["number", ["number", 0]], expr, env);
+        return [...Array(size).keys()].map((e) => e + from);
+    }
     listConcat(expr, env) {
         const [lst1, lst2] = this.inter.evalArgs(["array", "array"], expr, env);
         return lst1.concat(lst2);
     }
-    listFirst(expr, env) {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
-        Validator.assertArrayIndex("list.first", lst, 0);
-        return lst[0];
-    }
-    listFlatten(expr, env) {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
-        const flatten = (arr) => arr.reduce((acc, elem) => acc.concat(Array.isArray(elem)
-            ? flatten(elem)
-            : elem), []);
-        return flatten(lst);
+    listFlat(expr, env) {
+        const [lst, depth] = this.inter.evalArgs(["array", ["number", 1]], expr, env);
+        return lst.flat(depth);
     }
     listGet(expr, env) {
         const [lst, index] = this.inter.evalArgs(["array", "number"], expr, env);
@@ -1447,14 +1443,6 @@ class ListLib {
         const [lst, sep] = this.inter.evalArgs(["array", ["string", ","]], expr, env);
         return lst.join(sep);
     }
-    listLast(expr, env) {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
-        return lst.length > 0 ? lst[lst.length - 1] : null;
-    }
-    listLess(expr, env) {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
-        return lst.length > 1 ? lst.slice(0, lst.length - 1) : [];
-    }
     listPop(expr, env) {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
         return lst.pop();
@@ -1463,22 +1451,9 @@ class ListLib {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
         return lst.length;
     }
-    listMake(expr, env) {
-        const [size, fill] = this.inter.evalArgs(["number", ["any", 0]], expr, env);
-        return [...Array(size).keys()].map(() => fill);
-    }
     listPush(expr, env) {
         const [lst, elem] = this.inter.evalArgs(["array", "any"], expr, env);
-        lst.push(elem);
-        return lst;
-    }
-    listRange(expr, env) {
-        const [size, from] = this.inter.evalArgs(["number", ["number", 0]], expr, env);
-        return [...Array(size).keys()].map((e) => e + from);
-    }
-    listRest(expr, env) {
-        const [lst] = this.inter.evalArgs(["array"], expr, env);
-        return Array.isArray(lst) && lst.length > 1 ? lst.slice(1) : [];
+        return lst.push(elem);
     }
     listReverse(expr, env) {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
@@ -1487,8 +1462,7 @@ class ListLib {
     listSet(expr, env) {
         const [lst, index, elem] = this.inter.evalArgs(["array", "number", "any"], expr, env);
         Validator.assertArrayIndex("list.set", lst, index);
-        lst[index] = elem;
-        return lst;
+        return lst[index] = elem;
     }
     listShift(expr, env) {
         const [lst] = this.inter.evalArgs(["array"], expr, env);
@@ -1496,7 +1470,6 @@ class ListLib {
     }
     listSlice(expr, env) {
         const [lst, start, end] = this.inter.evalArgs(["array", ["number", 0], ["number", 0]], expr, env);
-        Validator.assertArrayIndex("list.slice", lst, start);
         return lst.slice(start, end || lst.length);
     }
     listSort(expr, env) {
@@ -1506,13 +1479,11 @@ class ListLib {
     listSplice(expr, env) {
         const [lst, start, count] = this.inter.evalArgs(["array", "number", ["number", 1]], expr, env);
         Validator.assertArrayIndex("list.splice", lst, start);
-        lst.splice(start, count);
-        return lst;
+        return lst.splice(start, count);
     }
     listUnshift(expr, env) {
         const [lst, elem] = this.inter.evalArgs(["array", "any"], expr, env);
-        lst.unshift(elem);
-        return lst;
+        return lst.unshift(elem);
     }
 }
 class MathLib {

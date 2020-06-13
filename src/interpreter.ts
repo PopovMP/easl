@@ -22,7 +22,6 @@ class Interpreter {
         "inc"        : this.evalIncrement,
         "lambda"     : this.evalLambda,
         "let"        : this.evalLet,
-        "list"       : this.evalList,
         "or"         : this.evalOr,
         "quasiquote" : this.evalQuasiquote,
         "quote"      : this.evalQuote,
@@ -320,11 +319,6 @@ class Interpreter {
 
             this.addToEnv(param, value, env);
         }
-    }
-
-    // (list expr*)
-    private evalList(expr: any[], env: any[]): any[] {
-        return this.mapExprList(expr.slice(1), env);
     }
 
     // (set symbol expr)

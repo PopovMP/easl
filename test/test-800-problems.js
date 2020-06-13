@@ -26,39 +26,43 @@ describe('problems', function () {
 
     it('Sequence generator', function () {
         assert.deepStrictEqual(easl.evaluate(`   
-            {let make-sequence (start length next)
-                    {let loop (lst i)
-                        {if (= i length)
-                            lst
-                            (loop (list.push lst (next (list.last lst))) (+ i 1)) }}
-                    (loop (list start) 1) }
-            
-              {make-sequence 3 10 {λ (cur) (* cur 3)} )
+        (let make-sequence (first length next)
+            (let res (list first))
+            (let loop (index prev)
+                (when (< index length)
+                    (let new (next prev))
+                    (list.push res new)
+                    (loop (+ index 1) new)))
+            (loop 1 first)
+            res)
+        
+        (make-sequence 3 10 (λ (e) (* 3 e)))
             `),
             [3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049]);
     });
 
     it('Swap elements of a list', function () {
         assert.deepStrictEqual(easl.evaluate(`   
-            {let swap (lst i1 i2)
-                {let temp (list.get lst i1)}
+            (let swap-on-place (lst i1 i2)
+                (let temp (list.get lst i1))
                 (list.set lst i1 (list.get lst i2))
-                (list.set lst i2 temp) }
+                (list.set lst i2 temp))
 
-            (swap '(1 2 3 4) 0 3)
+            (let lst '(1 2 3 4))
+            (swap-on-place lst 0 3)
+            lst
                                                              `), [4, 2, 3, 1]);
     });
 
     it('"Find the maximum of a list', function () {
         assert.strictEqual(easl.evaluate(`   
-            {let list-max (lst)
-            
-              {let loop (lst max)
-                {if lst
-                    (loop (list.rest lst) (math.max max (list.first lst)))
-                    max }}
-            
-              (loop lst (list.first lst)) }
+            (let list-max (lst)
+                (let loop (lst max)
+                    (if lst
+                        (loop (list.slice lst 1)
+                              (math.max max (list.get lst 0)))
+                        max))
+                (loop lst (list.get lst 0)))
             
             (list-max '(42 34 12 5 62 2))
                                                              `), 62);

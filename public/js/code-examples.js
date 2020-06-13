@@ -15,21 +15,23 @@ const examplesList = [
     {
         name: "Working with lists",
         code: `;; We define a list in square brackets.
+(print "Range of size 8 starting from 1 :" (list.range 8 1))
+(print "List with size 8 filled with 1  :" (list.make 8 1))
+(print "Declare and define a new list   :" '(list 0 1 2 3))
 (let lst (list 0 1 2 3))
+(print "A list of numbers               :" lst)
+(print "The list length                 :" (list.length  lst    ))
+(print "The first element               :" (list.get     lst 0  ))
+(print "All but first one               :" (list.slice   lst 1  ))
+(print "The last element                :" (list.get     lst   (- (list.length lst) 1)) )
+(print "All but the last one            :" (list.slice   lst 0 (- (list.length lst) 1)) )
+(print "The third element               :" (list.get     lst 2  ))
+(print "From the 2nd to the 4th         :" (list.slice   lst 1 4))
+(print "Add an element to the end       :" (list.push    lst 4  )) ; Returns the new length of the list
+(print "Set 1st element on place        :" (list.set     lst 0 2)) ; Returns the new element
+(print "Push one elem in front          :" (list.unshift lst 3  )) ; Returns the new length of the list
+(print "Sort a list on place and get it :" (list.sort    lst    ))
 
-(print "A list of numbers         :" lst)
-(print "The list length           :" (list.length  lst    ))
-(print "The first element         :" (list.first   lst    ))
-(print "All but first one         :" (list.rest    lst    ))
-(print "The last element          :" (list.last    lst    ))
-(print "All but the last one      :" (list.less    lst    ))
-(print "The third element         :" (list.get     lst 2  ))
-(print "From the 2nd to the 4th   :" (list.slice   lst 1 4))
-(print "Add an element to the end :" (list.push    lst 4  ))
-(print "Set 1st element on place  :" (list.set     lst 0 2))
-(print "Push one elem in front    :" (list.unshift lst 3  ))
-(print "Get a sorted list         :" (list.sort    lst    ))
-(print "List range                :" (list.range   10 1   ))
 `
     },
 
@@ -143,15 +145,15 @@ const examplesList = [
     code:
     `;; Swap list elements
 
-(let lst (list 1 2 3 4))
-
-(let swap (lst i1 i2)
+(let swap-on-place (lst i1 i2)
     (let temp (list.get lst i1))
     (list.set lst i1 (list.get lst i2))
-    (list.set lst i2 temp) )
+    (list.set lst i2 temp))
 
+(let lst '(1 2 3 4))
 (print "Original:" lst)
-(print "Swapped :" (swap lst 0 3))
+(swap-on-place lst 0 3)
+(print "Swapped :" lst)
 `
     },
 
@@ -193,13 +195,13 @@ const examplesList = [
         (else n) ))
 
 (let FizzBuzz (max)
-    (let loop (n res)
-        (if (<= n max)
-            (loop (+ n 1)
-                  (list.push res
-                            (get-fizz-buzz n)))
-            res ))
-    (loop 1 '()) )
+    (let res '())
+    (let loop (n)
+        (when (<= n max)
+            (list.push res (get-fizz-buzz n))
+            (loop (+ n 1))))
+    (loop 1)
+    res)
 
 (print (FizzBuzz 100))
 `    },
@@ -227,25 +229,25 @@ const examplesList = [
         code: `;; Benchmark: for, call, recursion
 ;; Calculate the sum of a list by using three different methods
 
-;; Use "for" loop over the given list
-(let sum-list-for (lst)
-    (let sum 0)
-    (for n lst
-        (inc sum n) )
-    sum )
-
 ;; Call "+" on each elements of the list
 (let sum-list-call (lst)
     (call + lst) )
 
+;; Use "for" loop over the given list
+(let sum-list-for (lst)
+    (let sum 0)
+    (for n lst
+        (inc sum n))
+    sum )
+
 ;; Tail optimised recursion
 (let sum-list-rec (lst)
-    (let loop (acc rest)
-        (if rest
-            (loop (+ acc (list.first rest))
-                  (list.rest rest))
-            acc ))
-    (loop 0 lst) )
+    (let loop (index acc)
+        (if index
+            (loop (- index 1)
+                  (+ acc (list.get lst index)))
+            (+ acc (list.get lst 0))))
+    (loop (- (list.length lst) 1) 0))
 
 ;; Benchmark function
 (let benchmark (func lst times method)
@@ -262,8 +264,8 @@ const examplesList = [
 
 (let rounds 1000)
 
-(benchmark sum-list-for  lst-nums rounds "for ")
 (benchmark sum-list-call lst-nums rounds "call")
+(benchmark sum-list-for  lst-nums rounds "for ")
 (benchmark sum-list-rec  lst-nums rounds "rec ")
 `
     },
@@ -295,14 +297,13 @@ const examplesList = [
         code: `;; Eliminate consecutive duplicates
 
 (let clean (lst)
-    (let loop (rest acc)
-         (if rest
-             (if (= (list.first rest) (list.last acc))
-                 (loop (list.rest rest) acc)
-                 (loop (list.rest rest)
-                       (list.push acc (list.first rest))) )
-             acc ))
-    (loop (list.rest lst) (list (list.first lst))) )
+    (let res (list))
+    (let last null)
+    (for e lst
+        (unless (equal last e)
+            (set last e)
+            (list.push res e)))
+    res)
 
 (print (clean '(0 1 1 2 3 4 5 5 5 6 7 7 8 8 8 9 9 9)))
 `
@@ -425,26 +426,18 @@ const examplesList = [
         name: "Sequence generator",
         code: `;; Sequence generator
 
-;; Each element is equal to the prev * 3
-(let curr (λ (prev) (* prev 3)))
+(let make-sequence (first length next)
+    (let res (list first))
+    (let loop (index prev)
+        (when (< index length)
+            (let new (next prev))
+            (list.push res new)
+            (loop (+ index 1) new)))
+    (loop 1 first)
+    res)
 
-;; Recursive style
-(let make-sequence-rec (first length next)
-    (let loop (i res)
-        (if (< i length)
-            (loop (+ i 1) (list.push res (next (list.last res))))
-            res ))
-    (loop 1 (list first)) )
-
-;; Iteration style
-(let make-sequence-iter (first length next)
- 	(let res (list first))
-    (repeat (- length 1)
-    	(list.push res (next (list.last res))) )
-    res )
-
-(print "Recursive:" (make-sequence-rec  3 10 curr))
-(print "Iteration:" (make-sequence-iter 3 10 curr))
+(print "Sequence:"
+       (make-sequence 3 10 (λ (e) (* 3 e))))
 `
     },
 

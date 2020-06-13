@@ -20,15 +20,15 @@
 
         const keywords = makeKeywords(
             "' ` , . λ block break call case cond continue debug do else for repeat if unless import lambda let " +
-            "set delete inc dec enum list string and or quote throw try when while");
+            "set delete inc dec enum string and or quote throw try when while");
 
         const builtinFunc = makeKeywords(
             // Core lib
             "+ - * / = > < != >= <= % ~ equal not type-of to-string to-number to-boolean print parse eval display newline " +
 
             // list lib
-            "list.has list.length list.first list.rest list.last list.less list.make list.pop list.push list.index-of " +
-            "list.range list.reverse list.get list.set list.slice list.flatten list.join list.shift list.sort list.unshift " +
+            "list list.make list.range list.has list.length list.pop list.push list.index-of list.reverse " +
+            "list.get list.set list.slice list.flat list.join list.shift list.sort list.unshift " +
 
             // math lib
             "math.pi math.abs math.ceil math.floor math.log math.max math.min math.pow math.random math.round " +
