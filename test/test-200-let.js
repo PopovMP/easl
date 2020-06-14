@@ -99,7 +99,7 @@ describe('let', function () {
         });
     });
 
-    describe('let with procedure', function () {
+    describe('let with function', function () {
         it('no arguments', function () {
             assert.strictEqual(easl.evaluate(` 
                     (let answer () 42)

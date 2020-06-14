@@ -58,7 +58,7 @@ describe('problems', function () {
         assert.strictEqual(easl.evaluate(`   
             (let list-max (lst)
                 (let loop (lst max)
-                    (if lst
+                    (if (list-length lst)
                         (loop (list-slice lst 1)
                               (math-max max (list-get lst 0)))
                         max))
@@ -67,5 +67,4 @@ describe('problems', function () {
             (list-max '(42 34 12 5 62 2))
                                                              `), 62);
     });
-
 });

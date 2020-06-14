@@ -65,11 +65,13 @@ describe("lambda", function () {
     });
 
     it("No params function", function () {
-        assert.strictEqual(easl.evaluate("(lambda (+ 2 3))"), "Error: Improper function");
+        assert.strictEqual(easl.evaluate("(lambda (+ 2 3))"),
+            "Error: Improper function");
     });
 
     it("No body", function () {
-        assert.strictEqual(easl.evaluate("(lambda (a b))"), "Error: Improper function");
+        assert.strictEqual(easl.evaluate("(lambda (a b))"),
+            "Error: Improper function");
     });
 
     it("lambda returns a builtin function", function () {

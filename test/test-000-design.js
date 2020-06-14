@@ -27,6 +27,9 @@ describe("EASL design", function () {
         it("number different than 0", function () {
             assert.strictEqual(easl.evaluate(`(if 500 1 0)`), 1);
         });
+        it("empty list", function () {
+            assert.strictEqual(easl.evaluate(`(if '() 1 0)`), 1);
+        });
         it("non empty list", function () {
             assert.strictEqual(easl.evaluate(`(if '(1 2 3) 1 0)`), 1);
         });
@@ -41,9 +44,6 @@ describe("EASL design", function () {
         });
         it("number 0", function () {
             assert.strictEqual(easl.evaluate(`(if 0 1 0)`), 0);
-        });
-        it("empty list", function () {
-            assert.strictEqual(easl.evaluate(`(if '() 1 0)`), 0);
         });
         it("null", function () {
             assert.strictEqual(easl.evaluate(`(if null 1 0)`), 0);

@@ -83,13 +83,6 @@ describe('scope', function () {
             a                 `), "Error: Unbound identifier: a");
     });
 
-    it("'repeat' is a scope", function () {
-        assert.strictEqual(easl.evaluate(`
-            {repeat 1
-                {let a 1} }
-            a                 `), "Error: Unbound identifier: a");
-    });
-
     it("'while' is a scope", function () {
         assert.strictEqual(easl.evaluate(`
             {let n 0}

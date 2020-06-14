@@ -41,9 +41,9 @@ const examplesList = [
 
 (let lst '())                            ; make an empty list
 
-(repeat 10                              ; cycle 10 times
-    (let random  (* (math-random) 100)) ; generate a random number between 0 and 100
-    (let rounded (math-round random)  ) ; round the number
+(for _ (list-make 10)                    ; cycle 10 times
+    (let random  (* (math-random) 100))  ; generate a random number between 0 and 100
+    (let rounded (math-round random)  )  ; round the number
     (list-push lst rounded) )            ; add the number to the end of the list
     
 (print lst) ; print the list
@@ -225,13 +225,13 @@ const examplesList = [
 `   },
 
     {
-        name: "Benchmark: for, call, recursion",
-        code: `;; Benchmark: for, call, recursion
+        name: "Benchmark: for, apply, recursion",
+        code: `;; Benchmark: for, apply, recursion
 ;; Calculate the sum of a list by using three different methods
 
 ;; Call "+" on each elements of the list
-(let sum-list-call (lst)
-    (call + lst) )
+(let sum-list-apply (lst)
+    (apply + lst) )
 
 ;; Use "for" loop over the given list
 (let sum-list-for (lst)
@@ -253,7 +253,8 @@ const examplesList = [
 (let benchmark (func lst times method)
     (let start-time (date-now))
 
-    (repeat times (func lst))
+    (for _ (list-make times)
+        (func lst))
  
     (let time (/ (- (date-now) start-time) 1000))
     (let res  (func lst))
@@ -264,9 +265,9 @@ const examplesList = [
 
 (let rounds 1000)
 
-(benchmark sum-list-call lst-nums rounds "call")
-(benchmark sum-list-for  lst-nums rounds "for ")
-(benchmark sum-list-rec  lst-nums rounds "rec ")
+(benchmark sum-list-apply lst-nums rounds "apply")
+(benchmark sum-list-for   lst-nums rounds "for  ")
+(benchmark sum-list-rec   lst-nums rounds "rec  ")
 `
     },
 
@@ -381,12 +382,11 @@ const examplesList = [
                (is-odd (λ (n)
                    (and (!= n 0)
                         (is-even (- n 1))))))
-    (if (is-odd n)
-        'odd
-        'even))
+    (if (is-even n)
+        'even
+        'odd))
 
-(repeat 10
-    (let n (math-ceil (* 100 (math-random))))
+(for n (list-range 10)
     (print n 'is (odd-even n)))
 `
     },
@@ -1125,7 +1125,7 @@ exit :
 
     (set IP 0)
     (for command lst-commands
-        (call eval-label command)
+        (apply eval-label command)
         (inc IP) )
 
     (set IP 0)
@@ -1133,7 +1133,7 @@ exit :
     (let cycle 0)
     (while (< IP lst-commands-len)
         (let command (list-get lst-commands IP))
-        (call eval-op command)
+        (apply eval-op command)
         (inc IP)
         (inc cycle)
         (if (> cycle max-cycles)

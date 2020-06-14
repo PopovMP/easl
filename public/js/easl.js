@@ -28,30 +28,35 @@ class Interpreter {
         this.builtinHash = {};
         this.specialForms = {
             "and": this.evalAnd,
+            "apply": this.evalApply,
             "block": this.evalBlock,
             "break": this.evalBreak,
-            "call": this.evalCall,
             "case": this.evalCase,
             "cond": this.evalCond,
             "continue": this.evalContinue,
             "debug": this.evalDebug,
             "dec": this.evalDecrement,
             "delete": this.evalDelete,
+            "display": this.evalDisplay,
             "do": this.evalDo,
             "enum": this.evalEnum,
+            "eval": this.evalEval,
             "for": this.evalFor,
             "if": this.evalIf,
             "inc": this.evalIncrement,
             "lambda": this.evalLambda,
             "let": this.evalLet,
+            "newline": this.evalNewline,
             "or": this.evalOr,
+            "parse": this.evalParse,
+            "print": this.evalPrint,
             "quasiquote": this.evalQuasiquote,
             "quote": this.evalQuote,
-            "repeat": this.evalRepeat,
             "set": this.evalSet,
             "string": this.evalString,
             "throw": this.evalThrow,
             "try": this.evalTry,
+            "type-of": this.evalTypeOf,
             "unless": this.evalUnless,
             "when": this.evalWhen,
             "while": this.evalWhile,
@@ -117,14 +122,6 @@ class Interpreter {
             }
         }
         return this.evalApplication(expr, env);
-    }
-    isTruthy(value) {
-        return !this.isFaulty(value);
-    }
-    isFaulty(value) {
-        return (Array.isArray(value) && value.length === 0)
-            ? true
-            : !value;
     }
     evalArgs(argTypes, expr, env) {
         const optionalCount = argTypes.filter(Array.isArray).length;
@@ -272,8 +269,7 @@ class Interpreter {
         if (expr.length !== 3) {
             throw "Error: 'set' requires 2 arguments. Given: " + (expr.length - 1);
         }
-        const value = this.evalExpr(expr[2], env);
-        this.setInEnv(expr[1], value, env);
+        this.setInEnv(expr[1], this.evalExpr(expr[2], env), env);
     }
     evalDelete(expr, env) {
         if (expr.length !== 2) {
@@ -370,7 +366,7 @@ class Interpreter {
         if (expr.length < 3 || expr.length > 4) {
             throw "Error: 'if' requires 2 or 3 arguments. Given: " + (expr.length - 1);
         }
-        return this.isTruthy(this.evalExpr(expr[1], env))
+        return this.evalExpr(expr[1], env)
             ? this.evalExpr(expr[2], env)
             : expr.length === 4
                 ? this.evalExpr(expr[3], env)
@@ -383,7 +379,7 @@ class Interpreter {
         if (expr.length === 2) {
             throw "Error: Empty 'unless' body";
         }
-        if (this.isTruthy(this.evalExpr(expr[1], env))) {
+        if (this.evalExpr(expr[1], env)) {
             return;
         }
         env.push(["#scope", "unless"]);
@@ -402,7 +398,7 @@ class Interpreter {
         if (expr.length === 2) {
             throw "Error: Empty 'when' body";
         }
-        if (!this.isTruthy(this.evalExpr(expr[1], env))) {
+        if (!this.evalExpr(expr[1], env)) {
             return;
         }
         env.push(["#scope", "when"]);
@@ -418,7 +414,7 @@ class Interpreter {
         const clauses = expr.slice(1);
         env.push(["#scope", "cond"]);
         for (const clause of clauses) {
-            if (clause[0] === "else" || this.isTruthy(this.evalExpr(clause[0], env))) {
+            if (clause[0] === "else" || this.evalExpr(clause[0], env)) {
                 const res = clause.length === 2
                     ? this.evalExpr(clause[1], env)
                     : this.evalExprList(clause.slice(1), env);
@@ -478,7 +474,7 @@ class Interpreter {
     evalWhile(expr, env) {
         const testExpr = expr[1];
         const loopBody = expr.slice(2);
-        while (this.isTruthy(this.evalExpr(testExpr, env))) {
+        while (this.evalExpr(testExpr, env)) {
             env.push(["#scope", "while"]);
             for (const bodyExpr of loopBody) {
                 const res = this.evalExpr(bodyExpr, env);
@@ -507,71 +503,42 @@ class Interpreter {
                 }
             }
             this.clearEnv("#scope", env);
-        } while (this.isTruthy(this.evalExpr(testExpr, env)));
+        } while (this.evalExpr(testExpr, env));
     }
     evalEnum(expr, env) {
         for (let i = 1; i < expr.length; i++) {
             this.addToEnv(expr[i], i - 1, env);
         }
     }
-    evalRepeat(expr, env) {
-        const count = this.evalExpr(expr[1], env);
-        if (typeof count !== "number")
-            throw `Error: Wrong count in 'repeat'`;
-        const loopBody = expr.slice(2);
-        for (let i = 0; i < count; i++) {
-            env.push(["#scope", "repeat"]);
-            for (const bodyExpr of loopBody) {
-                const res = this.evalExpr(bodyExpr, env);
-                if (res === "continue")
-                    break;
-                if (res === "break") {
-                    this.clearEnv("#scope", env);
-                    return;
-                }
-            }
-            this.clearEnv("#scope", env);
-        }
-    }
-    evalCall(expr, env) {
+    evalApply(expr, env) {
         const procId = expr[1];
         const callArgs = Array.isArray(expr[2]) && expr[2][0] === "list"
             ? expr[2].slice(1)
             : this.evalExpr(expr[2], env);
         for (let i = 0; i < callArgs.length; i++) {
-            const elm = callArgs[i];
-            if (typeof elm === "string" && !["true", "false", "null"].includes(elm)) {
-                callArgs[i] = ["string", elm];
+            const arg = callArgs[i];
+            if (typeof arg === "string" && !["true", "false", "null"].includes(arg)) {
+                callArgs[i] = ["string", arg];
             }
-            else if (elm === true) {
+            else if (arg === true) {
                 callArgs[i] = "true";
             }
-            else if (elm === false) {
+            else if (arg === false) {
                 callArgs[i] = "false";
             }
-            else if (elm === null) {
+            else if (arg === null) {
                 callArgs[i] = "null";
             }
         }
         return this.evalExpr([procId, ...callArgs], env);
     }
     evalAnd(expr, env) {
-        if (expr.length === 1) {
-            return true;
+        switch (expr.length) {
+            case 1: return true;
+            case 2: return this.evalExpr(expr[1], env);
+            case 3: return this.evalExpr(expr[1], env) && this.evalExpr(expr[2], env);
         }
-        if (expr.length === 2) {
-            return this.evalExpr(expr[1], env);
-        }
-        if (expr.length === 3) {
-            const val = this.evalExpr(expr[1], env);
-            return this.isTruthy(val)
-                ? this.evalExpr(expr[2], env)
-                : val;
-        }
-        const val = this.evalExpr(expr[1], env);
-        return this.isTruthy(val)
-            ? this.evalAnd(expr.slice(1), env)
-            : val;
+        return this.evalExpr(expr[1], env) && this.evalAnd(expr.slice(1), env);
     }
     evalQuote(expr) {
         if (expr.length !== 2) {
@@ -602,20 +569,11 @@ class Interpreter {
     }
     evalOr(expr, env) {
         switch (expr.length) {
-            case 1:
-                return false;
-            case 2:
-                return this.evalExpr(expr[1], env);
-            case 3:
-                const val = this.evalExpr(expr[1], env);
-                return this.isTruthy(val)
-                    ? val
-                    : this.evalExpr(expr[2], env);
+            case 1: return false;
+            case 2: return this.evalExpr(expr[1], env);
+            case 3: return this.evalExpr(expr[1], env) || this.evalExpr(expr[2], env);
         }
-        const val = this.evalExpr(expr[1], env);
-        return this.isTruthy(val)
-            ? val
-            : this.evalOr(expr.slice(1), env);
+        return this.evalExpr(expr[1], env) || this.evalOr(expr.slice(1), env);
     }
     evalTry(expr, env) {
         try {
@@ -660,6 +618,66 @@ class Interpreter {
     evalDebug(env) {
         this.dumpEnvironment(env);
         this.isDebug = true;
+    }
+    evalTypeOf(expr, env) {
+        if (expr.length !== 2) {
+            throw "Error: 'type-of' requires 1 argument. Given: " + (expr.length - 1);
+        }
+        const entity = expr[1];
+        if (Array.isArray(entity)) {
+            switch (entity[0]) {
+                case "list": return "list";
+                case "string": return "string";
+                case "lambda":
+                case "closure": return "function";
+            }
+        }
+        if (entity === "null") {
+            return "null";
+        }
+        const value = this.evalExpr(entity, env);
+        if (Array.isArray(value)) {
+            switch (value[0]) {
+                case "lambda":
+                case "closure": return "function";
+            }
+            return "list";
+        }
+        if (value === null) {
+            return "null";
+        }
+        return typeof value;
+    }
+    evalParse(expr, env) {
+        const [scr] = this.evalArgs(["string"], expr, env);
+        return new Parser().parse(scr);
+    }
+    evalEval(expr, env) {
+        const [obj] = this.evalArgs(["any"], expr, env);
+        return this.evalCodeTree(obj, this.options);
+    }
+    evalPrint(expr, env) {
+        if (expr.length === 1) {
+            this.options.printer("\r\n");
+        }
+        else if (expr.length === 2) {
+            const text = Printer.stringify(this.evalExpr(expr[1], env));
+            this.options.printer(text + "\r\n");
+        }
+        else {
+            const text = this.mapExprList(expr.slice(1), env)
+                .map(Printer.stringify)
+                .join(" ");
+            this.options.printer(text + "\r\n");
+        }
+    }
+    evalDisplay(expr, env) {
+        const [obj] = this.evalArgs(["any"], expr, env);
+        this.options.printer(Printer.stringify(obj));
+    }
+    evalNewline(expr, env) {
+        this.evalArgs([], expr, env);
+        this.options.printer("\r\n");
     }
     dumpEnvironment(env) {
         const getCircularReplacer = () => {
@@ -1104,15 +1122,9 @@ class CoreLib {
             "~": this.evalAddStrings,
             "equal": this.evalScalarEqual,
             "not": this.evalNot,
-            "type-of": this.evalTypeOf,
             "to-string": this.evalToString,
             "to-number": this.evalToNumber,
             "to-boolean": this.evalToBoolean,
-            "parse": this.evalParse,
-            "eval": this.evalEval,
-            "print": this.evalPrint,
-            "display": this.evalDisplay,
-            "newline": this.evalNewline,
         };
         this.builtinHash = {};
         this.inter = interpreter;
@@ -1254,79 +1266,16 @@ class CoreLib {
     }
     evalNot(expr, env) {
         const [obj] = this.inter.evalArgs(["any"], expr, env);
-        return Array.isArray(obj) && obj.length === 0 || !Boolean(obj);
-    }
-    evalTypeOf(expr, env) {
-        if (expr.length !== 2) {
-            throw "Error: 'type-of' requires 1 argument. Given: " + (expr.length - 1);
-        }
-        const entity = expr[1];
-        if (Array.isArray(entity)) {
-            switch (entity[0]) {
-                case "list": return "list";
-                case "string": return "string";
-                case "lambda":
-                case "function":
-                case "closure": return "function";
-            }
-        }
-        if (entity === "null") {
-            return "null";
-        }
-        const value = this.inter.evalExpr(entity, env);
-        if (Array.isArray(value)) {
-            switch (value[0]) {
-                case "lambda":
-                case "function":
-                case "closure": return "function";
-            }
-            return "list";
-        }
-        if (value === null) {
-            return "null";
-        }
-        return typeof value;
+        return !obj;
     }
     evalToBoolean(expr, env) {
         const [obj] = this.inter.evalArgs(["any"], expr, env);
-        return Array.isArray(obj) && obj.length === 0 ? false : Boolean(obj);
+        return Boolean(obj);
     }
     evalToNumber(expr, env) {
         const [obj] = this.inter.evalArgs(["any"], expr, env);
         const number = Number(obj);
         return isNaN(number) ? null : number;
-    }
-    evalParse(expr, env) {
-        const [scr] = this.inter.evalArgs(["string"], expr, env);
-        const parser = new Parser();
-        return parser.parse(scr);
-    }
-    evalEval(expr, env) {
-        const [obj] = this.inter.evalArgs(["any"], expr, env);
-        return this.inter.evalCodeTree(obj, this.inter.options);
-    }
-    evalPrint(expr, env) {
-        if (expr.length === 1) {
-            this.inter.options.printer("\r\n");
-        }
-        else if (expr.length === 2) {
-            const text = this.evalToString(expr, env);
-            this.inter.options.printer(text + "\r\n");
-        }
-        else {
-            const text = this.inter.mapExprList(expr.slice(1), env)
-                .map(Printer.stringify)
-                .join(" ");
-            this.inter.options.printer(text + "\r\n");
-        }
-    }
-    evalDisplay(expr, env) {
-        const [obj] = this.inter.evalArgs(["any"], expr, env);
-        this.inter.options.printer(Printer.stringify(obj));
-    }
-    evalNewline(expr, env) {
-        this.inter.evalArgs([], expr, env);
-        this.inter.options.printer("\r\n");
     }
     evalToString(expr, env) {
         const [obj] = this.inter.evalArgs(["any"], expr, env);

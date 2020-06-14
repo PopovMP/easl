@@ -203,13 +203,13 @@ describe('ext library', function () {
         it('list sum', function () {
             const options = {extContext: this, extFunctions: {"ext.getList": () => [1, 2, 3]}};
 
-            assert.strictEqual(easl.evaluate(`  (call + (ext.getList))       `, options), 6);
+            assert.strictEqual(easl.evaluate(`  (apply + (ext.getList))       `, options), 6);
         });
 
         it('list concat', function () {
             const options = {extContext: this, extFunctions: {"ext.getList": () => ["a", "b", "c"]}};
 
-            assert.strictEqual(easl.evaluate(`  (call ~ (ext.getList))       `, options), "abc");
+            assert.strictEqual(easl.evaluate(`  (apply ~ (ext.getList))       `, options), "abc");
         });
 
         it('num list by ref', function () {

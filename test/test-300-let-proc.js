@@ -30,7 +30,8 @@ describe("function", function () {
         it("we can define function only once", function () {
             assert.strictEqual(easl.evaluate(`
               {let foo () 1}
-              {let foo () 2}               `), "Error: Identifier already defined: foo");
+              {let foo () 2}               `),
+                "Error: Identifier already defined: foo");
         });
     });
 
@@ -54,10 +55,12 @@ describe("function", function () {
             ({lambda (n) (* 2 n)} 5)                            `), 10);
         });
         it("not a function", function () {
-            assert.strictEqual(easl.evaluate(`  (42)     `), "Error: Improper function application. Given: 42");
+            assert.strictEqual(easl.evaluate(`  (42)     `),
+                "Error: Improper function application. Given: 42");
         });
         it("unknown function", function () {
-            assert.strictEqual(easl.evaluate(` (foo 42)  `), "Error: Unbound identifier: foo");
+            assert.strictEqual(easl.evaluate(` (foo 42)  `),
+                "Error: Unbound identifier: foo");
         });
     });
 
@@ -181,78 +184,78 @@ describe("function", function () {
     describe("given a lambda as arg with other args", function () {
         it("calc", function () {
             assert.strictEqual(easl.evaluate(` 
-                {let apply (f a b) (f a b)}
-                (apply {lambda (a b) (+ a b)} 2 3)       `), 5);
+                {let app (f a b) (f a b)}
+                (app {lambda (a b) (+ a b)} 2 3)       `), 5);
         });
     });
 
     describe("given a lambda as arg with one arg 1", function () {
         it("calc", function () {
             assert.strictEqual(easl.evaluate(` 
-                {let apply (f a) (f a)}
-                (apply {lambda (a) (* 2 a)}  2)          `), 4);
+                {let app (f a) (f a)}
+                (app {lambda (a) (* 2 a)}  2)          `), 4);
         });
     });
 
     describe("given a lambda as arg with one arg 2", function () {
         it("calc", function () {
             assert.strictEqual(easl.evaluate(` 
-                {let apply (f a) (f a)}
-                (apply {lambda (a) (* 2 a)}  2)            `), 4);
+                {let app (f a) (f a)}
+                (app {lambda (a) (* 2 a)}  2)            `), 4);
         });
     });
 
     describe("given a let lambda as arg with other args", function () {
         it("calc", function () {
             assert.strictEqual(easl.evaluate(` 
-                {let apply (f a b) (f a b)}
+                {let app (f a b) (f a b)}
                 {let sum {lambda (a b) (+ a b)}}
-                (apply sum 2 3)                          `), 5);
+                (app sum 2 3)                          `), 5);
         });
     });
 
     describe("given a let lambda as arg with one arg 1", function () {
         it("calc", function () {
             assert.strictEqual(easl.evaluate(` 
-                {let apply (f a) (f a)}
+                {let app (f a) (f a)}
                 {let double {lambda (a) (* 2 a)}}
-                (apply double  2)                       `), 4);
+                (app double  2)                       `), 4);
         });
     });
 
     describe("given a let lambda as arg with one arg 2", function () {
         it("calc", function () {
             assert.strictEqual(easl.evaluate(` 
-                {let apply (f a) (f a)}
+                {let app (f a) (f a)}
                 {let double {lambda (a) (* 2 a)}}
-                (apply double 2)                         `), 4);
+                (app double 2)                         `), 4);
         });
     });
 
     describe("given a function as arg with other args", function () {
         it("calc", function () {
             assert.strictEqual(easl.evaluate(` 
-                {let apply (f a b) (f a b)}
+                {let app (f a b) (f a b)}
                 (let sum (a b) (+ a b)}
-                (apply sum 2 3)                          `), 5);
+                (app sum 2 3)                          `), 5);
         });
     });
 
     describe("given a function as arg with one arg 1", function () {
         it("calc", function () {
             assert.strictEqual(easl.evaluate(` 
-                {let apply (f a) (f a)}
+                {let app (f a) (f a)}
                 (let double (a) (* 2 a)}
-                (apply double 2)                         `), 4);
+                (app double 2)                         `), 4);
         });
     });
 
     describe("given a function as arg with one arg 2", function () {
         it("calc", function () {
             assert.strictEqual(easl.evaluate(` 
-                {let apply (f a) (f a)}
+                {let fun-apply (f a) (f a)}
                 (let double (a) (* a 2)}
-                (apply double 2)                         `), 4);
+                (fun-apply double 2)                         `), 4);
         });
     });
 

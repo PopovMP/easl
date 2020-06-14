@@ -196,19 +196,19 @@ describe('core-lib', function () {
 
         it('type-of function', function () {
             assert.strictEqual(easl.evaluate(` 
-             {let sum (a b) (+ a b)}
+             (let sum (a b) (+ a b))
              (type-of sum)                           `), "function");
         });
 
         it('type-of let lambda', function () {
             assert.strictEqual(easl.evaluate(` 
-             {let sum {lambda (a b) (+ a b)} }
+             (let sum (lambda (a b) (+ a b)))
              (type-of sum)                           `), "function");
         });
 
         it('type-of lambda', function () {
             assert.strictEqual(easl.evaluate(` 
-             (type-of {lambda (a b) (+ a b)})        `), "function");
+             (type-of (lambda (a b) (+ a b)))        `), "function");
         });
 
         it('using the string "string"', function () {

@@ -17,15 +17,9 @@ class CoreLib implements ILib {
         "~"          : this.evalAddStrings,
         "equal"      : this.evalScalarEqual,
         "not"        : this.evalNot,
-        "type-of"    : this.evalTypeOf,
         "to-string"  : this.evalToString,
         "to-number"  : this.evalToNumber,
         "to-boolean" : this.evalToBoolean,
-        "parse"      : this.evalParse,
-        "eval"       : this.evalEval,
-        "print"      : this.evalPrint,
-        "display"    : this.evalDisplay,
-        "newline"    : this.evalNewline,
     };
 
     public readonly builtinFunc: string[];
@@ -242,55 +236,14 @@ class CoreLib implements ILib {
     private evalNot(expr: any[], env: any[]): boolean {
         const [obj] = <[any]>this.inter.evalArgs(["any"], expr, env);
 
-        return Array.isArray(obj) && obj.length === 0 || !Boolean(obj);
-    }
-
-    // (type-of obj)
-   private evalTypeOf(expr: any[], env: any[]): string {
-        if (expr.length !== 2) {
-            throw "Error: 'type-of' requires 1 argument. Given: " + (expr.length - 1);
-        }
-
-        const entity = expr[1];
-
-        if (Array.isArray(entity)) {
-            switch (entity[0]) {
-                case "list"     : return "list";
-                case "string"   : return "string";
-                case "lambda"   :
-                case "function" :
-                case "closure"  : return "function";
-            }
-        }
-
-        if (entity === "null") {
-            return "null";
-        }
-
-        const value = this.inter.evalExpr(entity, env);
-
-        if (Array.isArray(value)) {
-            switch (value[0]) {
-                case "lambda"   :
-                case "function" :
-                case "closure"  : return "function";
-            }
-
-            return "list";
-        }
-
-        if (value === null) {
-            return "null";
-        }
-
-        return typeof value;
+        return !obj;
     }
 
     // (to-boolean obj)
     private evalToBoolean(expr: any[], env: any[]): boolean {
         const [obj] = <[any]>this.inter.evalArgs(["any"], expr, env);
 
-        return  Array.isArray(obj) && obj.length === 0 ? false : Boolean(obj);
+        return Boolean(obj);
     }
 
     // (to-number obj)
@@ -299,50 +252,6 @@ class CoreLib implements ILib {
         const number = Number(obj);
 
         return isNaN(number) ? null : number;
-    }
-
-    // (parse src)
-    private evalParse(expr: any[], env: any[]): any[] {
-        const [scr] = <[string]>this.inter.evalArgs(["string"], expr, env);
-        const parser: Parser = new Parser();
-
-        return parser.parse(scr);
-    }
-
-    // (eval src)
-    private evalEval(expr: any[], env: any[]): any[] {
-        const [obj] = <[any]>this.inter.evalArgs(["any"], expr, env);
-
-        return this.inter.evalCodeTree(obj, this.inter.options);
-    }
-
-    // (print expr1 expr2 ...)
-    private evalPrint(expr: any[], env: any[]): void {
-        if (expr.length === 1) {
-            this.inter.options.printer("\r\n");
-        } else if (expr.length === 2) {
-            const text = this.evalToString(expr, env);
-            this.inter.options.printer(text + "\r\n");
-        } else {
-            const text = this.inter.mapExprList(expr.slice(1), env)
-                .map(Printer.stringify)
-                .join(" ")
-            this.inter.options.printer(text + "\r\n");
-        }
-    }
-
-    // (display expr)
-    private evalDisplay(expr: any[], env: any[]): void {
-        const [obj] = <[any]>this.inter.evalArgs(["any"], expr, env);
-
-        this.inter.options.printer( Printer.stringify(obj) );
-    }
-
-    // (newline)
-    private evalNewline(expr: any[], env: any[]): void {
-        this.inter.evalArgs([], expr, env);
-
-        this.inter.options.printer("\r\n");
     }
 
     // to-string expr)

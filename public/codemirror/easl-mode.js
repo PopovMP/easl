@@ -20,11 +20,11 @@
 
         const keywords = makeKeywords(
             "' ` , . λ block break call case cond continue debug do else for repeat if unless import lambda let " +
-            "set delete inc dec enum string and or quote throw try when while");
+            "set delete inc dec enum string and or quote throw try type-of print parse eval display newline when while");
 
         const builtinFunc = makeKeywords(
             // Core lib
-            "+ - * / = > < != >= <= % ~ equal not type-of to-string to-number to-boolean print parse eval display newline " +
+            "+ - * / = > < != >= <= % ~ equal not to-string to-number to-boolean " +
 
             // list lib
             "list list-make list-range list-has list-length list-pop list-push list-index-of list-reverse " +
@@ -35,12 +35,14 @@
             "math-sign math-sqrt math-trunc " +
 
             // number lib
-            "number-max-value number-min-value number-parse-float number-parse-int number-is-finite number-is-integer number-to-fixed number-to-string " +
+            "number-max-value number-min-value number-parse-float number-parse-int number-is-finite " +
+            "number-is-integer number-to-fixed number-to-string " +
 
-            // string
-            "string-char-at string-char-code-at string-concat string-ends-with string-from-char-code string-includes string-index-of " +
-            "string-last-index-of string-length string-match string-repeat string-replace string-split string-starts-with string-sub-string " +
-            "string-trim string-trim-left string-trim-right string-to-lower string-to-upper " +
+            // string lib
+            "string-char-at string-char-code-at string-concat string-ends-with string-from-char-code string-includes " +
+            "string-index-of string-last-index-of string-length string-match string-repeat string-replace string-split " +
+            "string-starts-with string-sub-string string-trim string-trim-left string-trim-right string-to-lower " +
+            "string-to-upper " +
 
             // date
             "date-now date-to-string"
