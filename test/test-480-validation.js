@@ -32,5 +32,4 @@ describe("Validate application", function () {
         assert.strictEqual(easl.evaluate(` 
                 ((list + 1) )              `), "Error: Improper function application. Given: (+ 1)");
     });
-
 });

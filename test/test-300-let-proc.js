@@ -261,21 +261,24 @@ describe("function", function () {
 
     it("function returns a builtin function", function () {
         assert.strictEqual(easl.evaluate(` 
-                {let opp () +}
+                (let opp () +)
                 ((opp) 2 3)                         `), 5);
     });
 
     it("cannot redefine parameter from body - one expr", function () {
         assert.strictEqual(easl.evaluate(` 
-                {let fn (a) {let a 1}}
-                (fn 5)                              `), "Error: Identifier already defined: a");
+                (let fn (a)
+                    (let a 1))
+                (fn 5)
+        `), "Error: Identifier already defined: a");
     });
 
     it("can redefine parameter from body - many expr", function () {
         assert.strictEqual(easl.evaluate(` 
-                {let fn (a)
-                    {let a 1}
-                    a }
+                (let fn (a)
+                    (let a 1)
+                    a)
                 (fn 5)                              `), 1);
     });
 });
+

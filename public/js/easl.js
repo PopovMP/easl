@@ -37,6 +37,7 @@ class Interpreter {
             "continue": this.evalContinue,
             "debug": this.evalDebug,
             "dec": this.evalDecrement,
+            "defined": this.evalDefined,
             "delete": this.evalDelete,
             "display": this.evalDisplay,
             "do": this.evalDo,
@@ -59,6 +60,7 @@ class Interpreter {
             "try": this.evalTry,
             "type-of": this.evalTypeOf,
             "unless": this.evalUnless,
+            "value-of": this.evalValueOf,
             "when": this.evalWhen,
             "while": this.evalWhile,
         };
@@ -195,6 +197,19 @@ class Interpreter {
         }
         throw `Error: Unbound identifier: ${symbol}`;
     }
+    isDefined(symbol, env) {
+        for (let i = env.length - 1; i > -1; i--) {
+            if (symbol === env[i][0]) {
+                return true;
+            }
+        }
+        for (const lib of this.libs) {
+            if (lib.builtinHash[symbol]) {
+                return true;
+            }
+        }
+        return false;
+    }
     clearEnv(tag, env) {
         let cell;
         do {
@@ -208,8 +223,8 @@ class Interpreter {
         const closure = isNamed
             ? this.lookup(proc, env)
             : this.evalExpr(proc, env);
-        if (typeof closure === "string") {
-            return this.evalExpr([closure, ...expr.slice(1)], env);
+        if (typeof closure === "string" && this.isDefined(closure, env)) {
+            return this.evalExpr([this.evalExpr(closure, env), ...expr.slice(1)], env);
         }
         if (!Array.isArray(closure) || closure[0] !== "closure") {
             throw `Error: Improper function application. Given: ${Printer.stringify(closure)}`;
@@ -236,32 +251,24 @@ class Interpreter {
         return expr[1];
     }
     evalLet(expr, env) {
-        if (expr.length === 3 && Array.isArray(expr[1])) {
-            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), "let", env);
-            return;
-        }
-        if (!Array.isArray(expr[2]) && expr.length !== 3) {
-            throw "Error: 'let' requires a symbol and a value.";
-        }
-        const param = expr.length === 3
-            ? expr[2]
-            : ["lambda", expr[2], ...expr.slice(3)];
-        const value = this.evalExpr(param, env);
-        this.addToEnv(expr[1], value, "let", env);
+        this.evalLetConst(expr, env, "let");
     }
     evalConst(expr, env) {
+        this.evalLetConst(expr, env, "const");
+    }
+    evalLetConst(expr, env, modifier) {
         if (expr.length === 3 && Array.isArray(expr[1])) {
-            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), "const", env);
+            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), modifier, env);
             return;
         }
         if (!Array.isArray(expr[2]) && expr.length !== 3) {
-            throw "Error: 'const' requires a symbol and a value.";
+            throw "Error: '" + modifier + "' requires a symbol and a value.";
         }
         const param = expr.length === 3
             ? expr[2]
             : ["lambda", expr[2], ...expr.slice(3)];
         const value = this.evalExpr(param, env);
-        this.addToEnv(expr[1], value, "const", env);
+        this.addToEnv(expr[1], value, modifier, env);
     }
     evalListDestructuring(params, args, modifier, env) {
         if (!Array.isArray(args)) {
@@ -351,6 +358,14 @@ class Interpreter {
         this.setInEnv(expr[1], value, env);
         return value;
     }
+    evalDefined(expr, env) {
+        const [symbol] = this.evalArgs(["string"], expr, env);
+        return this.isDefined(symbol, env);
+    }
+    evalValueOf(expr, env) {
+        const [symbol] = this.evalArgs(["string"], expr, env);
+        return this.lookup(symbol, env);
+    }
     evalBlock(expr, env) {
         if (expr.length === 1) {
             throw "Error: Empty block";
@@ -380,7 +395,9 @@ class Interpreter {
         if (!Array.isArray(expr[1]))
             throw "Error: Improper function parameters";
         const params = expr[1];
-        const body = expr.length === 3 ? expr[2] : ["block", ...expr.slice(2)];
+        const body = expr.length === 3
+            ? expr[2]
+            : ["block", ...expr.slice(2)];
         return ["closure", params, body, env];
     }
     evalIf(expr, env) {

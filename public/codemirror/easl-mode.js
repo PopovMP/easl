@@ -22,15 +22,16 @@
         const constants = makeKeywords("true false null #args #name");
 
         const keywords = makeKeywords(
-            "' ` , . << >> λ apply block break call case cond continue const debug do else for repeat if unless import lambda " +
-            "let set delete inc dec enum string and or quote throw try type-of print parse eval display newline when while");
+            "' ` , @ . << >> λ apply block break call case cond continue const debug defined do else for if unless " +
+            "import lambda let set delete inc dec enum string and or quote throw try type-of print parse eval display " +
+            "newline value-of when while");
 
         const builtinFunc = makeKeywords(
             // Core lib
             "+ - * / = > < != >= <= % ~ equal not to-string to-number to-boolean " +
 
             // list lib
-            "list list-make list-range list-has list-length list-pop list-push list-index-of list-reverse " +
+            "list list-make list-range list-concat list-has list-length list-pop list-push list-index-of list-reverse " +
             "list-get list-set list-slice list-flat list-join list-shift list-sort list-unshift " +
 
             // math lib
@@ -52,7 +53,7 @@
         );
 
         const indentKeys = makeKeywords(
-            "let lambda if cond case for repeat while do try block when"
+            "block case cond const do for if lambda let try unless when while λ"
         );
 
         const tests = {

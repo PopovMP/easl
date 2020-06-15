@@ -77,4 +77,8 @@ describe("lambda", function () {
     it("lambda returns a builtin function", function () {
         assert.strictEqual(easl.evaluate("(((lambda () +)) 2 3)"), 5);
     });
+
+    it("lambda lambda returns a builtin function", function () {
+        assert.strictEqual(easl.evaluate("((((lambda () (lambda () +)))) 2 3)"), 5);
+    });
 });

@@ -63,4 +63,26 @@ describe("Eval basics", function () {
             assert.strictEqual(easl.evaluate("3 (+ 1 1)"), 2);
         });
     });
+
+    describe("defined", function () {
+        it("defined true", function () {
+            assert.strictEqual( easl.evaluate("(let a 1) (defined 'a)"), true);
+        });
+        it("defined false", function () {
+            assert.strictEqual( easl.evaluate("(let a 1) (defined 'b)"), false);
+        });
+    });
+
+    describe("value-of symbol", function () {
+        it("value-of existing symbol", function () {
+            assert.strictEqual( easl.evaluate("(let a 1) (value-of 'a)"), 1);
+        });
+        it("value-of non-existing symbol", function () {
+            assert.strictEqual( easl.evaluate("(let a 1) (value-of 'b)"),
+                "Error: Unbound identifier: b");
+        });
+        it("value-of build-in function", function () {
+            assert.strictEqual( easl.evaluate("((value-of '+) 1 2)"), 3);
+        });
+    });
 });

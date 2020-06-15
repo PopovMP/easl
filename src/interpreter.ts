@@ -15,6 +15,7 @@ class Interpreter {
         "continue"   : this.evalContinue,
         "debug"      : this.evalDebug,
         "dec"        : this.evalDecrement,
+        "defined"    : this.evalDefined,
         "delete"     : this.evalDelete,
         "display"    : this.evalDisplay,
         "do"         : this.evalDo,
@@ -37,6 +38,7 @@ class Interpreter {
         "try"        : this.evalTry,
         "type-of"    : this.evalTypeOf,
         "unless"     : this.evalUnless,
+        "value-of"   : this.evalValueOf,
         "when"       : this.evalWhen,
         "while"      : this.evalWhile,
     };
@@ -216,6 +218,22 @@ class Interpreter {
         throw `Error: Unbound identifier: ${symbol}`;
     }
 
+    private isDefined(symbol: string, env: any[]): any {
+        for (let i = env.length - 1; i > -1; i--) {
+            if (symbol === env[i][0]) {
+                return true;
+            }
+        }
+
+        for (const lib of this.libs) {
+            if (lib.builtinHash[symbol]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private clearEnv(tag: string, env: any[]): void {
         let cell: [string, any];
         do {
@@ -233,12 +251,12 @@ class Interpreter {
             ? this.lookup(proc as string, env)
             : this.evalExpr(proc, env);
 
-        if (typeof closure === "string") {
-            return this.evalExpr([closure, ...expr.slice(1)], env);
+        if ( typeof closure === "string" && this.isDefined(closure, env) ) {
+            return this.evalExpr([this.evalExpr(closure, env), ...expr.slice(1)], env);
         }
 
         if ( !Array.isArray(closure) || closure[0] !== "closure") {
-            throw `Error: Improper function application. Given: ${ Printer.stringify(closure) }`;
+            throw `Error: Improper function application. Given: ${Printer.stringify(closure)}`;
         }
 
         return this.callClosure(expr, env, closure, procId);
@@ -249,8 +267,8 @@ class Interpreter {
             ? [this.evalExpr(expr[1], env)]
             : this.mapExprList(expr.slice(1), env);
 
-        const closureBody: any   = closure[2];
-        const closureEnv:  any[] = this.makeClosureEnv(procId, closure[1], args, closure[3]);
+        const closureBody: any  = closure[2];
+        const closureEnv: any[] = this.makeClosureEnv(procId, closure[1], args, closure[3]);
 
         return this.evalExpr(closureBody, closureEnv);
     }
@@ -277,22 +295,7 @@ class Interpreter {
     // (let symbol (par*)                  ; procedure definition
     //     expr+)
     private evalLet(expr: any[], env: any[]): void {
-        if (expr.length === 3 && Array.isArray(expr[1])) {
-            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), "let", env);
-            return;
-        }
-
-        if ( !Array.isArray(expr[2]) && expr.length !== 3 ) {
-            throw "Error: 'let' requires a symbol and a value.";
-        }
-
-        const param: any = expr.length === 3
-            ? expr[2]
-            : ["lambda", expr[2], ...expr.slice(3)];
-
-        const value: any = this.evalExpr(param, env);
-
-        this.addToEnv(expr[1], value, "let", env);
+        this.evalLetConst(expr, env, "let");
     }
 
     // (const (symbol symbol*) (expr expr*)) ; list destructuring
@@ -300,13 +303,17 @@ class Interpreter {
     // (const symbol (par*)                  ; procedure definition
     //     expr+)
     private evalConst(expr: any[], env: any[]): void {
+        this.evalLetConst(expr, env, "const");
+    }
+
+    private evalLetConst(expr: any[], env: any[], modifier: string): void {
         if (expr.length === 3 && Array.isArray(expr[1])) {
-            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), "const", env);
+            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), modifier, env);
             return;
         }
 
         if ( !Array.isArray(expr[2]) && expr.length !== 3 ) {
-            throw "Error: 'const' requires a symbol and a value.";
+            throw "Error: '" + modifier + "' requires a symbol and a value.";
         }
 
         const param: any = expr.length === 3
@@ -315,7 +322,7 @@ class Interpreter {
 
         const value: any = this.evalExpr(param, env);
 
-        this.addToEnv(expr[1], value, "const", env);
+        this.addToEnv(expr[1], value, modifier, env);
     }
 
     private evalListDestructuring(params: any[], args: any[], modifier: string, env: any[]): void {
@@ -442,6 +449,20 @@ class Interpreter {
         return value;
     }
 
+    // (defined symbol)
+    private evalDefined(expr: any[], env: any[]): any {
+        const [symbol] = <[string]>this.evalArgs(["string"], expr, env);
+
+        return this.isDefined(symbol, env);
+    }
+
+    // (value-of symbol)
+    private evalValueOf(expr: any[], env: any[]): any {
+        const [symbol] = <[string]>this.evalArgs(["string"], expr, env);
+
+        return this.lookup(symbol, env);
+    }
+
     // (block expr expr*)
     private evalBlock(expr: any[], env: any[]): any {
         if (expr.length === 1) {
@@ -481,7 +502,9 @@ class Interpreter {
         if ( !Array.isArray(expr[1]) ) throw "Error: Improper function parameters";
 
         const params: any[] = expr[1];
-        const body:   any[] = expr.length === 3 ? expr[2] : ["block", ... expr.slice(2)];
+        const body:   any[] = expr.length === 3
+            ? expr[2]
+            : ["block", ... expr.slice(2)];
 
         return ["closure", params, body, env];
     }
