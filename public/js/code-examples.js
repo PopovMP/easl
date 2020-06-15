@@ -415,8 +415,8 @@ const examplesList = [
         name: "Closure counter",
         code: `;; Closure counter
 
-(let make-counter ((value 0) (delta 1))
-    (dec value delta)
+(let make-counter ((initial-value 0) (delta 1))
+    (let value (- initial-value delta))
     (λ () (inc value delta)) )
 
 (let count (make-counter))
@@ -550,7 +550,8 @@ const examplesList = [
         name: "OOP - Lambda Calculus style",
         code: `;; OOP - Lambda Calculus style
 
-(let Person (name age)
+(let Person (name initial-age)
+   (let age initial-age)
    (let grow (λ ()
                 (inc age)))
    (λ (f)

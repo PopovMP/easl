@@ -11,6 +11,7 @@ class Interpreter {
         "break"      : this.evalBreak,
         "case"       : this.evalCase,
         "cond"       : this.evalCond,
+        "const"      : this.evalConst,
         "continue"   : this.evalContinue,
         "debug"      : this.evalDebug,
         "dec"        : this.evalDecrement,
@@ -157,7 +158,7 @@ class Interpreter {
         }
     }
 
-    private addToEnv(symbol: string, value: any, env: any[]): void {
+    private addToEnv(symbol: string, value: any, modifier: string, env: any[]): void {
         if (typeof value === "undefined") {
             throw `Error: cannot set unspecified value to symbol: ${symbol}.`;
         }
@@ -174,16 +175,23 @@ class Interpreter {
             }
         }
 
-        env.push([symbol, value]);
+        env.push([symbol, value, modifier]);
     }
 
     private setInEnv(symbol: string, value: any, env: any[]): void {
         if (typeof value === "undefined") {
-            throw `Error: cannot set unspecified value to symbol: ${symbol}.`;
+            throw `Error: cannot set unspecified value to a symbol. Given: ${symbol}.`;
         }
 
         for (let i = env.length - 1; i > -1; i--) {
             if (symbol === env[i][0]) {
+                if (env[i][2] === "const") {
+                    throw `Error: cannot modify a constant symbol. Given: ${symbol}.`;
+                }
+                else if (env[i][2] === "arg") {
+                    throw `Error: cannot modify a function argument. Given: ${symbol}.`;
+                }
+
                 env[i][1] = value;
                 return;
             }
@@ -250,7 +258,7 @@ class Interpreter {
     private makeClosureEnv(name: string, params: string[], args: any[], env: any[]): any[] {
         const closureEnv = env.concat([["#scope", name], ["#args", args], ["#name", name]]);
 
-        this.evalListDestructuring(params, args, closureEnv);
+        this.evalListDestructuring(params, args, "arg", closureEnv);
 
         return closureEnv;
     }
@@ -270,7 +278,7 @@ class Interpreter {
     //     expr+)
     private evalLet(expr: any[], env: any[]): void {
         if (expr.length === 3 && Array.isArray(expr[1])) {
-            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), env);
+            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), "let", env);
             return;
         }
 
@@ -284,10 +292,33 @@ class Interpreter {
 
         const value: any = this.evalExpr(param, env);
 
-        this.addToEnv(expr[1], value, env);
+        this.addToEnv(expr[1], value, "let", env);
     }
 
-    private evalListDestructuring(params: any[], args: any[], env: any[]): void {
+    // (const (symbol symbol*) (expr expr*)) ; list destructuring
+    // (const symbol expr)                   ; variable definition
+    // (const symbol (par*)                  ; procedure definition
+    //     expr+)
+    private evalConst(expr: any[], env: any[]): void {
+        if (expr.length === 3 && Array.isArray(expr[1])) {
+            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), "const", env);
+            return;
+        }
+
+        if ( !Array.isArray(expr[2]) && expr.length !== 3 ) {
+            throw "Error: 'const' requires a symbol and a value.";
+        }
+
+        const param: any = expr.length === 3
+            ? expr[2]
+            : ["lambda", expr[2], ...expr.slice(3)];
+
+        const value: any = this.evalExpr(param, env);
+
+        this.addToEnv(expr[1], value, "const", env);
+    }
+
+    private evalListDestructuring(params: any[], args: any[], modifier: string, env: any[]): void {
         if ( !Array.isArray(args) ) {
             throw "Error: list destructuring requires one iterable argument.";
         }
@@ -303,7 +334,7 @@ class Interpreter {
                     : `Error: cannot set unspecified value to parameter: ${param}.`
                 : args[i];
 
-            this.addToEnv(param, value, env);
+            this.addToEnv(param, value, modifier, env);
         }
 
         if (restIndex > -1) {
@@ -312,7 +343,7 @@ class Interpreter {
                 ? []
                 : args.slice(restIndex);
 
-            this.addToEnv(param, value, env);
+            this.addToEnv(param, value, modifier, env);
         }
     }
 
@@ -592,7 +623,7 @@ class Interpreter {
 
         for (const elem of range) {
             env.push(["#scope", "for"]);
-            this.addToEnv(symbol, elem, env);
+            this.addToEnv(symbol, elem, "let", env);
 
             for (const bodyExpr of loopBody) {
                 const res: any = this.evalExpr(bodyExpr, env);
@@ -655,7 +686,7 @@ class Interpreter {
     // (enum symbol symbol*)
     private evalEnum(expr: any[], env: any[]): void {
         for (let i: number = 1; i < expr.length; i++) {
-            this.addToEnv(expr[i], i - 1, env);
+            this.addToEnv(expr[i], i - 1, "const", env);
         }
     }
 

@@ -33,6 +33,7 @@ class Interpreter {
             "break": this.evalBreak,
             "case": this.evalCase,
             "cond": this.evalCond,
+            "const": this.evalConst,
             "continue": this.evalContinue,
             "debug": this.evalDebug,
             "dec": this.evalDecrement,
@@ -148,7 +149,7 @@ class Interpreter {
                 return typeof arg === argType;
         }
     }
-    addToEnv(symbol, value, env) {
+    addToEnv(symbol, value, modifier, env) {
         if (typeof value === "undefined") {
             throw `Error: cannot set unspecified value to symbol: ${symbol}.`;
         }
@@ -161,14 +162,20 @@ class Interpreter {
                 throw `Error: Identifier already defined: ${symbol}`;
             }
         }
-        env.push([symbol, value]);
+        env.push([symbol, value, modifier]);
     }
     setInEnv(symbol, value, env) {
         if (typeof value === "undefined") {
-            throw `Error: cannot set unspecified value to symbol: ${symbol}.`;
+            throw `Error: cannot set unspecified value to a symbol. Given: ${symbol}.`;
         }
         for (let i = env.length - 1; i > -1; i--) {
             if (symbol === env[i][0]) {
+                if (env[i][2] === "const") {
+                    throw `Error: cannot modify a constant symbol. Given: ${symbol}.`;
+                }
+                else if (env[i][2] === "arg") {
+                    throw `Error: cannot modify a function argument. Given: ${symbol}.`;
+                }
                 env[i][1] = value;
                 return;
             }
@@ -219,7 +226,7 @@ class Interpreter {
     }
     makeClosureEnv(name, params, args, env) {
         const closureEnv = env.concat([["#scope", name], ["#args", args], ["#name", name]]);
-        this.evalListDestructuring(params, args, closureEnv);
+        this.evalListDestructuring(params, args, "arg", closureEnv);
         return closureEnv;
     }
     evalString(expr) {
@@ -230,7 +237,7 @@ class Interpreter {
     }
     evalLet(expr, env) {
         if (expr.length === 3 && Array.isArray(expr[1])) {
-            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), env);
+            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), "let", env);
             return;
         }
         if (!Array.isArray(expr[2]) && expr.length !== 3) {
@@ -240,9 +247,23 @@ class Interpreter {
             ? expr[2]
             : ["lambda", expr[2], ...expr.slice(3)];
         const value = this.evalExpr(param, env);
-        this.addToEnv(expr[1], value, env);
+        this.addToEnv(expr[1], value, "let", env);
     }
-    evalListDestructuring(params, args, env) {
+    evalConst(expr, env) {
+        if (expr.length === 3 && Array.isArray(expr[1])) {
+            this.evalListDestructuring(expr[1], this.evalExpr(expr[2], env), "const", env);
+            return;
+        }
+        if (!Array.isArray(expr[2]) && expr.length !== 3) {
+            throw "Error: 'const' requires a symbol and a value.";
+        }
+        const param = expr.length === 3
+            ? expr[2]
+            : ["lambda", expr[2], ...expr.slice(3)];
+        const value = this.evalExpr(param, env);
+        this.addToEnv(expr[1], value, "const", env);
+    }
+    evalListDestructuring(params, args, modifier, env) {
         if (!Array.isArray(args)) {
             throw "Error: list destructuring requires one iterable argument.";
         }
@@ -255,14 +276,14 @@ class Interpreter {
                     ? this.evalExpr(params[i][1], env)
                     : `Error: cannot set unspecified value to parameter: ${param}.`
                 : args[i];
-            this.addToEnv(param, value, env);
+            this.addToEnv(param, value, modifier, env);
         }
         if (restIndex > -1) {
             const param = params[restIndex + 1];
             const value = args.length < restIndex
                 ? []
                 : args.slice(restIndex);
-            this.addToEnv(param, value, env);
+            this.addToEnv(param, value, modifier, env);
         }
     }
     evalSet(expr, env) {
@@ -458,7 +479,7 @@ class Interpreter {
         }
         for (const elem of range) {
             env.push(["#scope", "for"]);
-            this.addToEnv(symbol, elem, env);
+            this.addToEnv(symbol, elem, "let", env);
             for (const bodyExpr of loopBody) {
                 const res = this.evalExpr(bodyExpr, env);
                 if (res === "continue")
@@ -507,7 +528,7 @@ class Interpreter {
     }
     evalEnum(expr, env) {
         for (let i = 1; i < expr.length; i++) {
-            this.addToEnv(expr[i], i - 1, env);
+            this.addToEnv(expr[i], i - 1, "const", env);
         }
     }
     evalApply(expr, env) {

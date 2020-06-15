@@ -19,7 +19,7 @@
         const constants = makeKeywords("true false null #args #name");
 
         const keywords = makeKeywords(
-            "' ` , . λ block break call case cond continue debug do else for repeat if unless import lambda let " +
+            "' ` , . λ block break call case cond continue const debug do else for repeat if unless import lambda let " +
             "set delete inc dec enum string and or quote throw try type-of print parse eval display newline when while");
 
         const builtinFunc = makeKeywords(
