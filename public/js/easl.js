@@ -902,8 +902,9 @@ class Parser {
             .replace(/\\"/g, '""');
         const abbrevList = [["'", "quote"], ["`", "quasiquote"]];
         const codeList = this.tokenize(fixedText);
-        const expanded = this.expandAbbreviations(codeList, abbrevList);
-        const ilTree = this.nest(expanded);
+        const abbrevResolved = this.expandAbbreviations(codeList, abbrevList);
+        const pipesResolved = this.expandPipeLeft(abbrevResolved, "<<");
+        const ilTree = this.nest(pipesResolved);
         return ilTree;
     }
     expandAbbreviations(codeList, abbrevList) {
@@ -1016,6 +1017,30 @@ class Parser {
         return output.length > input.length
             ? this.expandListAbbreviation(output, abbrevChar, fullForm)
             : output;
+    }
+    expandPipeLeft(input, pipeSymbol) {
+        const output = [];
+        for (let i = 0, paren = 0, pipes = 0; i < input.length; i++) {
+            const curr = input[i];
+            if (curr === pipeSymbol) {
+                output.push("(");
+                pipes++;
+                continue;
+            }
+            output.push(curr);
+            if (pipes > 0 && this.isOpenParen(curr)) {
+                paren++;
+            }
+            if (pipes > 0 && paren === 0 && this.isCloseParen(curr)) {
+                for (; pipes > 0; pipes--) {
+                    output.push(")");
+                }
+            }
+            if (pipes > 0 && this.isCloseParen(curr)) {
+                paren--;
+            }
+        }
+        return output;
     }
     nest(input) {
         let i = -1;

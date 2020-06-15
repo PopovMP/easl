@@ -19,9 +19,10 @@ class Parser {
 
         const abbrevList: [string, string][] = [["'", "quote"], ["`", "quasiquote"]];
 
-        const codeList: any[] = this.tokenize(fixedText);
-        const expanded: any[] = this.expandAbbreviations(codeList, abbrevList);
-        const ilTree: any[]   = this.nest(expanded);
+        const codeList:       any[] = this.tokenize(fixedText);
+        const abbrevResolved: any[] = this.expandAbbreviations(codeList, abbrevList);
+        const pipesResolved:  any[] = this.expandPipeLeft(abbrevResolved, "<<");
+        const ilTree: any[] = this.nest(pipesResolved);
 
         return ilTree;
     }
@@ -162,6 +163,38 @@ class Parser {
         return output.length > input.length
             ? this.expandListAbbreviation(output, abbrevChar, fullForm)
             : output;
+    }
+
+    public expandPipeLeft(input: any[], pipeSymbol: string): any[] {
+        const output: any[] = [];
+
+        for (let i: number = 0, paren: number = 0, pipes: number = 0; i < input.length; i++) {
+            const curr: string = input[i];
+
+            if (curr === pipeSymbol ) {
+                output.push("(");
+                pipes++;
+                continue;
+            }
+
+            output.push(curr);
+
+            if (pipes > 0 && this.isOpenParen(curr) ) {
+                paren++;
+            }
+
+            if (pipes > 0 && paren === 0 && this.isCloseParen(curr) ) {
+                for (; pipes > 0; pipes--) {
+                    output.push(")");
+                }
+            }
+
+            if (pipes > 0 && this.isCloseParen(curr) ) {
+                paren--;
+            }
+        }
+
+        return output;
     }
 
     public nest(input: any[]): any[] {

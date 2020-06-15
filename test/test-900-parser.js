@@ -117,9 +117,18 @@ describe('Parser', function () {
         });
     });
 
+    describe("expand pipe left", function () {
+        it("single <<", function () {
+            assert.strictEqual( Printer.stringify( parser.parse("(foo << bar)") ) , "((foo (bar)))");
+        });
+        it("double <<", function () {
+            assert.strictEqual( Printer.stringify( parser.parse("(foo << bar << baz)") ) , "((foo (bar (baz))))");
+        });
+    });
+
     describe("stringify let", function () {
         it("stringify {let a (+ 1 2)}", function () {
-            assert.deepStrictEqual(Printer.stringify( parser.parse("{let a (+ 1 2)}") ),
+            assert.strictEqual(Printer.stringify( parser.parse("{let a (+ 1 2)}") ),
                 "((let a (+ 1 2)))");
         });
     });

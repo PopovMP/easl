@@ -37,16 +37,21 @@ const examplesList = [
 
     {
         name: "Random numbers in a list",
-        code: `;; Random numbers in a list
+        code: `(import "https://easl.forexsb.com/easl/list-hof.easl?v=66")
 
-(let lst '())                            ; make an empty list
+;; Imnperative style
+(const lst (list))
 
-(for _ (list-make 10)                    ; cycle 10 times
-    (let random  (* (math-random) 100))  ; generate a random number between 0 and 100
-    (let rounded (math-round random)  )  ; round the number
-    (list-push lst rounded) )            ; add the number to the end of the list
-    
-(print lst) ; print the list
+(for i (list-range 10)
+    (list-push lst << math-round << * 100 << math-random))
+
+(print lst)
+
+
+;; Functional style
+(print (list-map (list-make 10)
+                 (λ (element index)
+                    (math-round << * 100 << math-random))))
 `
     },
 
@@ -55,12 +60,12 @@ const examplesList = [
         code: `;; Odd or even with 'case'
 
 ; Generate a random number between 0 and 9
-(let n (math-floor (* 10 (math-random))) )
+(const n (math-floor (* 10 (math-random))) )
 
 ; Checks which list of options contains the value of 'n' and returns the text.
-(let type (case n
-             ((0 2 4 6 8) "even")
-             ((1 3 5 7 9) "odd" ) ))
+(const type (case n
+               ((0 2 4 6 8) "even")
+               ((1 3 5 7 9) "odd" ) ))
 
 (print n "is" type)
 `
@@ -70,8 +75,8 @@ const examplesList = [
         name: "First class citizens",
         code: `;; First class citizens
 
-(let a 12)
-(let b 24)
+(const a 12)
+(const b 24)
 
 ;; Imperative way - most of the Programming Languages (PLs) can do that
 (let d 0)
@@ -91,7 +96,7 @@ const examplesList = [
     {
         name: "Function with optional arguments",
         code: `;; The function's arguments are optional.
-(let sum ((a 0) (b 0))
+(const sum ((a 0) (b 0))
    (+ a b))
 
 (print "(sum)     →" (sum))
@@ -104,19 +109,19 @@ const examplesList = [
         name: "Implementation of 'map'",
         code: `;; Implementation of 'map' in EASL
 
-(let map (func lst)
-    (let i    0)    
-    (let len (list-length lst))
-    (let res '())
+(const map (lst func)
+    (const len (list-length lst))
+    (const res (list))
 
+    (let i 0)    
     (while (< i len)
-         (list-push res (func (list-get lst i)))
-         (inc i) )
+         (list-push res << func << list-get lst i)
+         (inc i))
 
     res)
 
-(let range (list-range 10 1))         ; Make a range form 1 to 10
-(let lst (map (λ (e) (* e 2)) range)) ; Double each element 
+(const range (list-range 10 1))         ; Make a range form 1 to 10
+(const lst (map range (λ (e) (* e 2)))) ; Double each element 
 (print lst)
 `
     },
@@ -125,18 +130,19 @@ const examplesList = [
         name: "Implementation of 'for-each'",
         code: `;; Implementation of 'for-each' in EASL
 
-(let for-each (func lst)
-    (let len (list-length lst))
-    (let i   0)
+(const for-each (lst func)
+    (const len (list-length lst))
 
+    (let i 0)
     (while (< i len)
-         (func (list-get lst i))
-         (inc i) ))
+         (func << list-get lst i)
+         (inc i)))
 
-(let printer (λ (e) (print e)))
-(let range   (list-range 10 1))
+(const printer (λ (e)
+                  (display e)
+                  (display " ")))
 
-(for-each printer range)
+(for-each (list-range 10 1) printer)
 `
     },
 
@@ -145,12 +151,12 @@ const examplesList = [
     code:
     `;; Swap list elements
 
-(let swap-on-place (lst i1 i2)
-    (let temp (list-get lst i1))
-    (list-set lst i1 (list-get lst i2))
+(const swap-on-place (lst i1 i2)
+    (const temp (list-get lst i1))
+    (list-set lst i1 << list-get lst i2)
     (list-set lst i2 temp))
 
-(let lst '(1 2 3 4))
+(const lst '(1 2 3 4))
 (print "Original:" lst)
 (swap-on-place lst 0 3)
 (print "Swapped :" lst)
@@ -395,16 +401,13 @@ const examplesList = [
         name: "Closure adder",
         code: `;; Closure adder
 
-(let add ((n null))
-    (let sum (or n 0))
-    (if (equal n null) 
-        sum
-        (λ ((n null))
-            (if (equal n null)
-                sum
-                (add (+ n sum))))))
+(let add ((m 0))
+    (λ ((n null))
+       (if (equal n null)
+           m
+           (add (+ n m)))))
 
-(print '(add)             "=>" (add)             )
+(print '((add))           "=>" ((add))           )
 (print '((add 3))         "=>" ((add 3))         )
 (print '(((add 3) 4))     "=>" (((add 3) 4))     )
 (print '((((add 3) 4) 5)) "=>" ((((add 3) 4) 5)) )
@@ -550,31 +553,31 @@ const examplesList = [
         name: "OOP - Lambda Calculus style",
         code: `;; OOP - Lambda Calculus style
 
-(let Person (name initial-age)
+(const Person (name initial-age)
    (let age initial-age)
-   (let grow (λ ()
-                (inc age)))
+   (const grow (λ ()
+                  (inc age)))
    (λ (f)
       (f name age grow)))
 
-(let name (name age grow) name)
-(let age  (name age grow) age)
-(let grow (name age grow) (grow))
-(let who  (name age grow) (print name age))
+(const name (name age grow) name)
+(const age  (name age grow) age)
+(const grow (name age grow) (grow))
+(const who  (name age grow) (print name age))
 
-(let john (Person "John" 33))
+(const john (Person "John" 33))
 (john grow)
 
-(let Singer (person)
-    (let sing (λ (song)
-                 (print "🎵" song)))
+(const Singer (person)
+    (const sing (λ (song)
+                   (print "🎵" song)))
     (λ (f)
        (f person sing)))
 
-(let person (person sing) person)
-(let sing   (person sing) sing)
+(const person (person sing) person)
+(const sing   (person sing) sing)
 
-(let johnSinger (Singer john))
+(const johnSinger (Singer john))
 ((johnSinger person) who)
 ((johnSinger sing) "Tra la la")
 `

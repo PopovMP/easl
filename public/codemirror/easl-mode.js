@@ -1,26 +1,29 @@
 (function (mod) {
     mod(CodeMirror);
 })(function (CodeMirror) {
-
     "use strict";
 
     CodeMirror.defineMode("easl-mode", function (options) {
-        const BUILTIN = "builtin", COMMENT = "comment", STRING = "string",
-            ATOM = "atom", NUMBER = "number", BRACKET = "bracket", KEYWORD = "keyword", VAR = "variable";
+        const BUILTIN = "builtin", COMMENT = "comment", STRING = "string", ATOM = "atom", NUMBER = "number",
+              BRACKET = "bracket", KEYWORD = "keyword", VAR = "variable";
         const INDENT_WORD_SKIP   = options.indentUnit || 4;
         const NORMAL_INDENT_UNIT = options.indentUnit || 4;
 
         function makeKeywords(str) {
             const obj = {}, words = str.split(" ");
-            for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
+
+            for (let i = 0; i < words.length; ++i) {
+                obj[words[i]] = true;
+            }
+
             return obj;
         }
 
         const constants = makeKeywords("true false null #args #name");
 
         const keywords = makeKeywords(
-            "' ` , . λ block break call case cond continue const debug do else for repeat if unless import lambda let " +
-            "set delete inc dec enum string and or quote throw try type-of print parse eval display newline when while");
+            "' ` , . << >> λ apply block break call case cond continue const debug do else for repeat if unless import lambda " +
+            "let set delete inc dec enum string and or quote throw try type-of print parse eval display newline when while");
 
         const builtinFunc = makeKeywords(
             // Core lib
