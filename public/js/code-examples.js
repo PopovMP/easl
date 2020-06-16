@@ -39,7 +39,7 @@ const examplesList = [
         name: "Random numbers in a list",
         code: `(import "https://easl.forexsb.com/easl/list-hof.easl?v=66")
 
-;; Imnperative style
+;; Imperative style
 (const lst (list))
 
 (for i (list-range 10)
@@ -73,23 +73,18 @@ const examplesList = [
 
     {
         name: "First class citizens",
-        code: `;; First class citizens
+        code: `;; Functions are first class citizens
 
-(const a 12)
-(const b 24)
+(const a    9)
+(const b    3)
+(const plus +)
 
-;; Imperative way - most of the Programming Languages (PLs) can do that
-(let d 0)
-(if (> a  b)
-    (set d (- a b))
-    (set d (+ a b)) )
-(print d)
+(const op (if (> a b) plus -))
+(print (op a b))
 
-;; A better way - some of the PLs can do that
-(print (if (> a b) (- a b) (+ a b)))
-
-;; The masters way - how many PLs can do that?
-(print ((if (> a b) - +) a b))
+;; Loop over functions in a list. Apply each function on two arguments.
+(for fun '(+ - * / % < > <= >= = != ~ list list-range list-make math-max math-pow)
+    (print \`(,fun ,a ,b) '=> (fun a b)))
 `
     },
 

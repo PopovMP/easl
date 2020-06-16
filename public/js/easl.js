@@ -359,8 +359,12 @@ class Interpreter {
         return value;
     }
     evalDefined(expr, env) {
-        const [symbol] = this.evalArgs(["string"], expr, env);
-        return this.isDefined(symbol, env);
+        if (expr.length !== 2) {
+            throw "Error: 'defined' requires 1 argument. Given: " + (expr.length - 1);
+        }
+        return this.isDefined(typeof expr[1] === "string"
+            ? expr[1]
+            : this.evalExpr(expr[1], env), env);
     }
     evalValueOf(expr, env) {
         const [symbol] = this.evalArgs(["string"], expr, env);

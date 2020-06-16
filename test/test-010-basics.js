@@ -71,6 +71,12 @@ describe("Eval basics", function () {
         it("defined false", function () {
             assert.strictEqual( easl.evaluate("(let a 1) (defined 'b)"), false);
         });
+        it("defined with string", function () {
+            assert.strictEqual( easl.evaluate('(let a 1) (defined "a")'), true);
+        });
+        it("defined symbol", function () {
+            assert.strictEqual( easl.evaluate("(let a 1) (defined a)"), true);
+        });
     });
 
     describe("value-of symbol", function () {
@@ -83,6 +89,13 @@ describe("Eval basics", function () {
         });
         it("value-of build-in function", function () {
             assert.strictEqual( easl.evaluate("((value-of '+) 1 2)"), 3);
+        });
+        it("value-of with string", function () {
+            assert.strictEqual( easl.evaluate('(let a 1) (value-of "a")'), 1);
+        });
+        it("value-of symbol", function () {
+            assert.strictEqual( easl.evaluate("(let a 1) (value-of a)"),
+                "Error: 'value-of' requires string. Given: number 1");
         });
     });
 });
