@@ -810,7 +810,6 @@ const examplesList = [
         code: `;; Assembly Interpreter
 
 (const code-text "
- 
 ;; FizBuz example
  
 ; Define messages
@@ -1071,10 +1070,10 @@ exit :
                   ((JNZ)   (JNZ  p))
                   ((OUT)   (OUT  p))
                   ((DEBUG) (show-state))
-                  (else (throw (+ "Wrong command: " command " at IP: " IP)))   ))))
+                  (else (throw (~ "Wrong command: " command " at IP: " IP)))   ))))
 
 (const eval-label (label command)
-    (if (equal command ":")
+    (when (equal command ":")
         (set-var label IP)))
 
 (const parse-param (par-txt)
@@ -1120,8 +1119,8 @@ exit :
     command-list)
 
 (const eval-asm (code-txt)
-    (const commands     (parse-code code-txt))
-    (const commands-len (list-length commands))
+    (const commands (parse-code code-txt))
+    (const commands-length (list-length commands))
 
     (set IP 0)
     (for command commands
@@ -1131,9 +1130,8 @@ exit :
     (set IP 0)
     (const max-cycles 10000)
     (let cycle 0)
-    (while (< IP commands-len)
-        (const command (list-get commands IP))
-        (apply eval-op command)
+    (while (< IP commands-length)
+        (apply eval-op (list-get commands IP))
         (inc IP)
         (inc cycle)
         (when (> cycle max-cycles)
