@@ -658,9 +658,13 @@ class Interpreter {
     evalThrow(expr, env) {
         throw this.evalExpr(expr[1], env);
     }
-    evalDebug(env) {
-        this.dumpEnvironment(env);
+    evalDebug(expr, env) {
         this.isDebug = true;
+        const envDumpList = [];
+        for (let i = Math.min(env.length - 1, 20); i > -1; i--) {
+            envDumpList.push(`${env[i][0]} = ${Printer.stringify(env[i][1]).substr(0, 500)}`);
+        }
+        this.options.printer(`Environment:\n${envDumpList.join("\n")}\n`);
     }
     evalTypeOf(expr, env) {
         if (expr.length !== 2) {
@@ -722,28 +726,8 @@ class Interpreter {
         this.evalArgs([], expr, env);
         this.options.printer("\r\n");
     }
-    dumpEnvironment(env) {
-        const getCircularReplacer = () => {
-            const seen = [];
-            return (key, value) => {
-                if (typeof value === "object" && value !== null) {
-                    if (seen.indexOf(value) > -1)
-                        return;
-                    seen.push(value);
-                }
-                return value;
-            };
-        };
-        const envDumpList = [];
-        const maxLength = Math.min(env.length - 1, 10);
-        for (let i = maxLength; i > -1; i--) {
-            const record = env[i];
-            envDumpList.push(`${record[0]} : ${JSON.stringify(record[1], getCircularReplacer()).substr(0, 500)}`);
-        }
-        this.options.printer(`Env : ${envDumpList.join("\n      ")}`);
-    }
     dumpExpression(expr) {
-        this.options.printer(`Expr: ${JSON.stringify(expr)}`);
+        this.options.printer(`Expression:\n${Printer.stringify(expr)}\n`);
     }
     assertArity(expr, argsCount, optionalCount) {
         const argText = (count) => count === 1
