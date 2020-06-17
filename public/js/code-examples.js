@@ -809,7 +809,7 @@ const examplesList = [
         name: "Assembly Interpreter",
         code: `;; Assembly Interpreter
 
-(let code-text "
+(const code-text "
  
 ;; FizBuz example
  
@@ -861,7 +861,6 @@ print-fizbuz :
 exit :
 " )
 
-
 (let AX 0) ; Accumulator Register
 (let BX 0) ; Base Register
 (let CX 0) ; Counter Register
@@ -872,23 +871,23 @@ exit :
 
 (let IP 0) ; Instruction Pointer
 
-(let var-names  (list)) ; Custom variables and labels names
-(let var-values (list)) ; Custom variables and labels values
+(const var-names  (list)) ; Custom variables and labels names
+(const var-values (list)) ; Custom variables and labels values
 
-(let set-var (name val)
-   (let index (list-index-of var-names name))
-   (if (>= index 0)
-       (list-set var-values index val)
-       (block (list-push var-names  name)
-              (list-push var-values val) )))
+(const set-var (name val)
+   (const index (list-index-of var-names name))
+   (cond
+       ((>= index 0) (list-set var-values index val))
+       (else (list-push var-names  name)
+             (list-push var-values val))))
 
-(let get-var (name)
-   (let index (list-index-of var-names name))
+(const get-var (name)
+   (const index (list-index-of var-names name))
    (if (>= index 0)
        (list-get var-values index)
        (throw (string-concat "Variable not defined: " name)) ))
 
-(let set-val (name val)
+(const set-val (name val)
     (case name
         ((EAX AH AL AX) (set AX val))
         ((EBX BH BL BX) (set BX val))
@@ -896,7 +895,7 @@ exit :
         ((EDX DH DL DX) (set DX val))
         (else (set-var name val)) ))
 
-(let get-val (ref)
+(const get-val (ref)
     (if (equal (type-of ref) "number")
         ref
         (case ref
@@ -906,129 +905,129 @@ exit :
             ((EDX DH DL DX) DX)
             (else (get-var ref)) )))
 
-(let set-ZF (val)
+(const set-ZF (val)
     (set ZF (if (= val 0) 1 0)) )
 
-(let set-SF (val)
+(const set-SF (val)
     (set SF (if (< val 0) 1 0)) )
 
-(let DD (name val)
+(const DD (name val)
     (set-var name val) )
 
-(let EQU (name val)
+(const EQU (name val)
     (set-var name val) )
 
-(let MOV (p q)
-    (let val (get-val q))
+(const MOV (p q)
+    (const val (get-val q))
     (set-val p val) )
 
-(let INC (p)
-    (let res (+ (get-val p) 1))
+(const INC (p)
+    (const res (+ (get-val p) 1))
     (set-val p res)
     (set-ZF res)
     (set-SF res) )
 
-(let DEC (p)
-    (let res (- (get-val p) 1))
+(const DEC (p)
+    (const res (- (get-val p) 1))
     (set-val p res)
     (set-ZF res)
     (set-SF res) )
 
-(let ADD (p q)
-    (let res (+ (get-val p) (get-val q)))
+(const ADD (p q)
+    (const res (+ (get-val p) (get-val q)))
     (set-val p res)
     (set-ZF res)
     (set-SF res) )
 
-(let SUB (p q)
-    (let res (- (get-val p) (get-val q)))
+(const SUB (p q)
+    (const res (- (get-val p) (get-val q)))
     (set-val p res)
     (set-ZF res)
     (set-SF res) )
 
-(let MUL (p)
-    (let res (* (get-val "AX") (get-val p)))
+(const MUL (p)
+    (const res (* (get-val "AX") (get-val p)))
     (set-val "AX" res)
     (set-ZF res)
     (set-SF res) )
 
-(let DIV (p)
-    (let res (/ (get-val "AX") (get-val p)))
+(const DIV (p)
+    (const res (/ (get-val "AX") (get-val p)))
     (set-val "AX" res)
     (set-ZF res)
     (set-SF res) )
 
-(let MOD (p)
-    (let res (% (get-val "AX") (get-val p)))
+(const MOD (p)
+    (const res (% (get-val "AX") (get-val p)))
     (set-val "AX" res)
     (set-ZF res)
     (set-SF res) )
 
-(let AND (p q)
-    (let res (and (get-val p) (get-val q)))
+(const AND (p q)
+    (const res (and (get-val p) (get-val q)))
     (set-val p res)
     (set-ZF res) )
 
-(let OR (p q)
-    (let res (or (get-val p) (get-val q)))
+(const OR (p q)
+    (const res (or (get-val p) (get-val q)))
     (set-val p res)
     (set-ZF res) )
 
-(let TEST (p q)
-    (let res (and (get-val p) (get-val q)))
+(const TEST (p q)
+    (const res (and (get-val p) (get-val q)))
     (set-ZF res) )
 
-(let NOT (p)
-    (let res (if (get-val p) 0 1))
+(const NOT (p)
+    (const res (if (get-val p) 0 1))
     (set-val p res)
     (set-ZF res) )
 
-(let CMP (p q)
-    (let res (- (get-val p) (get-val q)))
+(const CMP (p q)
+    (const res (- (get-val p) (get-val q)))
     (set-ZF res)
     (set-SF res) )
 
-(let jump (label)
+(const jump (label)
     (set IP (get-val label)) )
 
-(let JMP (label)
+(const JMP (label)
     (jump label) )
 
-(let JE (label)
+(const JE (label)
     (if ZF (jump label)) )
 
-(let JNE (label)
+(const JNE (label)
     (unless ZF (jump label)) )
 
-(let JL (label)
+(const JL (label)
     (if (and (not ZF) SF)
         (jump label) ))
 
-(let JLE (label)
+(const JLE (label)
     (if (or (and (not ZF) SF) ZF)
         (jump label) ))
 
-(let JG (label)
+(const JG (label)
     (if (and (not ZF) (not SF))
         (jump label) ))
 
-(let JGE (label)
+(const JGE (label)
     (if (or (and (not ZF) (not SF)) ZF)
         (jump label) ))
 
-(let JZ (label)
+(const JZ (label)
     (if ZF
         (jump label)) )
 
-(let JNZ (label)
+(const JNZ (label)
     (if (not ZF)
         (jump label)) )
 
-(let OUT (ref)
+(const OUT (ref)
     (print (get-val ref)) )
 
-(let show-state ()
-    (let i 0)
+(const show-state ()
+    (const i 0)
     (for var-name var-names
         (print var-name ":" (var-values i))
         (inc i) )
@@ -1041,7 +1040,7 @@ exit :
     (print "SF :" SF)
     (print "IP :" IP) )
 
-(let eval-op (command p (q null))
+(const eval-op (command p (q null))
     (case p
         ((DS DW DD DQ DT) (DD command q))
         ((EQU) (EQU command q))
@@ -1074,69 +1073,71 @@ exit :
                   ((DEBUG) (show-state))
                   (else (throw (+ "Wrong command: " command " at IP: " IP)))   ))))
 
-(let eval-label (label command)
+(const eval-label (label command)
     (if (equal command ":")
-        (set-var label IP) ))
+        (set-var label IP)))
 
-(let parse-param (par-txt)
-    (let num-param (to-number par-txt))
+(const parse-param (par-txt)
+    (const num-param (to-number par-txt))
     (if (equal (type-of num-param) "number")
         num-param
-        par-txt ))
+        par-txt))
 
-(let parse-code-line (code-line)
+(const parse-code-line (code-line)
     ; Parse a command line
-    (let split-parts (string-split code-line " "))
-    (let non-empty-parts (list))
+    (const split-parts (string-split code-line " "))
+    (const non-empty-parts (list))
     (for element split-parts
         (unless (equal element "")
-                (list-push non-empty-parts element) ))
+            (list-push non-empty-parts element)))
 
-    (let command (list))
+    (const command (list))
     (for par-txt non-empty-parts
-        (let param (parse-param par-txt))
+        (const param (parse-param par-txt))
         (if (or (equal (type-of param) "string")
                 (equal (type-of param) "number"))
-            (list-push command param) ))
+            (list-push command param)))
 
-    command )
+    command)
 
-(let parse-code (code-txt)
-    (let src-list (string-split code-txt "\\n"))
-    (let command-list '())
+(const trim-comment (code-line)
+    (const comment-index (string-index-of code-line ";"))
+    (if (>= comment-index 0)
+        (string-sub-string code-line 0 comment-index)
+        code-line))
 
-    (for code-line src-list
-        (let comment-index (string-index-of code-line ";"))
-        (if (>= comment-index 0)
-            (set code-line (string-sub-string code-line 0 comment-index)) )
-        (set code-line (string-trim code-line))
+(const parse-code (code-txt)
+    (const command-list (list))
 
-        (if (> (string-length code-line) 0) (block
-            (let command (parse-code-line code-line))
-            (if (> (list-length command) 0)
-                (list-push command-list command) ) )) )
+    (for code-line-raw (string-split code-txt "\\n")
+        (const code-line (string-trim (trim-comment code-line-raw)))
 
-    command-list )
+        (when (> (string-length code-line) 0)
+            (const command (parse-code-line code-line))
+            (when (> (list-length command) 0)
+                (list-push command-list command))))
 
-(let eval-asm (code-txt)
-    (let lst-commands     (parse-code code-txt))
-    (let lst-commands-len (list-length lst-commands))
+    command-list)
+
+(const eval-asm (code-txt)
+    (const commands     (parse-code code-txt))
+    (const commands-len (list-length commands))
 
     (set IP 0)
-    (for command lst-commands
+    (for command commands
         (apply eval-label command)
         (inc IP) )
 
     (set IP 0)
-    (let max-cycles 10000)
+    (const max-cycles 10000)
     (let cycle 0)
-    (while (< IP lst-commands-len)
-        (let command (list-get lst-commands IP))
+    (while (< IP commands-len)
+        (const command (list-get commands IP))
         (apply eval-op command)
         (inc IP)
         (inc cycle)
-        (if (> cycle max-cycles)
-            (throw "Too many cycles!") )) )
+        (when (> cycle max-cycles)
+            (throw "Too many cycles!"))))
 
 (eval-asm code-text)
 `

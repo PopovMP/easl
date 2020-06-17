@@ -83,4 +83,13 @@ describe('block', function () {
                 (let sum (a b) (+ a b))
                 (sum 2 3) )         `), 5);
     });
+
+    it('block closure', function () {
+        assert.strictEqual(easl.evaluate(`
+            (const count (block
+                            (let a 0)
+                            (lambda ()
+                                (inc a))))
+            (count) (count) (count)`), 3);
+    });
 });

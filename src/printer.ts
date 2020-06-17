@@ -13,9 +13,8 @@ class Printer {
                                          : " ";
 
         function printClosure(closure: any[]): void {
-            texts.push("lambda (" + closure[1].join(" ") + ") (");
+            texts.push("lambda (" + closure[1].join(" ") + ")");
             loop(closure[2]);
-            texts.push(")");
         }
 
         function printQuote(obj: any[] | any): void {

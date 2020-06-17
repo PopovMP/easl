@@ -67,8 +67,7 @@ class Interpreter {
         this.isDebug = false;
         this.libs = [];
         this.options = new Options();
-        const forms = Object.keys(this.specialForms);
-        for (const form of forms) {
+        for (const form of Object.keys(this.specialForms)) {
             this.builtinHash[form] = true;
         }
     }
@@ -229,20 +228,24 @@ class Interpreter {
         if (!Array.isArray(closure) || closure[0] !== "closure") {
             throw `Error: Improper function application. Given: ${Printer.stringify(closure)}`;
         }
-        return this.callClosure(expr, env, closure, procId);
-    }
-    callClosure(expr, env, closure, procId) {
-        const args = expr.length === 1 ? [] : expr.length === 2
-            ? [this.evalExpr(expr[1], env)]
-            : this.mapExprList(expr.slice(1), env);
-        const closureBody = closure[2];
-        const closureEnv = this.makeClosureEnv(procId, closure[1], args, closure[3]);
-        return this.evalExpr(closureBody, closureEnv);
-    }
-    makeClosureEnv(name, params, args, env) {
-        const closureEnv = env.concat([["#scope", name], ["#args", args], ["#name", name]]);
+        const args = expr.length === 1
+            ? []
+            : expr.length === 2
+                ? [this.evalExpr(expr[1], env)]
+                : this.mapExprList(expr.slice(1), env);
+        const params = closure[1];
+        const body = closure[2];
+        const closureEnv = closure[3].concat([["#scope", procId], ["#args", args], ["#name", procId]]);
+        const scopeStart = closureEnv.length - 1;
         this.evalListDestructuring(params, args, "arg", closureEnv);
-        return closureEnv;
+        const res = this.evalExprList(body, closureEnv);
+        if (Array.isArray(res) && res[0] === "closure") {
+            closureEnv.splice(scopeStart, 1);
+        }
+        else {
+            this.clearEnv("#scope", closureEnv);
+        }
+        return res;
     }
     evalString(expr) {
         if (expr.length !== 2) {
@@ -394,15 +397,13 @@ class Interpreter {
         return "continue";
     }
     evalLambda(expr, env) {
-        if (expr.length < 3)
-            throw "Error: Improper function";
-        if (!Array.isArray(expr[1]))
-            throw "Error: Improper function parameters";
-        const params = expr[1];
-        const body = expr.length === 3
-            ? expr[2]
-            : ["block", ...expr.slice(2)];
-        return ["closure", params, body, env];
+        if (expr.length < 3) {
+            throw "Error: Improper function. Given: " + Printer.stringify(expr);
+        }
+        if (!Array.isArray(expr[1])) {
+            throw "Error: Improper function parameters. Given: " + Printer.stringify(expr);
+        }
+        return ["closure", expr[1], expr.slice(2), env];
     }
     evalIf(expr, env) {
         if (expr.length < 3 || expr.length > 4) {
@@ -496,7 +497,7 @@ class Interpreter {
         const range = this.evalExpr(expr[2], env);
         const loopBody = expr.slice(3);
         if (!Array.isArray(range)) {
-            throw `Error: No range provided in 'for'`;
+            throw `Error: 'for' no range provided. Given: ` + Printer.stringify(range);
         }
         for (const elem of range) {
             env.push(["#scope", "for"]);
@@ -1099,9 +1100,8 @@ class Printer {
             ? ""
             : " ";
         function printClosure(closure) {
-            texts.push("lambda (" + closure[1].join(" ") + ") (");
+            texts.push("lambda (" + closure[1].join(" ") + ")");
             loop(closure[2]);
-            texts.push(")");
         }
         function printQuote(obj) {
             if (Array.isArray(obj)) {

@@ -50,15 +50,14 @@ class Interpreter {
         this.libs    = [];
         this.options = new Options();
 
-        const forms = Object.keys(this.specialForms);
-        for (const form of forms) {
+        for (const form of Object.keys(this.specialForms) ) {
             this.builtinHash[form] = true;
         }
     }
 
     public evalCodeTree(codeTree: any[], options: Options, callback?: Function): any {
         this.options = options;
-        this.libs.push(... LibManager.getBuiltinLibs(options.libs, this));
+        this.libs.push(... LibManager.getBuiltinLibs(options.libs, this) );
 
         if (typeof callback === "function") {
             LibManager.manageImports(codeTree,
@@ -246,7 +245,7 @@ class Interpreter {
     private evalApplication(expr: any[], env: any[]): any {
         const proc: string | any[] = expr[0];
         const isNamed: boolean = typeof proc === "string";
-        const procId: string = isNamed ? proc as string : proc[0];
+        const procId:  string  = isNamed ? proc as string : proc[0];
         const closure: any[] | string = isNamed
             ? this.lookup(proc as string, env)
             : this.evalExpr(proc, env);
@@ -259,26 +258,30 @@ class Interpreter {
             throw `Error: Improper function application. Given: ${Printer.stringify(closure)}`;
         }
 
-        return this.callClosure(expr, env, closure, procId);
-    }
+        const args: any[] = expr.length === 1
+            ? []
+            : expr.length === 2
+                ? [this.evalExpr(expr[1], env)]
+                : this.mapExprList(expr.slice(1), env);
 
-    private callClosure(expr: any[], env: any[], closure: any[], procId: string) {
-        const args: any[] = expr.length === 1 ? [] : expr.length === 2
-            ? [this.evalExpr(expr[1], env)]
-            : this.mapExprList(expr.slice(1), env);
-
-        const closureBody: any  = closure[2];
-        const closureEnv: any[] = this.makeClosureEnv(procId, closure[1], args, closure[3]);
-
-        return this.evalExpr(closureBody, closureEnv);
-    }
-
-    private makeClosureEnv(name: string, params: string[], args: any[], env: any[]): any[] {
-        const closureEnv = env.concat([["#scope", name], ["#args", args], ["#name", name]]);
+        const params:     any[]  = closure[1];
+        const body:       any[]  = closure[2];
+        const closureEnv: any[]  = closure[3].concat([["#scope", procId], ["#args", args], ["#name", procId]]);
+        const scopeStart: number = closureEnv.length - 1;
 
         this.evalListDestructuring(params, args, "arg", closureEnv);
 
-        return closureEnv;
+        const res: any = this.evalExprList(body, closureEnv);
+
+        if ( Array.isArray(res) && res[0] === "closure" ) {
+            // Doesn't clean the scope to preserve the closure.
+            // Remove only the initial scope tag
+            closureEnv.splice(scopeStart, 1);
+        } else {
+            this.clearEnv("#scope", closureEnv);
+        }
+
+        return res;
     }
 
     // (string text)
@@ -503,15 +506,16 @@ class Interpreter {
     // (lambda (par*)
     //     expr+)
     private evalLambda(expr: any[], env: any[]): any[] {
-        if (expr.length < 3) throw "Error: Improper function";
-        if ( !Array.isArray(expr[1]) ) throw "Error: Improper function parameters";
+        if (expr.length < 3) {
+            throw "Error: Improper function. Given: " + Printer.stringify(expr);
+        }
 
-        const params: any[] = expr[1];
-        const body:   any[] = expr.length === 3
-            ? expr[2]
-            : ["block", ... expr.slice(2)];
+        if ( !Array.isArray(expr[1]) ) {
+            throw "Error: Improper function parameters. Given: " + Printer.stringify(expr);
+        }
 
-        return ["closure", params, body, env];
+        // (closure (par*) (body+) env)
+        return ["closure", expr[1], expr.slice(2), env];
     }
 
     // (if test-expr
@@ -646,7 +650,7 @@ class Interpreter {
         const loopBody: any[] = expr.slice(3);
 
         if ( !Array.isArray(range) ) {
-            throw `Error: No range provided in 'for'`;
+            throw `Error: 'for' no range provided. Given: ` + Printer.stringify(range);
         }
 
         for (const elem of range) {

@@ -75,8 +75,25 @@ describe('for loop', function () {
 
     it('the loop body is a scope', function () {
         assert.strictEqual(easl.evaluate(` 
-                {for e '(1)
-                    {let a e} }
+                (for e '(1)
+                    (let a e))
                 a                                      `), "Error: Unbound identifier: a");
+    });
+
+    it('the loop variable cannot be redefined', function () {
+        assert.strictEqual(easl.evaluate(` 
+                (for e '(1)
+                    (let e 5))
+                1
+        `), "Error: Identifier already defined: e");
+    });
+
+    it('the loop variable cannot be redefined in multiple expressions', function () {
+        assert.strictEqual(easl.evaluate(` 
+                (for e '(1)
+                    2
+                    (let e 5))
+                1
+        `), "Error: Identifier already defined: e");
     });
 });

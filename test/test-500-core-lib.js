@@ -257,8 +257,8 @@ describe('core-lib', function () {
         });
         it('function two expressions', function () {
             assert.strictEqual(easl.evaluate(` 
-              {let sum (a) {let b 1} (+ a b)}
-              (to-string sum)  `), "(lambda (a) (block (let b 1) (+ a b)))");
+              (let sum (a) (let b 1) (+ a b))
+              (to-string sum)  `), "(lambda (a) (let b 1) (+ a b))");
         });
     });
 
