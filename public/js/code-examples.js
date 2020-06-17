@@ -8,7 +8,7 @@ const examplesList = [
 (let n 1)       ; initialize a counter
 (while (< n 6)  ; evaluate the condition
     (print n)   ; the 'while' loop body
-    (inc   n) ) ; increment the counter
+    (inc   n))  ; increment the counter
 `
     },
 
@@ -18,7 +18,7 @@ const examplesList = [
 (print "Range of size 8 starting from 1 :" (list-range 8 1))
 (print "List with size 8 filled with 1  :" (list-make 8 1))
 (print "Declare and define a new list   :" '(list 0 1 2 3))
-(let lst (list 0 1 2 3))
+(const lst (list 0 1 2 3))
 (print "A list of numbers               :" lst)
 (print "The list length                 :" (list-length  lst    ))
 (print "The first element               :" (list-get     lst 0  ))
@@ -37,7 +37,7 @@ const examplesList = [
 
     {
         name: "Random numbers in a list",
-        code: `(import "https://easl.forexsb.com/easl/list-hof.easl?v=66")
+        code: `(import "https://easl.forexsb.com/easl/list-hof.easl")
 
 ;; Imperative style
 (const lst (list))
@@ -162,7 +162,7 @@ const examplesList = [
         name: "Factorial",
         code: `;; Factorial
 
-(let fac (n)
+(const fac (n)
     (if (= n 0)
         1
         (* n (fac (- n 1))) )) 
@@ -188,16 +188,16 @@ const examplesList = [
         name: "FizzBuzz recursive style",
         code: `;; FizzBuzz recursive style
 
-(let get-fizz-buzz (n)
+(const get-fizz-buzz (n)
     (cond
         ((not (% n 15)) "FizzBuzz")
         ((not (% n  3)) "Fizz"    )
         ((not (% n  5)) "Buzz"    )
         (else n) ))
 
-(let FizzBuzz (max)
-    (let res '())
-    (let loop (n)
+(const FizzBuzz (max)
+    (const res '())
+    (const loop (n)
         (when (<= n max)
             (list-push res (get-fizz-buzz n))
             (loop (+ n 1))))
@@ -211,18 +211,20 @@ const examplesList = [
         name: "Fibonacci - tail optimized",
         code: `;; Fibonacci - tail optimized
 
-(let fibo (n)
-    (let loop (i prev cur)
+(const fibo (n)
+    (const loop (i prev cur)
         (if (= i n)
             cur
-            (loop (+ i 1) cur (+ prev cur)) ))
+            (loop (+ i 1)
+                  cur
+                  (+ prev cur))))
     (case n
         ((1 2) 1)
-        (else (loop 2 1 1)) ))
+        (else (loop 2 1 1))))
 
 ;; Print
-(for i (list-range 10 1)
-    (print "fibo" i ":" (fibo i)) )
+(for i (list-range 9 1)
+    (print \`(fibo , i) '=> (fibo i)))
 `   },
 
     {
@@ -231,19 +233,19 @@ const examplesList = [
 ;; Calculate the sum of a list by using three different methods
 
 ;; Call "+" on each elements of the list
-(let sum-list-apply (lst)
+(const sum-list-apply (lst)
     (apply + lst) )
 
 ;; Use "for" loop over the given list
-(let sum-list-for (lst)
+(const sum-list-for (lst)
     (let sum 0)
     (for n lst
         (inc sum n))
     sum )
 
 ;; Tail optimised recursion
-(let sum-list-rec (lst)
-    (let loop (index acc)
+(const sum-list-rec (lst)
+    (const loop (index acc)
         (if index
             (loop (- index 1)
                   (+ acc (list-get lst index)))
@@ -251,20 +253,20 @@ const examplesList = [
     (loop (- (list-length lst) 1) 0))
 
 ;; Benchmark function
-(let benchmark (func lst times method)
-    (let start-time (date-now))
+(const benchmark (func lst times method)
+    (const start-time (date-now))
 
     (for _ (list-make times)
         (func lst))
  
-    (let time (/ (- (date-now) start-time) 1000))
-    (let res  (func lst))
+    (const time (/ (- (date-now) start-time) 1000))
+    (const res  (func lst))
     (print "Using:" method "Res:" res "Time:" time) )
 
 ;; Make a list from 1 to N inclusively
-(let lst-nums (list-range 100 1)) ;; Try with 10, 100, or 1000 elements
+(const lst-nums (list-range 100 1)) ;; Try with 10, 100, or 1000 elements
 
-(let rounds 1000)
+(const rounds 1000)
 
 (benchmark sum-list-apply lst-nums rounds "apply")
 (benchmark sum-list-for   lst-nums rounds "for  ")
@@ -276,19 +278,20 @@ const examplesList = [
         name: "Find the maximum of a list",
         code: `;; Find the maximum of a list recursively
 
-(let list-max (lst)
-    (let len (list-length lst))
 
-    (let loop (index max)
+(const list-max (lst)
+    (const len (list-length lst))
+
+    (const loop (index max)
         (if (= index len)
             max
             (loop (+ index 1)
                   (math-max max
                             (list-get lst index)))))
 
-    (loop 0 (list-get lst 0)) )
+    (loop 0 (list-get lst 0)))
 
-(let lst '(42 34 12 5 62 2))
+(const lst '(42 34 12 5 62 2))
 (print "List :" lst)
 (print "Max  :" (list-max lst))
 `
@@ -298,8 +301,8 @@ const examplesList = [
         name: "Eliminate consecutive duplicates",
         code: `;; Eliminate consecutive duplicates
 
-(let clean (lst)
-    (let res (list))
+(const clean (lst)
+    (const res (list))
     (let last null)
     (for e lst
         (unless (equal last e)
@@ -318,15 +321,15 @@ const examplesList = [
 ; The source code of the list HOF is at the link below
 (import "https://easl.forexsb.com/easl/list-hof.easl")
 
-(let lst '(1 2 3 4 5))
+(const lst '(1 2 3 4 5))
 
 ; (list-reduce lst (λ (element accumulator index) (...)) initial-value) 
-(let sum (list-reduce lst (λ (e acc) (+ e acc))  0) )
+(const sum (list-reduce lst (λ (e acc) (+ e acc))  0) )
 (print "sum elem" sum)
 
 
 ; (list-map lst (λ (element index) (...)))
-(let doubled (list-map lst (λ (e) (* 2 e))))
+(const doubled (list-map lst (λ (e) (* 2 e))))
 
 (print "doubled" doubled)
 
@@ -335,19 +338,19 @@ const examplesList = [
 
 
 ; (list-filter lst (λ (element index) (...)))
-(let odd (list-filter lst (λ (e) (and (% e 2) e))))
+(const odd (list-filter lst (λ (e) (and (% e 2) e))))
 
 (print "odd elem" odd)
 
 
 ; (list-any lst (λ (element index) (...)))
-(let has-gt-3 (list-any lst (λ (e) (> e 3))))
+(const has-gt-3 (list-any lst (λ (e) (> e 3))))
 
 (print "has elem > 3" has-gt-3)
 
 
 ; (list-all lst (λ (element index) (...)))
-(let all-gt-3 (list-all lst (λ (e) (> e 3))))
+(const all-gt-3 (list-all lst (λ (e) (> e 3))))
 
 (print "all elem > 3" all-gt-3)
  
@@ -358,10 +361,10 @@ const examplesList = [
         name: "Hanoi tower",
         code: `;; Hanoi tower
 
-(let move (from to)
+(const move (from to)
     (print "Move disk from" from "to" to) )
 
-(let solve (n from to through)
+(const solve (n from to through)
     (when (> n 0)
           (solve (- n 1) from through to)
           (move from to)
@@ -376,7 +379,7 @@ const examplesList = [
         name: "Mutual recursive default parameters",
         code: `;; Mutual recursive default parameters
 
-(let odd-even (n
+(const odd-even (n
                (is-even (λ (n)
                    (or (= n 0)
                        (is-odd (- n 1)))))
@@ -396,7 +399,7 @@ const examplesList = [
         name: "Closure adder",
         code: `;; Closure adder
 
-(let add ((m 0))
+(const add ((m 0))
     (λ ((n null))
        (if (equal n null)
            m
@@ -413,17 +416,17 @@ const examplesList = [
         name: "Closure counter",
         code: `;; Closure counter
 
-(let make-counter ((initial-value 0) (delta 1))
+(const make-counter ((initial-value 0) (delta 1))
     (let value (- initial-value delta))
     (λ () (inc value delta)) )
 
-(let count (make-counter))
+(const count (make-counter))
 (print (count) (count) (count) (count))
 
-(let count10  (make-counter 0 10))
+(const count10  (make-counter 0 10))
 (print (count10) (count10) (count10) (count10))
 
-(let counter (make-counter 4 -1))
+(const counter (make-counter 4 -1))
 (while (counter) (print "***"))
 `   },
 
@@ -431,11 +434,11 @@ const examplesList = [
         name: "Sequence generator",
         code: `;; Sequence generator
 
-(let make-sequence (first length next)
-    (let res (list first))
-    (let loop (index prev)
+(const make-sequence (first length next)
+    (const res (list first))
+    (const loop (index prev)
         (when (< index length)
-            (let new (next prev))
+            (const new (next prev))
             (list-push res new)
             (loop (+ index 1) new)))
     (loop 1 first)
@@ -463,14 +466,14 @@ const examplesList = [
     {
         name: "EASL interprets EASL",
         code: `;; EASL source code in a string
-(let src "
-    (let lst '(1 2 3 4 5 6 7))
-    (let len (list-length lst))
+(const src "
+    (const lst '(1 2 3 4 5 6 7))
+    (const len (list-length lst))
     (* 6 len)
 " )
 
-(let ilc (parse src)) ; Parse the source code to intermediate language
-(let res (eval  ilc)) ; Eval the intermediate language
+(const ilc (parse src)) ; Parse the source code to intermediate language
+(const res (eval  ilc)) ; Eval the intermediate language
 
 (print "The answer is:" res)
 `
@@ -482,19 +485,19 @@ const examplesList = [
 
 (enum .fname .lname .age)
 
-(let person.new (fname lname age)
+(const person.new (fname lname age)
      (list fname lname age) )
 
-(let person.clone (person)
+(const person.clone (person)
     (list-slice person) )
 
-(let person.grow (person)
+(const person.grow (person)
     (list-set person .age (+ (list-get person .age) 1)))
 
-(let person.say (person)
+(const person.say (person)
     (print (list-join person " ")))
 
-(let john (person.new "John" "Doe" 33))
+(const john (person.new "John" "Doe" 33))
 (person.say  john)
 (person.grow john)
 (person.say  john)
@@ -509,7 +512,7 @@ const examplesList = [
 (enum .first-name .last-name .clone)
 
 ;; Person factory
-(let make-person (first-name last-name)
+(const make-person (first-name last-name)
     (lambda ((action -1) (value ""))
         (cond
             ((= action .first-name) 
@@ -525,7 +528,7 @@ const examplesList = [
             (else (~ "I am " first-name " " last-name "!")))))
 
 ;; Create a person: John Smith
-(let john-smith (make-person "John" "Smith"))
+(const john-smith (make-person "John" "Smith"))
 
 ;; Get properties
 (print (john-smith))
@@ -533,14 +536,14 @@ const examplesList = [
 (print "My last  name is:" (john-smith .last-name ))
 
 ;; When set a property, the factory returns a new object
-(let john-doe (john-smith .last-name "Doe"))
+(const john-doe (john-smith .last-name "Doe"))
 (print (john-doe))
 
 ;; clone an object
-(let john-doe-clone (john-doe .clone))
+(const john-doe-clone (john-doe .clone))
 
 ;; Change the first name of the clone
-(let jane-doe (john-doe-clone .first-name "Jane"))
+(const jane-doe (john-doe-clone .first-name "Jane"))
 (print (jane-doe))
 `   },
 
@@ -600,7 +603,7 @@ const examplesList = [
 
 ;; The function is closed in 'lambda' to prevent pollution of the global scope
 ((lambda ()
-	(let sum (a b) (+ a b))
+	(const sum (a b) (+ a b))
     (assert.equal (sum 2 3) 5 "Call a function with two args.") ))
 
 (assert.equal 13 42 "The answer to Life, the Universe, and Everything!")
@@ -615,50 +618,50 @@ const examplesList = [
 
 ;; Boolean logic
 
-(let TRUE  (λ (x) (λ (y) x)))
-(let FALSE (λ (x) (λ (y) y)))
-(let NOT   (λ (p) ((p FALSE) TRUE) ))
-(let AND   (λ (p) (λ (q) ((p q) p) )))
-(let OR    (λ (p) (λ (q) ((p p) q) )))
-(let IF    (λ (p) (λ (x) (λ (y) ((p x) y) )))) 
+(const TRUE  (λ (x) (λ (y) x)))
+(const FALSE (λ (x) (λ (y) y)))
+(const NOT   (λ (p) ((p FALSE) TRUE) ))
+(const AND   (λ (p) (λ (q) ((p q) p) )))
+(const OR    (λ (p) (λ (q) ((p p) q) )))
+(const IF    (λ (p) (λ (x) (λ (y) ((p x) y) )))) 
 
 ;; Alonso Church numbers representation
 
-(let zero  (λ (f) (λ (x) x )))
-(let one   (λ (f) (λ (x) (f x) )))
-(let two   (λ (f) (λ (x) (f (f x)) )))
-(let three (λ (f) (λ (x) (f (f (f x))) )))
-(let four  (λ (f) (λ (x) (f (f (f (f x)))) )))
-(let five  (λ (f) (λ (x) (f (f (f (f (f x))))) )))
-(let six   (λ (f) (λ (x) (f (f (f (f (f (f x)))))) )))
-(let seven (λ (f) (λ (x) (f (f (f (f (f (f (f x))))))) )))
-(let eight (λ (f) (λ (x) (f (f (f (f (f (f (f (f x)))))))) )))
-(let nine  (λ (f) (λ (x) (f (f (f (f (f (f (f (f (f x))))))))) )))
-(let ten   (λ (f) (λ (x) (f (f (f (f (f (f (f (f (f (f x)))))))))) )))
+(const zero  (λ (f) (λ (x) x )))
+(const one   (λ (f) (λ (x) (f x) )))
+(const two   (λ (f) (λ (x) (f (f x)) )))
+(const three (λ (f) (λ (x) (f (f (f x))) )))
+(const four  (λ (f) (λ (x) (f (f (f (f x)))) )))
+(const five  (λ (f) (λ (x) (f (f (f (f (f x))))) )))
+(const six   (λ (f) (λ (x) (f (f (f (f (f (f x)))))) )))
+(const seven (λ (f) (λ (x) (f (f (f (f (f (f (f x))))))) )))
+(const eight (λ (f) (λ (x) (f (f (f (f (f (f (f (f x)))))))) )))
+(const nine  (λ (f) (λ (x) (f (f (f (f (f (f (f (f (f x))))))))) )))
+(const ten   (λ (f) (λ (x) (f (f (f (f (f (f (f (f (f (f x)))))))))) )))
 
 ;; Algebra 
 
-(let succ     (λ (n) (λ (f) (λ (x) (f ((n f) x)) ))))
-(let pred     (λ (n) (λ (f) (λ (x) (((n (λ (g) (λ (h) (h (g f))))) (λ (u) x)) (λ (u) u)) ))))
+(const succ     (λ (n) (λ (f) (λ (x) (f ((n f) x)) ))))
+(const pred     (λ (n) (λ (f) (λ (x) (((n (λ (g) (λ (h) (h (g f))))) (λ (u) x)) (λ (u) u)) ))))
 
-(let add      (λ (m) (λ (n) ((m succ) n) )))
-(let sub      (λ (m) (λ (n) ((n pred) m) )))
+(const add      (λ (m) (λ (n) ((m succ) n) )))
+(const sub      (λ (m) (λ (n) ((n pred) m) )))
 
-(let mult     (λ (m) (λ (n) (λ (f) (m (n f)) ))))
-(let power    (λ (m) (λ (n) (n m) )))
+(const mult     (λ (m) (λ (n) (λ (f) (m (n f)) ))))
+(const power    (λ (m) (λ (n) (n m) )))
 
-(let zero?    (λ (n) ((n (λ (x) FALSE)) TRUE) ))
-(let lte?     (λ (m) (λ (n) (zero? ((sub m) n)) )))
+(const zero?    (λ (n) ((n (λ (x) FALSE)) TRUE) ))
+(const lte?     (λ (m) (λ (n) (zero? ((sub m) n)) )))
 
 ;; Converts a Church number to an integer
-(let int  (λ (cn) ((cn (λ (n) (+ n 1))) 0)))
+(const int  (λ (cn) ((cn (λ (n) (+ n 1))) 0)))
 
 ;; Converts a Church boolean to bool
-(let bool (λ (cb) ((cb true) false) ))
+(const bool (λ (cb) ((cb true) false) ))
 
 ;; Examples
 (print "one =" (int one))
-(let forty-two ((add ((mult ten) four)) two))
+(const forty-two ((add ((mult ten) four)) two))
 (print "forty-one   =" (int (pred forty-two)))
 (print "forty-two   =" (int forty-two))
 (print "forty-three =" (int (succ forty-two)))
@@ -690,14 +693,14 @@ const examplesList = [
 (print)
 
 ;; Factorial
-(let fac (λ (n) ((((IF ((lte? n) one))
+(const fac (λ (n) ((((IF ((lte? n) one))
                      (λ () one))
                      (λ () ((mult n) (fac (pred n))))))))
 
 (print "factorial 5 =" (int (fac five)))
 
 ;; Fibonacci
-(let fib (λ (n) ((((IF ((lte? n) one))
+(const fib (λ (n) ((((IF ((lte? n) one))
                      (λ () one))
                      (λ () ((add (fib ((sub n) one)))
                                  (fib ((sub n) two))))))))
@@ -711,27 +714,27 @@ const examplesList = [
         name: "BrainFuck Interpreter",
         code: `;; BrainFuck Interpreter
 
-(let code-text  "
+(const code-text  "
 
    Adds two digits from the input
    ,>++++++[<-------->-],[<+>-]<.
  
 ")
 
-(let input-text "34")
+(const input-text "34")
 
-(let code-list '())
+(const code-list '())
 (for ch (string-split code-text)
-   (if (list-has (list "+" "-" ">" "<" "," "." "[" "]") ch)
-       (list-push code-list ch) ))
+   (when (list-has (list "+" "-" ">" "<" "," "." "[" "]") ch)
+       (list-push code-list ch)))
 
 (let code-index  0)
-(let code-len (list-length code-list))
+(const code-len (list-length code-list))
 
 (let input-index 0)
-(let input-list (string-split input-text))
+(const input-list (string-split input-text))
 
-(let buffer '(0))
+(const buffer '(0))
 (let pointer  0)
 (let command "")
 (let output  "")
@@ -746,13 +749,13 @@ const examplesList = [
     (case command
         ;; Increment the pointer.
         ((">") (inc pointer)
-             (if (= (list-length buffer) pointer)
+             (when (= (list-length buffer) pointer)
                  (list-push buffer 0) ))
 
         ;; Decrement the pointer.
         (("<") (if (> pointer 0)
-                 (dec pointer)
-                 (print "Error: pointer < 0")))
+                   (dec pointer)
+                   (print "Error: pointer < 0")))
 
         ;; Increment the byte at the pointer.
         (("+") (list-set buffer pointer
@@ -767,7 +770,7 @@ const examplesList = [
                             (string-from-char-code (list-get buffer pointer))) ))
 
         ;; Input a byte and store it in the byte at the pointer.
-        ((",") (let input (list-get input-list input-index))
+        ((",") (const input (list-get input-list input-index))
              (inc input-index)
              (list-set buffer pointer
                      (if (equal (type-of input) "string")
@@ -993,33 +996,33 @@ exit :
     (jump label) )
 
 (const JE (label)
-    (if ZF (jump label)) )
+    (when ZF (jump label)) )
 
 (const JNE (label)
     (unless ZF (jump label)) )
 
 (const JL (label)
-    (if (and (not ZF) SF)
+    (when (and (not ZF) SF)
         (jump label) ))
 
 (const JLE (label)
-    (if (or (and (not ZF) SF) ZF)
+    (when (or (and (not ZF) SF) ZF)
         (jump label) ))
 
 (const JG (label)
-    (if (and (not ZF) (not SF))
+    (when (and (not ZF) (not SF))
         (jump label) ))
 
 (const JGE (label)
-    (if (or (and (not ZF) (not SF)) ZF)
+    (when (or (and (not ZF) (not SF)) ZF)
         (jump label) ))
 
 (const JZ (label)
-    (if ZF
+    (when ZF
         (jump label)) )
 
 (const JNZ (label)
-    (if (not ZF)
+    (when (not ZF)
         (jump label)) )
 
 (const OUT (ref)
@@ -1093,8 +1096,8 @@ exit :
     (const command (list))
     (for par-txt non-empty-parts
         (const param (parse-param par-txt))
-        (if (or (equal (type-of param) "string")
-                (equal (type-of param) "number"))
+        (when (or (equal (type-of param) "string")
+                  (equal (type-of param) "number"))
             (list-push command param)))
 
     command)
