@@ -13,6 +13,7 @@ class Interpreter {
         "cond"       : this.evalCond,
         "const"      : this.evalConst,
         "continue"   : this.evalContinue,
+        "collect"    : this.evalCollect,
         "debug"      : this.evalDebug,
         "dec"        : this.evalDecrement,
         "defined"    : this.evalDefined,
@@ -41,6 +42,7 @@ class Interpreter {
         "value-of"   : this.evalValueOf,
         "when"       : this.evalWhen,
         "while"      : this.evalWhile,
+        "yield"      : this.evalYield,
     };
 
     public options: Options;
@@ -501,6 +503,34 @@ class Interpreter {
     // (continue)
     private evalContinue(): string {
         return "continue";
+    }
+
+    // (collect expr+)
+    private evalCollect(expr: any[], env: any[]): any[] {
+        if (expr.length < 2) {
+            throw "Error: 'collect' requires at least 1 expression.";
+        }
+
+        env.push(["#scope", "collect"]);
+        env.push(["#collect", []]);
+
+        this.evalExprList(expr.slice(1), env);
+
+        const res: any[] = this.lookup("#collect", env);
+        this.clearEnv("#scope", env);
+
+        return res;
+    }
+
+    // (yield expr)
+    private evalYield(expr: any[], env: any[]): void {
+        if ( !this.isDefined("#collect", env) ) {
+            throw "Error: 'yield' used out of 'collect'.";
+        }
+
+        const [element] = <[any]>this.evalArgs(["any"], expr, env);
+
+        this.lookup("#collect", env).push(element);
     }
 
     // (lambda (par*)

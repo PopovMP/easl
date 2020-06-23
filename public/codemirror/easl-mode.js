@@ -22,9 +22,9 @@
         const constants = makeKeywords("true false null #args #name");
 
         const keywords = makeKeywords(
-            "' ` , @ . << >> λ apply block break call case cond continue const debug defined do else for if unless " +
+            "' ` , @ . << >> λ apply block break call case collect cond continue const debug defined do else for if unless " +
             "import lambda let set delete inc dec enum string and or quote throw try type-of print parse eval display " +
-            "newline value-of when while");
+            "newline value-of when while yield");
 
         const builtinFunc = makeKeywords(
             // Core lib

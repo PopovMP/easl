@@ -52,6 +52,11 @@ const examplesList = [
 (print (list-map (list-make 10)
                  (λ (element index)
                     (math-round << * 100 << math-random))))
+
+;; The best of two worlds
+(print (collect
+          (for i (list-range 10)
+             (yield << math-round << * 100 << math-random))))
 `
     },
 
@@ -105,15 +110,13 @@ const examplesList = [
         code: `;; Implementation of 'map' in EASL
 
 (const map (lst func)
-    (const len (list-length lst))
-    (const res (list))
+    (collect
+        (const len (list-length lst))
+        (let i 0)    
 
-    (let i 0)    
-    (while (< i len)
-         (list-push res << func << list-get lst i)
-         (inc i))
-
-    res)
+        (while (< i len)
+             (yield (func (list-get lst i)))
+             (inc i))))
 
 (const range (list-range 10 1))         ; Make a range form 1 to 10
 (const lst (map range (λ (e) (* e 2)))) ; Double each element 
@@ -177,10 +180,12 @@ const examplesList = [
 ; for the multiples of five print "Buzz".
 ; For numbers which are multiples of both three and five print "FizzBuzz".
 
-(for i (list-range 100 1)
-    (print (or (~ (if (% i 3) "" "Fizz")
-                  (if (% i 5) "" "Buzz"))
-               i )) )
+(print
+    (collect
+        (for i (list-range 100 1)
+            (yield (or (~ (if (% i 3) "" "Fizz")
+                          (if (% i 5) "" "Buzz"))
+                       i)))))
 `
     },
 
@@ -301,16 +306,15 @@ const examplesList = [
         name: "Eliminate consecutive duplicates",
         code: `;; Eliminate consecutive duplicates
 
-(const clean (lst)
-    (const res (list))
-    (let last null)
-    (for e lst
-        (unless (equal last e)
-            (set last e)
-            (list-push res e)))
-    res)
+(const clear (lst)
+    (collect
+        (let last null)
+        (for e lst
+            (unless (equal last e)
+                (set last e)
+                (yield e)))))
 
-(print (clean '(0 1 1 2 3 4 5 5 5 6 7 7 8 8 8 9 9 9)))
+(print (clear '(0 1 1 2 3 4 5 5 5 6 7 7 8 8 8 9 9 9)))
 `
     },
 

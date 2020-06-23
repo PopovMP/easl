@@ -20,9 +20,12 @@
   display: inline-block;
 }
 
+.CodeMirror {
+  min-height: 500px !important;
+}
+
 #code-area {
   width: 100%;
-  min-height: 450px;
 }
 
 #code-output {
