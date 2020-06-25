@@ -53,3 +53,10 @@
 (alist-add forms "list-length" (λ (expr)
     (~ (parse-code (list-get expr 1))
        ".length")))
+
+; (list-join lst delimiter)
+(alist-add forms "list-join" (λ (expr)
+    (~ (parse-code (list-get expr 1))
+       ".join("
+       (parse-code (list-get expr 2))
+       ")\n")))

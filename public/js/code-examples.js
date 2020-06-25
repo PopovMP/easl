@@ -1168,10 +1168,13 @@ exit :
 
 (print (parse-code '( 
 
-(print (collect
-          (for i (list-range 10)
-             (yield << math-round << * 100 << math-random))))
-             
+(print (list-join (collect
+                      (for i (list-range 100 1)
+                          (yield (or (~ (if (% i 3) "" "Fizz")
+                                        (if (% i 5) "" "Buzz"))
+                                     i))))
+                  ", "))
+
 )))
 
 `   },

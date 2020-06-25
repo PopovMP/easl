@@ -3,6 +3,11 @@
     (const (expr1 expr2) (parse-args expr))
     (~ "(" expr1 " && " expr2 ")")))
 
+; (or expr1 expr2)
+(alist-add forms "or" (λ (expr)
+    (const (expr1 expr2) (parse-args expr))
+    (~ "(" expr1 " || " expr2 ")")))
+
 ; (block expr expr*)
 (alist-add forms "block" (λ (expr)
     (~ "(() => {\n"
@@ -12,8 +17,7 @@
 ; (if test-expr then-expr else-expr?)
 (alist-add forms "if" (λ (expr)
     (const (test-expr then-expr else-expr) (parse-args expr))
-    (~ test-expr " ? " then-expr " : " else-expr)))
-
+    (~ "(" test-expr " ? " then-expr " : " else-expr ")")))
 
 ; (let symbol expr)
 (alist-add forms "let" (λ (expr)
@@ -30,12 +34,10 @@
        (parse-code (list-get expr 2)) ";\n")))
 
 (alist-add forms "inc" (λ (expr)
-    (~ "++"
-       (list-get expr 1))))
+    (~ "++" (list-get expr 1))))
 
 (alist-add forms "dec" (λ (expr)
-    (~ "--"
-       (list-get expr 1))))
+    (~ "--" (list-get expr 1))))
 
 (alist-add forms "while" (λ (expr)
     (~ "while ("
