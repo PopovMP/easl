@@ -193,23 +193,25 @@ const examplesList = [
         name: "FizzBuzz recursive style",
         code: `;; FizzBuzz recursive style
 
+(const is-dev-by (n m)
+    (= (% n m) 0))
+
 (const get-fizz-buzz (n)
     (cond
-        ((not (% n 15)) "FizzBuzz")
-        ((not (% n  3)) "Fizz"    )
-        ((not (% n  5)) "Buzz"    )
-        (else n) ))
+        ((is-dev-by n 15) "FizzBuzz")
+        ((is-dev-by n  3) "Fizz")
+        ((is-dev-by n  5) "Buzz")
+        (else n)))
 
-(const FizzBuzz (max)
-    (const res '())
-    (const loop (n)
-        (when (<= n max)
-            (list-push res (get-fizz-buzz n))
-            (loop (+ n 1))))
-    (loop 1)
-    res)
+(const fizz-buzz (max)
+    (collect
+        (const loop (n)
+            (when (<= n max)
+                (yield (get-fizz-buzz n))
+                (loop (+ n 1))))
+        (loop 1)))
 
-(print (FizzBuzz 100))
+(print (fizz-buzz 100))
 `    },
 
     {
@@ -438,18 +440,18 @@ const examplesList = [
         name: "Sequence generator",
         code: `;; Sequence generator
 
-(const make-sequence (first length next)
-    (const res (list first))
-    (const loop (index prev)
-        (when (< index length)
-            (const new (next prev))
-            (list-push res new)
-            (loop (+ index 1) new)))
-    (loop 1 first)
-    res)
+(const make-sequence (size first next)
+    (collect
+        (yield first)
+        (const loop (index prev)
+            (when (< index size)
+                (const new (next prev))
+                (yield new)
+                (loop (+ index 1) new)))
+        (loop 1 first)))
 
 (print "Sequence:"
-       (make-sequence 3 10 (λ (e) (* 3 e))))
+       (make-sequence 10 3 (λ (e) (* 3 e))))
 `
     },
 
