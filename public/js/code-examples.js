@@ -1165,15 +1165,13 @@ exit :
 (import "https://easl.forexsb.com/easl/easl-to-js-string-lib.easl")
 (import "https://easl.forexsb.com/easl/easl-to-js-date-lib.easl")
 
-
 (print (parse-code '( 
 
-(print (list-join (collect
-                      (for i (list-range 100 1)
-                          (yield (or (~ (if (% i 3) "" "Fizz")
-                                        (if (% i 5) "" "Buzz"))
-                                     i))))
-                  ", "))
+(print (collect
+           (for i (list-range 100 1)
+               (yield (or (~ (if (% i 3) "" "Fizz")
+                             (if (% i 5) "" "Buzz"))
+                          i))))))
 
 )))
 

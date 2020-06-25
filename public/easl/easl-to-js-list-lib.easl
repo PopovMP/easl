@@ -8,55 +8,35 @@
 
 ; (list-make size fill=0)
 (alist-add forms "list-make" (λ (expr)
-    (~ "[ ...Array("
-       (parse-code (list-get expr 1))
-       ").keys() ].map( () => "
-       (if (= (list-length expr) 2)
-           "0"
-           (parse-code (list-get expr 2)))
-       " )")))
+    (const (size (fill 0)) (parse-args expr))
+    (~ "[ ...Array(" size ").keys() ].map( () => " fill " )")))
 
 ; (list-range size (from 0))
 (alist-add forms "list-range" (λ (expr)
-    (~ "[ ...Array("
-       (parse-code (list-get expr 1))
-       ").keys() ].map( (e) => "
-       (if (= (list-length expr) 2)
-           "e"
-           (~ "e + " (parse-code (list-get expr 2))))
-       " )")))
+    (const (size (from 0)) (parse-args expr))
+    (~ "[ ...Array(" size ").keys() ].map(e => " (if (= from 0) "e" (~ "e + " from)) ")")))
 
 ; (list-push lst value)
 (alist-add forms "list-push" (λ (expr)
-    (~ (parse-code (list-get expr 1))
-       ".push("
-       (parse-code (list-get expr 2))
-       ");\n")))
+    (const (lst value) (parse-args expr))
+    (~ lst ".push(" value ");\n")))
 
 ; (list-get lst index)
 (alist-add forms "list-get" (λ (expr)
-    (~ (parse-code (list-get expr 1))
-       "["
-       (parse-code (list-get expr 2))
-       "]")))
+    (const (lst index) (parse-args expr))
+    (~ lst "[" index "]")))
 
 ; (list-set lst index value)
 (alist-add forms "list-set" (λ (expr)
-    (~ (parse-code (list-get expr 1))
-       "["
-       (parse-code (list-get expr 2))
-       "] = "
-       (parse-code (list-get expr 3))
-       ";\n")))
+    (const (lst index value) (parse-args expr))
+    (~ lst "[" index "] = " value ";\n")))
 
 ; (list-length lst)
 (alist-add forms "list-length" (λ (expr)
-    (~ (parse-code (list-get expr 1))
-       ".length")))
+    (const (lst) (parse-args expr))
+    (~ lst ".length")))
 
 ; (list-join lst delimiter)
 (alist-add forms "list-join" (λ (expr)
-    (~ (parse-code (list-get expr 1))
-       ".join("
-       (parse-code (list-get expr 2))
-       ")\n")))
+    (const (lst (delimiter "\", \"")) (parse-args expr))
+    (~ lst ".join(" delimiter ")\n")))

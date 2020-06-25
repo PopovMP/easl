@@ -1,13 +1,15 @@
 (const forms (list))
 
 (const parse-code-block (code-lines)
-    (const js-lines (collect (for line code-lines
-                                   (yield (parse-code line)))))
+    (const js-lines (collect
+                        (for line code-lines
+                            (yield (parse-code line)))))
 
     (const last-index (- (list-length js-lines) 1))
-    (list-set js-lines last-index (~ "return "
-                                     (list-get js-lines last-index)
-                                     ";\n"))
+    (list-set js-lines
+              last-index
+              (~ "return " (list-get js-lines last-index) ";\n"))
+
     (list-join js-lines ";\n"))
 
 (const parse-code-list (source-code)
