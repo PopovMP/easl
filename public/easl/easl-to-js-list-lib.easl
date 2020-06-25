@@ -3,7 +3,7 @@
     (~ "["
        (if (= (list-length expr) 1)
            ""
-           (list-join (parse-code (list-slice expr 1)) ", "))
+           (list-join << parse-code-lines << list-slice expr 1))
        "]")))
 
 ; (list-make size fill=0)

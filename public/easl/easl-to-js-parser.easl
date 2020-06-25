@@ -12,6 +12,11 @@
 
     (list-join js-lines ";\n"))
 
+(const parse-code-lines (code-lines)
+    (collect
+        (for line code-lines
+            (yield (parse-code line)))))
+
 (const parse-code-list (source-code)
     (const loop (index javascript)
         (if (= index << list-length source-code)
