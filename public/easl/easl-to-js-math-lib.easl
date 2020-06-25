@@ -1,0 +1,52 @@
+; (math-pi)
+(alist-add forms "math-pi" (λ (expr)
+    "Math.PI"))
+
+; (math-abs numb)
+(alist-add forms "math-abs" (λ (expr)
+    (const (numb) (parse-args expr))
+    (~ "Math.abs(" numb ")")))
+
+; (math-ceil numb)
+(alist-add forms "math-ceil" (λ (expr)
+    (const (numb) (parse-args expr))
+    (~ "Math.ceil(" numb ")")))
+
+; (math-floor numb)
+(alist-add forms "math-floor" (λ (expr)
+    (const (numb) (parse-args expr))
+    (~ "Math.floor(" numb ")")))
+
+; (math-log numb)
+(alist-add forms "math-log" (λ (expr)
+    (const (numb) (parse-args expr))
+    (~ "Math.log(" numb ")")))
+
+; (math-max numb1 numb2)
+(alist-add forms "math-max" (λ (expr)
+    (const (numb1 numb2) (parse-args expr))
+    (~ "Math.max(" numb1 ", " numb2 ")")))
+
+; (math-min numb1 numb2)
+(alist-add forms "math-min" (λ (expr)
+    (const (numb1 numb2) (parse-args expr))
+    (~ "Math.min(" numb1 ", " numb2 ")")))
+
+; (math-pow numb1 numb2)
+(alist-add forms "math-pow" (λ (expr)
+    (const (numb1 numb2) (parse-args expr))
+    (~ "Math.pow(" numb1 ", " numb2 ")")))
+
+; (math-random)
+(alist-add forms "math-random" (λ (expr)
+    "Math.random()"))
+
+; (math-round numb)
+(alist-add forms "math-round" (λ (expr)
+    (const (numb) (parse-args expr))
+    (~ "Math.round(" numb ")")))
+
+; (math-sqrt numb)
+(alist-add forms "math-sqrt" (λ (expr)
+    (const (numb) (parse-args expr))
+    (~ "Math.sqrt(" numb ")")))

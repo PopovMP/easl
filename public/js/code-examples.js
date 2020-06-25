@@ -1149,6 +1149,33 @@ exit :
 (eval-asm code-text)
 `
     },
+
+
+    {
+        name: "EASL to JavaScript",
+        code: `;; EASL to JavaScript
+
+(import "https://easl.forexsb.com/easl/alist.easl")
+(import "https://easl.forexsb.com/easl/easl-to-js-parser.easl")
+(import "https://easl.forexsb.com/easl/easl-to-js-forms.easl")
+(import "https://easl.forexsb.com/easl/easl-to-js-core-lib.easl")
+(import "https://easl.forexsb.com/easl/easl-to-js-number-lib.easl")
+(import "https://easl.forexsb.com/easl/easl-to-js-math-lib.easl")
+(import "https://easl.forexsb.com/easl/easl-to-js-list-lib.easl")
+(import "https://easl.forexsb.com/easl/easl-to-js-string-lib.easl")
+(import "https://easl.forexsb.com/easl/easl-to-js-date-lib.easl")
+
+
+(print (parse-code '( 
+
+(print (collect
+          (for i (list-range 10)
+             (yield << math-round << * 100 << math-random))))
+             
+)))
+
+`   },
+
 ];
 
 if (typeof module === "object") {

@@ -1,0 +1,39 @@
+(const forms (list))
+
+(const parse-code-block (code-lines)
+    (const js-lines (collect (for line code-lines
+                                   (yield (parse-code line)))))
+
+    (const last-index (- (list-length js-lines) 1))
+    (list-set js-lines last-index (~ "return "
+                                     (list-get js-lines last-index)
+                                     ";\n"))
+    (list-join js-lines ";\n"))
+
+(const parse-code-list (source-code)
+    (const loop (index javascript)
+        (if (= index << list-length source-code)
+            javascript
+            (loop (+ index 1)
+                  (~ javascript << parse-code << list-get source-code index))))
+
+    (if (equal (type-of source-code) "list")
+        (loop 0 "")
+        (parse-code source-code)))
+
+(const parse-code (expr)
+    (case expr
+        ((null true false) expr)
+        (else
+            (case (type-of expr)
+                ((number string) expr)
+                (else
+                    (const form (list-get expr 0))
+                    (if (equal (type-of form) "string")
+                        ((alist-get forms form) expr)
+                        (parse-code-list expr)))))))
+
+(const parse-args (expr)
+    (collect
+        (for arg (list-slice expr 1)
+            (yield << parse-code arg))))

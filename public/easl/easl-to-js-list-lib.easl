@@ -1,0 +1,55 @@
+; (list expr*)
+(alist-add forms "list" (λ (expr)
+    (~ "["
+       (if (= (list-length expr) 1)
+           ""
+           (list-join (parse-code (list-slice expr 1)) ", "))
+       "]")))
+
+; (list-make size fill=0)
+(alist-add forms "list-make" (λ (expr)
+    (~ "[ ...Array("
+       (parse-code (list-get expr 1))
+       ").keys() ].map( () => "
+       (if (= (list-length expr) 2)
+           "0"
+           (parse-code (list-get expr 2)))
+       " )")))
+
+; (list-range size (from 0))
+(alist-add forms "list-range" (λ (expr)
+    (~ "[ ...Array("
+       (parse-code (list-get expr 1))
+       ").keys() ].map( (e) => "
+       (if (= (list-length expr) 2)
+           "e"
+           (~ "e + " (parse-code (list-get expr 2))))
+       " )")))
+
+; (list-push lst value)
+(alist-add forms "list-push" (λ (expr)
+    (~ (parse-code (list-get expr 1))
+       ".push("
+       (parse-code (list-get expr 2))
+       ");\n")))
+
+; (list-get lst index)
+(alist-add forms "list-get" (λ (expr)
+    (~ (parse-code (list-get expr 1))
+       "["
+       (parse-code (list-get expr 2))
+       "]")))
+
+; (list-set lst index value)
+(alist-add forms "list-set" (λ (expr)
+    (~ (parse-code (list-get expr 1))
+       "["
+       (parse-code (list-get expr 2))
+       "] = "
+       (parse-code (list-get expr 3))
+       ";\n")))
+
+; (list-length lst)
+(alist-add forms "list-length" (λ (expr)
+    (~ (parse-code (list-get expr 1))
+       ".length")))

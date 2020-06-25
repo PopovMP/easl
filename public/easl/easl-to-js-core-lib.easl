@@ -1,0 +1,84 @@
+; (+ num1 num2)
+(alist-add forms "+" (λ (expr)
+    (const (num1 num2) (parse-args expr))
+    (~ "(" num1 " + " num2 ")")))
+
+; (- num1 num2)
+(alist-add forms "-" (λ (expr)
+    (const (num1 num2) (parse-args expr))
+    (~ "(" num1 " - " num2 ")")))
+
+; (* num1 num2)
+(alist-add forms "*" (λ (expr)
+    (const (num1 num2) (parse-args expr))
+    (~ "(" num1 " * " num2 ")")))
+
+; (/ num1 num2)
+(alist-add forms "/" (λ (expr)
+    (const (num1 num2) (parse-args expr))
+    (~ "(" num1 " / " num2 ")")))
+
+; (% num1 num2)
+(alist-add forms "%" (λ (expr)
+    (const (num1 num2) (parse-args expr))
+    (~ "(" num1 " % " num2 ")")))
+
+; (= num1 num2)
+(alist-add forms "=" (λ (expr)
+    (const (num1 num2) (parse-args expr))
+    (~ "(" num1 " === " num2 ")")))
+
+; (> num1 num2)
+(alist-add forms ">" (λ (expr)
+    (const (num1 num2) (parse-args expr))
+    (~ "(" num1 " > " num2 ")")))
+
+; (< num1 num2)
+(alist-add forms "<" (λ (expr)
+    (const (num1 num2) (parse-args expr))
+    (~ "(" num1 " < " num2 ")")))
+
+; (!== num1 num2)
+(alist-add forms "!==" (λ (expr)
+    (const (num1 num2) (parse-args expr))
+    (~ "(" num1 " !== " num2 ")")))
+
+; (>= num1 num2)
+(alist-add forms ">=" (λ (expr)
+    (const (num1 num2) (parse-args expr))
+    (~ "(" num1 " >= " num2 ")")))
+
+; (<= num1 num2)
+(alist-add forms "<=" (λ (expr)
+    (const (num1 num2) (parse-args expr))
+    (~ "(" num1 " <= " num2 ")")))
+
+; (~ str1 str2)
+(alist-add forms "~" (λ (expr)
+    (const (str1 str2) (parse-args expr))
+    (~ "(" str1 " + " str2 ")")))
+
+; (equal obj1 obj2)
+(alist-add forms "equal" (λ (expr)
+    (const (obj1 obj2) (parse-args expr))
+    (~ "(" obj1 " === " obj2 ")")))
+
+; (not obj)
+(alist-add forms "not" (λ (expr)
+    (const (obj) (parse-args expr))
+    (~ "!" obj)))
+
+; (to-boolean obj)
+(alist-add forms "to-boolean" (λ (expr)
+    (const (obj) (parse-args expr))
+    (~ "Boolean(" obj ")")))
+
+; (to-number obj)
+(alist-add forms "to-number" (λ (expr)
+    (const (obj) (parse-args expr))
+    (~ "Number(" obj ")")))
+
+; (to-string obj)
+(alist-add forms "to-string" (λ (expr)
+    (const (obj) (parse-args expr))
+    (~ "JSON.stringify(" obj ")")))

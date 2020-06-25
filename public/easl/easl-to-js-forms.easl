@@ -1,0 +1,94 @@
+; (and expr1 expr2)
+(alist-add forms "and" (λ (expr)
+    (const (expr1 expr2) (parse-args expr))
+    (~ "(" expr1 " && " expr2 ")")))
+
+; (block expr expr*)
+(alist-add forms "block" (λ (expr)
+    (~ "(() => {\n"
+       (parse-code-block (list-slice expr 1))
+       "})()")))
+
+; (if test-expr then-expr else-expr?)
+(alist-add forms "if" (λ (expr)
+    (const (test-expr then-expr else-expr) (parse-args expr))
+    (~ test-expr " ? " then-expr " : " else-expr)))
+
+
+; (let symbol expr)
+(alist-add forms "let" (λ (expr)
+    (~ "let "
+       (list-get expr 1)
+       " = "
+       (parse-code (list-get expr 2)) ";\n")))
+
+; (let symbol const)
+(alist-add forms "const" (λ (expr)
+    (~ "const "
+       (list-get expr 1)
+       " = "
+       (parse-code (list-get expr 2)) ";\n")))
+
+(alist-add forms "inc" (λ (expr)
+    (~ "++"
+       (list-get expr 1))))
+
+(alist-add forms "dec" (λ (expr)
+    (~ "--"
+       (list-get expr 1))))
+
+(alist-add forms "while" (λ (expr)
+    (~ "while ("
+       (parse-code (list-get expr 1))
+       ") {\n"
+           (parse-code (list-slice expr 2))
+       "}\n")))
+
+(alist-add forms "for" (λ (expr)
+    (~ "for (const "
+       (parse-code (list-get expr 1))
+       " of "
+       (parse-code (list-get expr 2))
+       ") {\n"
+       (parse-code (list-slice expr 3))
+       "}\n")))
+
+; (collect expr expr*)
+(alist-add forms "collect" (λ (expr)
+    (~ "(() => {\n"
+       "const __collect = [];\n"
+       (parse-code (list-get expr 1))
+       "return __collect;\n"
+       "})()")))
+
+; (yield expr)
+(alist-add forms "yield" (λ (expr)
+    (~ "__collect.push("
+       (parse-code (list-get expr 1))
+       ");\n")))
+
+; (print expr1 expr2 ...)
+(alist-add forms "print" (λ (expr)
+    (case (list-length expr)
+        ((1) "console.log();\r\n")
+        ((2) (~ "console.log("
+                (parse-code (list-get expr 1))
+                ");\n"))
+        (else (~ "console.log("
+                 (list-join (parse-code-list (list-slice expr 1)) " ")
+                 ");\n")))))
+
+; (display expr)
+(alist-add forms "display" (λ (expr)
+    (~ "console.log("
+       (parse-code (list-get expr 1))
+       ");\n")))
+
+; (newline)
+(alist-add forms "newline" (λ (expr)
+    "console.log();\n"))
+
+; (string expr)
+(alist-add forms "string" (λ (expr)
+    (const (text) (parse-args expr))
+    (~ "\"" text "\"")))
