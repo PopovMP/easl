@@ -1,108 +1,108 @@
-; (alist.length alist)
+; (alist-length alist)
 ; Gets the length of a given alist
-(let alist.length list.length)
+(const alist-length list-length)
 
-; (alist.has alist key)
+; (alist-has alist key)
 ; Gets if an alsit contains a given key
-(let alist.has (alist key)
-    (let loop (index)
+(const alist-has (alist key)
+    (const loop (index)
         (if (< index 0)
             false
-            (if (equal (list.get (list.get alist index) 0) key)
+            (if (equal (list-get (list-get alist index) 0) key)
                 true
                 (loop (- index 1)))))
-    (loop (- (list.length alist) 1)))
+    (loop (- (list-length alist) 1)))
 
-; (alist.add alist key value)
-; Adds a key - value pair in the given alist.
+; (alist-add alist key value)
+; Adds a key - value pair in the given alist-
 ; Returns the modified alsit
 ; Throws if the key already exists
-(let alist.add (alist key value)
-    (when (alist.has alist key)
-        (throw (~ "Error: 'alist.add' cannot add an existing key. Given: " key)))
-    (list.push alist (list key value)))
+(const alist-add (alist key value)
+    (when (alist-has alist key)
+        (throw (~ "Error: 'alist-add' cannot add an existing key. Given: " key)))
+    (list-push alist (list key value)))
 
-; (alist.add-or-set alist key value)
-; Adds a key-value pair in the given alist.
+; (alist-add-or-set alist key value)
+; Adds a key-value pair in the given alist-
 ; If the key already exists, sets the associated value
 ; Returns the modified alsit
-(let alist.add-or-set (alist key value)
-    (let loop (index)
+(const alist-add-or-set (alist key value)
+    (const loop (index)
         (if (>= index 0)
-            (if (equal (list.get (list.get alist index) 0) key)
-                (list.set (list.get alist index) 1 value)
+            (if (equal (list-get (list-get alist index) 0) key)
+                (list-set (list-get alist index) 1 value)
                 (loop (- index 1)))
-            (list.push alist (list key value))))
-    (loop (- (list.length alist) 1))
+            (list-push alist (list key value))))
+    (loop (- (list-length alist) 1))
     alist)
 
-; (alist.get alist key)
+; (alist-get alist key)
 ; Returns the datum associated with the given key or undefined
 ; Throws if the key doesn't exist
-(let alist.get (alist key)
-    (let loop (index)
+(const alist-get (alist key)
+    (const loop (index)
         (if (>= index 0)
-            (if (equal (list.get (list.get alist index) 0) key)
-                (list.get (list.get alist index) 1)
+            (if (equal (list-get (list-get alist index) 0) key)
+                (list-get (list-get alist index) 1)
                 (loop (- index 1)))
-            (throw (~ "Error: 'alist.get' cannot get a value for a non-existing key. Given: " key)))))
-    (loop (- (list.length alist) 1)))
+            (throw (~ "Error: 'alist-get' cannot get a value for a non-existing key. Given: " key))))
+    (loop (- (list-length alist) 1)))
 
-; (alist.set alist key value)
+; (alist-set alist key value)
 ; Sets a new value for the given key
 ; Throws if the key doesn't exist
-(let alist.set (alist key value)
-    (let loop (index)
+(const alist-set (alist key value)
+    (const loop (index)
         (if (>= index 0)
-            (if (equal (list.get (list.get alist index) 0) key)
-                (list.set (list.get alist index) 1 value)
+            (if (equal (list-get (list-get alist index) 0) key)
+                (list-set (list-get alist index) 1 value)
                 (loop (- index 1)))
-            (throw (~ "Error: 'alist.set' cannot set a value for a non-existing key. Given: " key)))))
-    (loop (- (list.length alist) 1)))
+            (throw (~ "Error: 'alist-set' cannot set a value for a non-existing key. Given: " key))))
+    (loop (- (list-length alist) 1)))
 
-; (alist.delete alist key)
-; Deletes a key-value pair from an alist.
+; (alist-delete alist key)
+; Deletes a key-value pair from an alist-
 ; Throws if the key doesn't exist
 ; Returns the modified alsit
-(let alist.delete (alist key value)
-    (let loop (index)
+(const alist-delete (alist key value)
+    (const loop (index)
         (if (>= index 0)
-            (if (equal (list.get (list.get alist index) 0) key)
-                (list.splice alist index 1)
+            (if (equal (list-get (list-get alist index) 0) key)
+                (list-splice alist index 1)
                 (loop (- index 1)))
-            (throw (~ "Error: 'alist.delete' cannot delete a non-existing key. Given: " key))))
-    (loop (- (list.length alist) 1))
+            (throw (~ "Error: 'alist-delete' cannot delete a non-existing key. Given: " key))))
+    (loop (- (list-length alist) 1))
     alist)
 
-; (alist.update alist key update)
+; (alist-update alist key update)
 ; Update a value for a given key by using an update function
 ; Throws if the key doesn't exist
-(let alist.update (alist key update)
-    (let loop (index)
+(const alist-update (alist key update)
+    (const loop (index)
         (if (>= index 0)
-            (if (equal (list.get (list.get alist index) 0) key)
-                (list.set (list.get alist index) 1
-                          (update (list.get (list.get alist index) 1)))
+            (if (equal (list-get (list-get alist index) 0) key)
+                (list-set (list-get alist index) 1
+                          (update (list-get (list-get alist index) 1)))
                 (loop (- index 1)))
-            (throw (~ "Error: 'alist.update' cannot update a value for a non-existing key. Given: " key)))))
-    (loop (- (list.length alist) 1)))
+            (throw (~ "Error: 'alist-update' cannot update a value for a non-existing key. Given: " key))))
+    (loop (- (list-length alist) 1)))
 
-; (alist.keys alist)
+; (alist-keys alist)
 ; Returns a list of the keys
-(let alist.keys (alist)
-    (let loop (index acc)
-        (if (= index (list.length alist))
+(const alist-keys (alist)
+    (const loop (index acc)
+        (if (= index (list-length alist))
             acc
             (loop (+ index 1)
-                  (list.push acc (list.get (list.get alist index) 0)))))
-    (loop 0 '()))
+                  (list-push acc (list-get (list-get alist index) 0)))))
+    (loop 0 (list)))
 
-; (alist.values alist)
+; (alist-values alist)
 ; Returns a list of the values
-(let alist.values (alist)
-    (let loop (index acc)
-        (if (= index (list.length alist))
+(const alist-values (alist)
+    (const loop (index acc)
+        (if (= index (list-length alist))
             acc
             (loop (+ index 1)
-                  (list.push acc (list.get (list.get alist index) 1)))))
-    (loop 0 '()))
+                  (list-push acc (list-get (list-get alist index) 1)))))
+    (loop 0 (list)))
