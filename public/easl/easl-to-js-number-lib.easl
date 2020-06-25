@@ -1,0 +1,37 @@
+; (number-max-int)
+(alist-add forms "number-max-int" (λ (expr)
+    "Number.MAX_SAFE_INTEGER"))
+
+; (number-min-int)
+(alist-add forms "number-min-int" (λ (expr)
+    "Number.MIN_SAFE_INTEGER"))
+
+; (number-parse-float text)
+(alist-add forms "number-parse-float" (λ (expr)
+    (const (text) (parse-args expr))
+    (~ "parseFloat(" text ")")))
+
+; (number-parse-int text)
+(alist-add forms "number-parse-int" (λ (expr)
+    (const (text) (parse-args expr))
+    (~ "parseInt(" text ")")))
+
+; (number-is-finite num)
+(alist-add forms "number-is-finite" (λ (expr)
+    (const (num) (parse-args expr))
+    (~ "isFinite(" num ")")))
+
+; (number-is-integer num)
+(alist-add forms "number-is-integer" (λ (expr)
+    (const (num) (parse-args expr))
+    (~ "Math.floor(" num ") === num")))
+
+; (number-to-fixed num digits)
+(alist-add forms "number-to-fixed" (λ (expr)
+    (const (num, digits) (parse-args expr))
+    (~ num ".toFixed(" digits ")")))
+
+; (number-to-string num)
+(alist-add forms "number-to-string" (λ (expr)
+    (const (num) (parse-args expr))
+    (~ num ".toString()")))

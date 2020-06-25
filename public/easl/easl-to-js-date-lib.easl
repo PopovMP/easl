@@ -1,0 +1,8 @@
+; (date-now)
+(alist-add forms "date-now" (λ (expr)
+    "Date.now()"))
+
+; (date-to-string date)
+(alist-add forms "date-to-string" (λ (expr)
+    (const (date) (parse-args expr))
+    (~ "(new Date(" date ")).toString()")))

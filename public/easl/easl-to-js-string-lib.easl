@@ -1,0 +1,100 @@
+; (string-char-at str pos)
+(alist-add forms "string-char-at" (λ (expr)
+    (const (str pos) (parse-args expr))
+    (~ str ".charAt(" pos ")")))
+
+; (string-char-code-at str index)
+(alist-add forms "string-char-code-at" (λ (expr)
+    (const (str index) (parse-args expr))
+    (~ str ".charCodeAt(" index ")")))
+
+; (string-concat str1 str2 ...)
+(alist-add forms "string-concat" (λ (expr)
+    (~ (parse-code-lines << list-slice expr 1)
+       ".map( JSON.stringify )"
+       ".reduce( (acc, e) => acc + e )")))
+
+; (string-ends-with str search)
+(alist-add forms "string-ends-with" (λ (expr)
+    (const (str search) (parse-args expr))
+    (~ str ".endsWith(" search ")")))
+
+; (string-from-char-code code)
+(alist-add forms "string-from-char-code" (λ (expr)
+    (const (code) (parse-args expr))
+    (~ "String.fromCharCode(" code ")")))
+
+; (string-includes str search (pos 0))
+(alist-add forms "string-includes" (λ (expr)
+    (const (str search (pos 0)) (parse-args expr))
+    (~ str ".includes(" search ", " pos ")")))
+
+; (string-index-of str search (pos 0))
+(alist-add forms "string-index-of" (λ (expr)
+    (const (str search (pos 0)) (parse-args expr))
+    (~ str ".indexOf(" search ", " pos ")")))
+
+; (string-last-index-of str search (pos 0))
+(alist-add forms "string-last-index-of" (λ (expr)
+    (const (str search (pos 0)) (parse-args expr))
+    (~ str ".lastIndexOf(" search ", " pos ")")))
+
+; (string-length str)
+(alist-add forms "string-length" (λ (expr)
+    (const (str) (parse-args expr))
+    (~ str ".length")))
+
+; (string-match str pattern (flags ""))
+(alist-add forms "string-match" (λ (expr)
+    (const (str pattern (flags "\"\"")) (parse-args expr))
+    (~ str ".match(new RegExp(" pattern ", " flags ")")))
+
+; (string-repeat str count)
+(alist-add forms "string-repeat" (λ (expr)
+    (const (str count) (parse-args expr))
+    (~ str ".repeat(" count ")")))
+
+; (string-replace str pattern replace (flags ""))
+(alist-add forms "string-replace" (λ (expr)
+    (const (str pattern replace (flags "\"\"")) (parse-args expr))
+    (~ str ".replace(new RegExp(" pattern ", " flags "), " replace ")")))
+
+; (string-split str (sep ""))
+(alist-add forms "string-split" (λ (expr)
+    (const (str (sep "\"\"")) (parse-args expr))
+    (~ str ".split(" sep ")")))
+
+; (string-starts-with str search)
+(alist-add forms "string-starts-with" (λ (expr)
+    (const (str search) (parse-args expr))
+    (~ str ".startsWith(" search ")")))
+
+; (string-sub-string str start end)
+(alist-add forms "string-sub-string" (λ (expr)
+    (const (str start end) (parse-args expr))
+    (~ str ".substring(" start ", " end ")")))
+
+; (string-trim str)
+(alist-add forms "string-trim" (λ (expr)
+    (const (str) (parse-args expr))
+    (~ str ".trim()")))
+
+; (string-trim-left str)
+(alist-add forms "string-trim-left" (λ (expr)
+    (const (str) (parse-args expr))
+    (~ str ".trimLeft()")))
+
+; (string-trim-right str)
+(alist-add forms "string-trim-right" (λ (expr)
+    (const (str) (parse-args expr))
+    (~ str ".trimRight()")))
+
+; (string-to-lower str)
+(alist-add forms "string-to-lower" (λ (expr)
+    (const (str) (parse-args expr))
+    (~ str ".toLowerCase()")))
+
+; (string-to-upper str)
+(alist-add forms "string-to-upper" (λ (expr)
+    (const (str) (parse-args expr))
+    (~ str ".toUpperCase()")))

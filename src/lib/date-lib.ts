@@ -23,14 +23,14 @@ class DateLib implements ILib {
         return this.methods[expr[0]].call(this, expr, env);
     }
 
-    // (date.now)
+    // (date-now)
     private evalDateNow(expr: any[], env: any[]): number {
         this.inter.evalArgs([], expr, env);
 
         return Date.now();
     }
 
-    // (date.to-string date)
+    // (date-to-string date)
     private evalDateToString(expr: any[], env: any[]): string {
         const [date] = <[number]>this.inter.evalArgs(["number"], expr, env);
 

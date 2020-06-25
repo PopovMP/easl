@@ -30,21 +30,21 @@ class NumberLib implements ILib {
         return this.methods[expr[0]].call(this, expr, env);
     }
 
-    // (numb.max-int)
+    // (number-max-int)
     private evalMaxInt(expr: any[], env: any[]): number {
         this.inter.evalArgs([], expr, env);
 
         return Number.MAX_SAFE_INTEGER;
     }
 
-    // (numb.min-int)
+    // (number-min-int)
     private evalMinInt(expr: any[], env: any[]): number {
         this.inter.evalArgs([], expr, env);
 
         return Number.MIN_SAFE_INTEGER;
     }
 
-    // (numb.parse-float str)
+    // (number-parse-float str)
     private evalParseFloat(expr: any[], env: any[]): number {
         const [str] = <[string]>this.inter.evalArgs(["string"], expr, env);
 
@@ -57,7 +57,7 @@ class NumberLib implements ILib {
         return res;
     }
 
-    // (numb.parse-int str)
+    // (number-parse-int str)
     private evalParseInt(expr: any[], env: any[]): number {
         const [str] = <[string]>this.inter.evalArgs(["string"], expr, env);
 
@@ -70,28 +70,28 @@ class NumberLib implements ILib {
         return res;
     }
 
-    // (numb.is-finite num)
+    // (number-is-finite num)
     private evalIsFinite(expr: any[], env: any[]): boolean {
         const [num] = <[number]>this.inter.evalArgs(["number"], expr, env);
 
         return isFinite(num);
     }
 
-    // (numb.is-integer num)
+    // (number-is-integer num)
     private evalIsInteger(expr: any[], env: any[]): boolean {
         const [num] = <[number]>this.inter.evalArgs(["number"], expr, env);
 
         return isFinite(num) && Math.floor(num) === num;
     }
 
-    // (numb.to-fixed num digits)
+    // (number-to-fixed num digits)
     private evalToFixed(expr: any[], env: any[]): string {
         const [num, digits] = <[number, number]>this.inter.evalArgs(["number", ["number", 0]], expr, env);
 
         return num.toFixed(digits);
     }
 
-    // (numb.to-string num)
+    // (number-to-string num)
     private evalToString(expr: any[], env: any[]): string {
         const [num] = <[number]>this.inter.evalArgs(["number"], expr, env);
 
