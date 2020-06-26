@@ -39,28 +39,62 @@
 (alist-add forms "dec" (λ (expr)
     (~ "--" (list-get expr 1))))
 
+; (when test-expr
+;     expr+)
+(alist-add forms "when" (λ (expr)
+    (~ "if (" (parse-code (list-get expr 1)) ") {\n"
+           (parse-code-list (list-slice expr 2))
+       "}\n")))
+
+; (while test-expr
+;     expr+)
 (alist-add forms "while" (λ (expr)
-    (~ "while ("
-       (parse-code (list-get expr 1))
-       ") {\n"
-           (parse-code (list-slice expr 2))
+    (const test-expr  (parse-code (list-get   expr 1)))
+    (const while-body (parse-code-list (list-slice expr 2)))
+
+    (~ "while (" test-expr ") {\n"
+           while-body "\n"
        "}\n")))
 
+; (do expr+
+;     test-expr)
+(alist-add forms "do" (λ (expr)
+    (const last-index (- (list-length expr) 1))
+    (const do-body    (parse-code-list (list-slice expr 1 last-index)))
+    (const test-expr  (parse-code (list-get expr last-index)))
+
+    (~ "do {\n"
+           do-body "\n"
+       "} while (" test-expr ");\n")))
+
+; (unless test-expr
+;     expr+)
+(alist-add forms "unless" (λ (expr)
+    (const test-expr   (parse-code (list-get   expr 1)))
+    (const unless-body (parse-code-list (list-slice expr 2)))
+
+    (~ "if (!" test-expr ") {\n"
+           unless-body "\n"
+       "}\n")))
+
+; (for symbol range
+;     expr+)
 (alist-add forms "for" (λ (expr)
-    (~ "for (const "
-       (parse-code (list-get expr 1))
-       " of "
-       (parse-code (list-get expr 2))
-       ") {\n"
-       (parse-code (list-slice expr 3))
+    (const symbol   (parse-code (list-get   expr 1)))
+    (const range    (parse-code (list-get   expr 2)))
+    (const for-body (parse-code-list (list-slice expr 3)))
+
+    (~ "for (const " symbol " of " range ") {\n"
+           for-body "\n"
        "}\n")))
 
-; (collect expr expr*)
+; (collect
+;     expr+)
 (alist-add forms "collect" (λ (expr)
     (~ "(() => {\n"
-       "const __collect = [];\n"
-       (parse-code (list-get expr 1))
-       "return __collect;\n"
+           "const __collect = [];\n"
+           (parse-code (list-get expr 1))
+           "return __collect;\n"
        "})()")))
 
 ; (yield expr)
