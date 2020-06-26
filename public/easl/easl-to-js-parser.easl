@@ -44,3 +44,11 @@
     (collect
         (for arg (list-slice expr 1)
             (yield << parse-code arg))))
+
+(const pad-left (text pad)
+    (list-join (collect
+                   (for line (string-split text "\n")
+                       (yield (if (equal line "")
+                                  ""
+                                  (~ pad line)))))
+               "\n"))

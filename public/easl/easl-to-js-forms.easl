@@ -19,7 +19,7 @@
     (const block-body (parse-code-list (list-slice expr 1)))
 
     (~ "(() => {\n"
-           block-body
+           (pad-left block-body "    ")
        "})()")))
 
 ; (break)
@@ -35,7 +35,9 @@
     (if (= (list-length expr) 3)
         (block
             (const (test-expr then-expr) (parse-args expr))
-            (~ "if (" test-expr ") {\n" then-expr "}\n"))
+            (~ "if (" test-expr ") {\n"
+                   (pad-left then-expr "    ")
+               "}\n"))
         (block
             (const (test-expr then-expr else-expr) (parse-args expr))
             (~ "(" test-expr " ? " then-expr " : " else-expr ")")))))
@@ -71,7 +73,7 @@
     (const when-body (parse-code-list (list-slice expr 2)))
 
     (~ "if (" test-expr ") {\n"
-           when-body "\n"
+           (pad-left when-body "    ") "\n"
        "}\n")))
 
 ; (while test-expr
@@ -81,7 +83,7 @@
     (const while-body (parse-code-list (list-slice expr 2)))
 
     (~ "while (" test-expr ") {\n"
-           while-body "\n"
+           (pad-left while-body "    ") "\n"
        "}\n")))
 
 ; (do expr+
@@ -92,7 +94,7 @@
     (const test-expr  (parse-code (list-get expr last-index)))
 
     (~ "do {\n"
-           do-body "\n"
+           (pad-left do-body "    ") "\n"
        "} while (" test-expr ");\n")))
 
 ; (unless test-expr
@@ -102,7 +104,7 @@
     (const unless-body (parse-code-list (list-slice expr 2)))
 
     (~ "if (!" test-expr ") {\n"
-           unless-body "\n"
+           (pad-left unless-body "    ") "\n"
        "}\n")))
 
 ; (for symbol range
@@ -113,7 +115,7 @@
     (const for-body (parse-code-list (list-slice expr 3)))
 
     (~ "for (const " symbol " of " range ") {\n"
-           for-body "\n"
+           (pad-left for-body "    ") "\n"
        "}\n")))
 
 ; (collect
@@ -122,10 +124,11 @@
     (const collect-body (parse-code-list (list-slice expr 1)))
 
     (~ "(() => {\n"
-           "const __collect = [];\n"
-           collect-body
-           "return __collect;\n"
-       "})()")))
+       (pad-left (~ "const __collect = [];\n"
+                    collect-body
+                    "return __collect;")
+                 "    ")
+       "\n})()")))
 
 ; (yield expr)
 (alist-add forms "yield" (λ (expr)
