@@ -6,6 +6,16 @@
            (list-join << parse-code-lines << list-slice expr 1))
        "]")))
 
+; (list-length lst)
+(alist-add forms "list-length" (λ (expr)
+    (const (lst) (parse-args expr))
+    (~ lst ".length")))
+
+; (list-join lst delimiter)
+(alist-add forms "list-join" (λ (expr)
+    (const (lst (delimiter "\", \"")) (parse-args expr))
+    (~ lst ".join(" delimiter ")")))
+
 ; (list-make size fill=0)
 (alist-add forms "list-make" (λ (expr)
     (const (size (fill 0)) (parse-args expr))
@@ -31,12 +41,27 @@
     (const (lst index value) (parse-args expr))
     (~ lst "[" index "] = " value ";\n")))
 
-; (list-length lst)
-(alist-add forms "list-length" (λ (expr)
+; (list-shift lst)
+(alist-add forms "list-shift" (λ (expr)
     (const (lst) (parse-args expr))
-    (~ lst ".length")))
+    (~ lst ".shift()")))
 
-; (list-join lst delimiter)
-(alist-add forms "list-join" (λ (expr)
-    (const (lst (delimiter "\", \"")) (parse-args expr))
-    (~ lst ".join(" delimiter ")\n")))
+; (list-slice lst from to)
+(alist-add forms "list-slice" (λ (expr)
+    (if (= (list-length expr) 3)
+        (block
+            (const (lst from) (parse-args expr))
+            (~ lst ".slice(" from ")"))
+        (block
+            (const (lst from to) (parse-args expr))
+            (~ lst ".slice(" from ", " to ")")))))
+
+; (list-sort lst)
+(alist-add forms "list-sort" (λ (expr)
+    (const (lst) (parse-args expr))
+    (~ lst ".sort()")))
+
+; (list-unshift lst value)
+(alist-add forms "list-unshift" (λ (expr)
+    (const (lst value) (parse-args expr))
+    (~ lst ".unshift(" value ");\n")))
