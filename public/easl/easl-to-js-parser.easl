@@ -8,7 +8,7 @@
     (const last-index (- (list-length js-lines) 1))
     (list-set js-lines
               last-index
-              (~ "return " (list-get js-lines last-index) ";\n"))
+              (~ "return " (list-get js-lines last-index) ";"))
 
     (list-join js-lines ";\n"))
 

@@ -75,6 +75,34 @@
 (alist-add forms "dec" (λ (expr)
     (~ "--" (list-get expr 1))))
 
+; (case key
+;    ((datum datum*) expr)
+;    ...
+;    (else     expr))
+(alist-add forms "case" (λ (expr)
+    (const key (parse-code (list-get expr 1)))
+    (const outputs (collect
+        (yield "(() => {")
+        (yield (~ "    switch (" key ") {"))
+        (for clause (list-slice expr 2)
+            (const match (list-get clause 0))
+            (if (equal (type-of match) "list")
+                (block
+                    (for datum match
+                        (yield (~ "        case " datum ":")))
+                    (yield "        {")
+                    (yield (pad-left (parse-code-block (list-slice clause 1))
+                                     "            "))
+                    (yield "        }"))
+                (block
+                    (yield "        default: {")
+                    (yield (pad-left (parse-code-block (list-slice clause 1))
+                                     "            "))
+                    (yield "        }"))))
+        (yield "    }")
+        (yield "})()")))
+
+    (list-join outputs "\n")))
 
 ; (when test-expr
 ;     expr+)
@@ -169,7 +197,7 @@
     (const text (case (list-length expr)
         ((1)  "")
         ((2)  (parse-code (list-get expr 1)))
-        (else (list-join (parse-code-lines (list-slice expr 1)) "\" \""))))
+        (else (list-join (parse-code-lines (list-slice expr 1)) ", "))))
 
     (~ "console.log(" text ");\n")))
 

@@ -1157,6 +1157,7 @@ exit :
         name: "EASL to JavaScript",
         code: `;; EASL to JavaScript
 
+(import "https://easl.forexsb.com/easl/list-hof.easl")
 (import "https://easl.forexsb.com/easl/alist.easl")
 (import "https://easl.forexsb.com/easl/easl-to-js-parser.easl")
 (import "https://easl.forexsb.com/easl/easl-to-js-forms.easl")

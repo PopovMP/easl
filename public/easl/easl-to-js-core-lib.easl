@@ -1,17 +1,15 @@
-; (+ num1 num2)
+; (+ num1 num2 num*)
 (alist-add forms "+" (λ (expr)
-    (const (num1 num2) (parse-args expr))
-    (~ "(" num1 " + " num2 ")")))
+    (~ "(" (list-join (parse-code-lines (list-slice expr 1)) " + ") ")")))
 
 ; (- num1 num2)
 (alist-add forms "-" (λ (expr)
     (const (num1 num2) (parse-args expr))
     (~ "(" num1 " - " num2 ")")))
 
-; (* num1 num2)
+; (* num1 num2 num*)
 (alist-add forms "*" (λ (expr)
-    (const (num1 num2) (parse-args expr))
-    (~ "(" num1 " * " num2 ")")))
+    (~ "(" (list-join (parse-code-lines (list-slice expr 1)) " * ") ")")))
 
 ; (/ num1 num2)
 (alist-add forms "/" (λ (expr)
@@ -53,10 +51,13 @@
     (const (num1 num2) (parse-args expr))
     (~ "(" num1 " <= " num2 ")")))
 
-; (~ str1 str2)
+; (~ str+)
 (alist-add forms "~" (λ (expr)
-    (const (str1 str2) (parse-args expr))
-    (~ "(" str1 " + " str2 ")")))
+    (~ "("
+       (list-join (list-map (parse-code-lines (list-slice expr 1))
+                            (λ (e) (to-string e)))
+                  " + ")
+       ")")))
 
 ; (equal obj1 obj2)
 (alist-add forms "equal" (λ (expr)
