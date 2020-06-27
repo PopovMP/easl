@@ -55,6 +55,7 @@ class Interpreter {
             "print": this.evalPrint,
             "quasiquote": this.evalQuasiquote,
             "quote": this.evalQuote,
+            "repeat": this.evalRepeat,
             "set": this.evalSet,
             "string": this.evalString,
             "throw": this.evalThrow,
@@ -602,6 +603,17 @@ class Interpreter {
             case 3: return this.evalExpr(expr[1], env) && this.evalExpr(expr[2], env);
         }
         return this.evalExpr(expr[1], env) && this.evalAnd(expr.slice(1), env);
+    }
+    evalRepeat(expr, env) {
+        if (expr.length < 3) {
+            throw "Error: 'repeat' requires at least 2 expressions. Given: " + (expr.length - 1);
+        }
+        const count = this.evalExpr(expr[1], env);
+        for (let i = 0; i < count; i++) {
+            env.push(["#scope", "repeat"]);
+            this.evalExprList(expr.slice(2), env);
+            this.clearEnv("#scope", env);
+        }
     }
     evalQuote(expr) {
         if (expr.length !== 2) {

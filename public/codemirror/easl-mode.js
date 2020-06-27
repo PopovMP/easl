@@ -23,7 +23,7 @@
 
         const keywords = makeKeywords(
             "' ` , @ . << >> λ apply block break call case collect cond continue const debug defined do else for if unless " +
-            "import lambda let set delete inc dec enum string and or quote throw try type-of print parse eval display " +
+            "import lambda let set delete inc dec enum string and or quote repeat throw try type-of print parse eval display " +
             "newline value-of when while yield");
 
         const builtinFunc = makeKeywords(

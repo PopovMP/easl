@@ -36,14 +36,15 @@ const examplesList = [
     },
 
     {
-        name: "Random numbers in a list",
-        code: `(import "https://easl.forexsb.com/easl/list-hof.easl")
+        name: "Print random integers",
+        code: `;; Print 10 random integers
+(import "https://easl.forexsb.com/easl/list-hof.easl")
 
 ;; Imperative style
 (const lst (list))
 
-(for i (list-range 10)
-    (list-push lst << math-round << * 100 << math-random))
+(repeat 10
+    (list-push lst (math-round (* 100 (math-random)))))
 
 (print lst)
 
@@ -53,10 +54,11 @@ const examplesList = [
                  (λ (element index)
                     (math-round << * 100 << math-random))))
 
+
 ;; The best of two worlds
 (print (collect
-          (for i (list-range 10)
-             (yield << math-round << * 100 << math-random))))
+          (repeat 10
+             (yield (math-round << * 100 << math-random)))))
 `
     },
 
