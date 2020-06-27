@@ -902,7 +902,7 @@ class Interpreter {
     }
 
     // (type-of obj)
-    private evalTypeOf(expr: any[], env: any[]): string {
+    private  evalTypeOf(expr: any[], env: any[]): string {
         if (expr.length !== 2) {
             throw "Error: 'type-of' requires 1 argument. Given: " + (expr.length - 1);
         }

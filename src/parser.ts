@@ -20,6 +20,9 @@ class Parser {
         const abbrevList: [string, string][] = [["'", "quote"], ["`", "quasiquote"]];
 
         const codeList:       any[] = this.tokenize(fixedText);
+
+        this.checkMatchingParens(codeList);
+
         const abbrevResolved: any[] = this.expandAbbreviations(codeList, abbrevList);
         const pipesResolved:  any[] = this.expandPipeLeft(abbrevResolved, "<<");
         const ilTree: any[] = this.nest(pipesResolved);
@@ -222,6 +225,52 @@ class Parser {
         }
 
         return pass([]);
+    }
+
+    public checkMatchingParens(codeList: any[]): void {
+        let curly  = 0;
+        let square = 0;
+        let round  = 0;
+
+        for (let i: number = 0; i < codeList.length; i++) {
+            // Eat string
+            if (codeList[i - 1] === "(" && codeList[i] === "string") {
+                i += 2;
+            }
+
+            switch (codeList[i]) {
+                case "(":
+                    round++;
+                    break;
+                case "[":
+                    square++;
+                    break;
+                case "{":
+                    curly++;
+                    break;
+                case ")":
+                    round--;
+                    break;
+                case "]":
+                    square--;
+                    break;
+                case "}":
+                    curly--;
+                    break;
+            }
+        }
+
+        if (curly !== 0) {
+            throw "Unmatching curly braces!";
+        }
+
+        if (square !== 0) {
+            throw "Unmatching square braces!";
+        }
+
+        if (round !== 0) {
+            throw "Unmatching round braces!";
+        }
     }
 }
 

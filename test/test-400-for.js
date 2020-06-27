@@ -9,7 +9,7 @@ const easl = new Easl();
 describe('for loop', function () {
     it('loop', function () {
         assert.strictEqual(easl.evaluate(` 
-                (let n 0}
+                (let n 0)
                 (for e '(1 2 3 4 5)
                     (set n (+ n e)))
                 n                                      `), 15);
@@ -34,7 +34,7 @@ describe('for loop', function () {
 
     it('break', function () {
         assert.strictEqual(easl.evaluate(`
-                (let n 0}
+                (let n 0)
                 (for e '(1 2 3 4 5)
                     (if (> e 2)
                         (break))

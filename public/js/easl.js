@@ -928,6 +928,7 @@ class Parser {
             .replace(/\\"/g, '""');
         const abbrevList = [["'", "quote"], ["`", "quasiquote"]];
         const codeList = this.tokenize(fixedText);
+        this.checkMatchingParens(codeList);
         const abbrevResolved = this.expandAbbreviations(codeList, abbrevList);
         const pipesResolved = this.expandPipeLeft(abbrevResolved, "<<");
         const ilTree = this.nest(pipesResolved);
@@ -1087,6 +1088,45 @@ class Parser {
             return pass(list.concat(curr));
         }
         return pass([]);
+    }
+    checkMatchingParens(codeList) {
+        let curly = 0;
+        let square = 0;
+        let round = 0;
+        for (let i = 0; i < codeList.length; i++) {
+            if (codeList[i - 1] === "(" && codeList[i] === "string") {
+                i += 2;
+            }
+            switch (codeList[i]) {
+                case "(":
+                    round++;
+                    break;
+                case "[":
+                    square++;
+                    break;
+                case "{":
+                    curly++;
+                    break;
+                case ")":
+                    round--;
+                    break;
+                case "]":
+                    square--;
+                    break;
+                case "}":
+                    curly--;
+                    break;
+            }
+        }
+        if (curly !== 0) {
+            throw "Unmatching curly braces!";
+        }
+        if (square !== 0) {
+            throw "Unmatching square braces!";
+        }
+        if (round !== 0) {
+            throw "Unmatching round braces!";
+        }
     }
 }
 if (typeof module === "object") {

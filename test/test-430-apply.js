@@ -133,26 +133,26 @@ describe('apply', function () {
 
     it('apply builtin function with list of num vars', function () {
         assert.strictEqual(easl.evaluate(`
-            {let x 1)
-            {let y 2}
-            {let lst (list x y)}
-            {apply + lst}                            `), 3);
+            (let x 1)
+            (let y 2)
+            (let lst (list x y))
+            (apply + lst)                            `), 3);
     });
 
     it('apply builtin function with list of string vars', function () {
         assert.strictEqual(easl.evaluate(`
-            {let x "a")
-            {let y "b"}
-            {let lst (list x y)}
-            {apply ~ lst}                            `), "ab");
+            (let x "a")
+            (let y "b")
+            (let lst (list x y))
+            (apply ~ lst)                            `), "ab");
     });
 
     it('apply builtin function with list of boolean vars', function () {
         assert.strictEqual(easl.evaluate(`
-            {let f false)
-            {let t true}
-            {let lst (list f t)}
-            {apply and lst}                            `), false);
+            (let f false)
+            (let t true)
+            (let lst (list f t))
+            (apply and lst)                            `), false);
     });
 
     it('apply or list of null and num', function () {
