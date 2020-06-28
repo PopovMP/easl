@@ -834,39 +834,39 @@ const examplesList = [
  
     MOV CX min        ; Use CX register as a counter
 
-loop :
+begin :
     CMP CX max        ; Compare the current value with \`max\`
     JG exit           ; If \`current\` > \`max\`, jump to 'exit'
 
     MOV AX CX         ; Set \`current\` in AX to use it for MOD
     MOD 15            ; MOD set the reminder to AX and also sets the ZF
-    JZ print-fizbuz   ; If ZF (Zero Flag) is set, we jump to 'print-fizbuz'
+    JZ print_fizbuz   ; If ZF (Zero Flag) is set, we jump to 'print-fizbuz'
  
     MOV AX CX
     MOD 3
-    JZ print-fiz
+    JZ print_fiz
  
     MOV AX CX
     MOD 5
-    JZ print-buz
+    JZ print_buz
  
     OUT CX            ; No Fiz / Buz, so we prtint the number
 
-next-loop :
+next_loop :
     INC CX            
-    JMP loop          ; Loop
+    JMP begin         ; Loop
 
-print-fiz :
+print_fiz :
     OUT fiz
-    JMP next-loop
+    JMP next_loop
 
-print-buz :
+print_buz :
     OUT buz
-    JMP next-loop
+    JMP next_loop
  
-print-fizbuz :
+print_fizbuz :
     OUT fizbuz
-    JMP next-loop
+    JMP next_loop
 
 exit :
 " )
@@ -884,173 +884,62 @@ exit :
 (const var-names  (list)) ; Custom variables and labels names
 (const var-values (list)) ; Custom variables and labels values
 
-(const set-var (name val)
-   (const index (list-index-of var-names name))
-   (cond
-       ((>= index 0) (list-set var-values index val))
-       (else (list-push var-names  name)
-             (list-push var-values val))))
+(const eval-asm (code-txt)
+    (const commands (parse-code code-txt))
+    (eval-labels   commands)
+    (eval-commands commands))
 
-(const get-var (name)
-   (const index (list-index-of var-names name))
-   (if (>= index 0)
-       (list-get var-values index)
-       (throw (string-concat "Variable not defined: " name)) ))
+(const parse-code (code-txt)
+    (collect
+        (for code-line-raw (string-split code-txt "\\n")
+            (const code-line (string-trim (trim-comment code-line-raw)))
+            (unless (equal code-line "")
+                (const command (parse-code-line code-line))
+                (when (list-length command)
+                    (yield command))))))
 
-(const set-val (name val)
-    (case name
-        ((EAX AH AL AX) (set AX val))
-        ((EBX BH BL BX) (set BX val))
-        ((ECX CH CL CX) (set CX val))
-        ((EDX DH DL DX) (set DX val))
-        (else (set-var name val)) ))
+(const trim-comment (code-line)
+    (const comment-index (string-index-of code-line ";"))
+    (if (>= comment-index 0)
+        (string-sub-string code-line 0 comment-index)
+        code-line))
 
-(const get-val (ref)
-    (if (equal (type-of ref) "number")
-        ref
-        (case ref
-            ((EAX AH AL AX) AX)
-            ((EBX BH BL BX) BX)
-            ((ECX CH CL CX) CX)
-            ((EDX DH DL DX) DX)
-            (else (get-var ref)) )))
+(const parse-code-line (code-line)
+    (collect
+        (for part (split-code-line code-line)
+            (const param (parse-param part))
+            (case (type-of param)
+                (("string" "number") (yield param))))))
 
-(const set-ZF (val)
-    (set ZF (if (= val 0) 1 0)) )
+(const split-code-line (code-line)
+    (collect
+        (for element (string-split code-line " ")
+            (unless (equal element "")
+                (yield element)))))
 
-(const set-SF (val)
-    (set SF (if (< val 0) 1 0)) )
+(const parse-param (par-txt)
+    (const num-param (to-number par-txt))
+    (case (type-of num-param)
+        (("number") num-param)
+        (else par-txt)))
 
-(const DD (name val)
-    (set-var name val) )
+(const eval-labels (commands)
+    (set IP 0)
+    (for command commands
+        (apply eval-label command)
+        (inc IP)))
 
-(const EQU (name val)
-    (set-var name val) )
+(const eval-label (label command)
+    (when (equal command ":")
+        (set-var label IP)))
+        
+(const eval-commands (commands)
+    (set IP 0)
+    (while (< IP (list-length commands))
+        (apply eval-command (list-get commands IP))
+        (inc IP)))
 
-(const MOV (p q)
-    (const val (get-val q))
-    (set-val p val) )
-
-(const INC (p)
-    (const res (+ (get-val p) 1))
-    (set-val p res)
-    (set-ZF res)
-    (set-SF res) )
-
-(const DEC (p)
-    (const res (- (get-val p) 1))
-    (set-val p res)
-    (set-ZF res)
-    (set-SF res) )
-
-(const ADD (p q)
-    (const res (+ (get-val p) (get-val q)))
-    (set-val p res)
-    (set-ZF res)
-    (set-SF res) )
-
-(const SUB (p q)
-    (const res (- (get-val p) (get-val q)))
-    (set-val p res)
-    (set-ZF res)
-    (set-SF res) )
-
-(const MUL (p)
-    (const res (* (get-val "AX") (get-val p)))
-    (set-val "AX" res)
-    (set-ZF res)
-    (set-SF res) )
-
-(const DIV (p)
-    (const res (/ (get-val "AX") (get-val p)))
-    (set-val "AX" res)
-    (set-ZF res)
-    (set-SF res) )
-
-(const MOD (p)
-    (const res (% (get-val "AX") (get-val p)))
-    (set-val "AX" res)
-    (set-ZF res)
-    (set-SF res) )
-
-(const AND (p q)
-    (const res (and (get-val p) (get-val q)))
-    (set-val p res)
-    (set-ZF res) )
-
-(const OR (p q)
-    (const res (or (get-val p) (get-val q)))
-    (set-val p res)
-    (set-ZF res) )
-
-(const TEST (p q)
-    (const res (and (get-val p) (get-val q)))
-    (set-ZF res) )
-
-(const NOT (p)
-    (const res (if (get-val p) 0 1))
-    (set-val p res)
-    (set-ZF res) )
-
-(const CMP (p q)
-    (const res (- (get-val p) (get-val q)))
-    (set-ZF res)
-    (set-SF res) )
-
-(const jump (label)
-    (set IP (get-val label)) )
-
-(const JMP (label)
-    (jump label) )
-
-(const JE (label)
-    (when ZF (jump label)) )
-
-(const JNE (label)
-    (unless ZF (jump label)) )
-
-(const JL (label)
-    (when (and (not ZF) SF)
-        (jump label) ))
-
-(const JLE (label)
-    (when (or (and (not ZF) SF) ZF)
-        (jump label) ))
-
-(const JG (label)
-    (when (and (not ZF) (not SF))
-        (jump label) ))
-
-(const JGE (label)
-    (when (or (and (not ZF) (not SF)) ZF)
-        (jump label) ))
-
-(const JZ (label)
-    (when ZF
-        (jump label)) )
-
-(const JNZ (label)
-    (when (not ZF)
-        (jump label)) )
-
-(const OUT (ref)
-    (print (get-val ref)) )
-
-(const show-state ()
-    (const i 0)
-    (for var-name var-names
-        (print var-name ":" (var-values i))
-        (inc i) )
-
-    (print "AX :" AX)
-    (print "BX :" BX)
-    (print "CX :" CX)
-    (print "DX :" DX)
-    (print "ZF :" ZF)
-    (print "SF :" SF)
-    (print "IP :" IP) )
-
-(const eval-op (command p (q null))
+(const eval-command (command p (q null))
     (case p
         ((DS DW DD DQ DT) (DD command q))
         ((EQU) (EQU command q))
@@ -1081,72 +970,173 @@ exit :
                   ((JNZ)   (JNZ  p))
                   ((OUT)   (OUT  p))
                   ((DEBUG) (show-state))
-                  (else (throw (~ "Wrong command: " command " at IP: " IP)))   ))))
+                  (else (throw (~ "Wrong command: " command " at IP: " IP)))))))
 
-(const eval-label (label command)
-    (when (equal command ":")
-        (set-var label IP)))
+(const set-var (name val)
+   (const index (list-index-of var-names name))
+   (cond
+       ((>= index 0) (list-set var-values index val))
+       (else (list-push var-names  name)
+             (list-push var-values val))))
 
-(const parse-param (par-txt)
-    (const num-param (to-number par-txt))
-    (if (equal (type-of num-param) "number")
-        num-param
-        par-txt))
+(const get-var (name)
+   (const index (list-index-of var-names name))
+   (if (>= index 0)
+       (list-get var-values index)
+       (throw (string-concat "Variable not defined: " name)) ))
 
-(const parse-code-line (code-line)
-    ; Parse a command line
-    (const split-parts (string-split code-line " "))
-    (const non-empty-parts (list))
-    (for element split-parts
-        (unless (equal element "")
-            (list-push non-empty-parts element)))
+(const set-val (name val)
+    (case name
+        ((EAX AH AL AX) (set AX val))
+        ((EBX BH BL BX) (set BX val))
+        ((ECX CH CL CX) (set CX val))
+        ((EDX DH DL DX) (set DX val))
+        (else (set-var name val))))
 
-    (const command (list))
-    (for par-txt non-empty-parts
-        (const param (parse-param par-txt))
-        (when (or (equal (type-of param) "string")
-                  (equal (type-of param) "number"))
-            (list-push command param)))
+(const get-val (ref)
+    (if (equal (type-of ref) "number")
+        ref
+        (case ref
+            ((EAX AH AL AX) AX)
+            ((EBX BH BL BX) BX)
+            ((ECX CH CL CX) CX)
+            ((EDX DH DL DX) DX)
+            (else (get-var ref)))))
 
-    command)
+(const set-ZF (val)
+    (set ZF (if (= val 0) 1 0)))
 
-(const trim-comment (code-line)
-    (const comment-index (string-index-of code-line ";"))
-    (if (>= comment-index 0)
-        (string-sub-string code-line 0 comment-index)
-        code-line))
+(const set-SF (val)
+    (set SF (if (< val 0) 1 0)))
 
-(const parse-code (code-txt)
-    (const command-list (list))
+(const DD (name val)
+    (set-var name val))
 
-    (for code-line-raw (string-split code-txt "\\n")
-        (const code-line (string-trim (trim-comment code-line-raw)))
+(const EQU (name val)
+    (set-var name val))
 
-        (when (> (string-length code-line) 0)
-            (const command (parse-code-line code-line))
-            (when (> (list-length command) 0)
-                (list-push command-list command))))
+(const MOV (p q)
+    (const val (get-val q))
+    (set-val p val))
 
-    command-list)
+(const INC (p)
+    (const res (+ (get-val p) 1))
+    (set-val p res)
+    (set-ZF res)
+    (set-SF res))
 
-(const eval-asm (code-txt)
-    (const commands (parse-code code-txt))
-    (const commands-length (list-length commands))
+(const DEC (p)
+    (const res (- (get-val p) 1))
+    (set-val p res)
+    (set-ZF res)
+    (set-SF res))
 
-    (set IP 0)
-    (for command commands
-        (apply eval-label command)
-        (inc IP) )
+(const ADD (p q)
+    (const res (+ (get-val p) (get-val q)))
+    (set-val p res)
+    (set-ZF res)
+    (set-SF res))
 
-    (set IP 0)
-    (const max-cycles 10000)
-    (let cycle 0)
-    (while (< IP commands-length)
-        (apply eval-op (list-get commands IP))
-        (inc IP)
-        (inc cycle)
-        (when (> cycle max-cycles)
-            (throw "Too many cycles!"))))
+(const SUB (p q)
+    (const res (- (get-val p) (get-val q)))
+    (set-val p res)
+    (set-ZF res)
+    (set-SF res))
+
+(const MUL (p)
+    (const res (* (get-val "AX") (get-val p)))
+    (set-val "AX" res)
+    (set-ZF res)
+    (set-SF res))
+
+(const DIV (p)
+    (const res (/ (get-val "AX") (get-val p)))
+    (set-val "AX" res)
+    (set-ZF res)
+    (set-SF res))
+
+(const MOD (p)
+    (const res (% (get-val "AX") (get-val p)))
+    (set-val "AX" res)
+    (set-ZF res)
+    (set-SF res))
+
+(const AND (p q)
+    (const res (and (get-val p) (get-val q)))
+    (set-val p res)
+    (set-ZF res))
+
+(const OR (p q)
+    (const res (or (get-val p) (get-val q)))
+    (set-val p res)
+    (set-ZF res))
+
+(const TEST (p q)
+    (const res (and (get-val p) (get-val q)))
+    (set-ZF res))
+
+(const NOT (p)
+    (const res (if (get-val p) 0 1))
+    (set-val p res)
+    (set-ZF res))
+
+(const CMP (p q)
+    (const res (- (get-val p) (get-val q)))
+    (set-ZF res)
+    (set-SF res))
+
+(const jump (label)
+    (set IP (get-val label)))
+
+(const JMP (label)
+    (jump label))
+
+(const JE (label)
+    (when ZF (jump label)))
+
+(const JNE (label)
+    (unless ZF (jump label)))
+
+(const JL (label)
+    (when (and (not ZF) SF)
+        (jump label)))
+
+(const JLE (label)
+    (when (or (and (not ZF) SF) ZF)
+        (jump label)))
+
+(const JG (label)
+    (when (and (not ZF) (not SF))
+        (jump label)))
+
+(const JGE (label)
+    (when (or (and (not ZF) (not SF)) ZF)
+        (jump label)))
+
+(const JZ (label)
+    (when ZF
+        (jump label)))
+
+(const JNZ (label)
+    (when (not ZF)
+        (jump label)))
+
+(const OUT (ref)
+    (print (get-val ref)))
+
+(const show-state ()
+    (const i 0)
+    (for var-name var-names
+        (print var-name ":" (var-values i))
+        (inc i))
+
+    (print "AX :" AX)
+    (print "BX :" BX)
+    (print "CX :" CX)
+    (print "DX :" DX)
+    (print "ZF :" ZF)
+    (print "SF :" SF)
+    (print "IP :" IP))
 
 (eval-asm code-text)
 `
