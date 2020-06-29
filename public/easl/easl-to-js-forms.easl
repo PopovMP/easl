@@ -104,6 +104,47 @@
 
     (list-join outputs "\n")))
 
+
+; (cond
+;    (test-expr expr+)
+;    ...
+;    (else     expr))
+(alist-add forms "cond" (λ (expr)
+    (const outputs
+        (collect
+            (yield "(() => {")
+
+            (const loop (index)
+                (when (< index (list-length expr))
+                    (const clause (list-get expr index))
+                    (cond
+                        ((= index 1) (yield-if clause))
+                        ((equal (list-get clause 0) "else") (yield-else clause))
+                        (else (yield-else-if clause)))
+                    (loop (+ index 1))))
+
+            (const yield-if (clause)
+                (yield (~ "    if (" (parse-code (list-get clause 0)) ") {"))
+                (yield (pad-left (parse-code-block (list-slice clause 1)) "        "))
+                (yield "    }"))
+
+            (const yield-else-if (clause)
+                (yield (~ "    else if (" (parse-code (list-get clause 0)) ") {"))
+                (yield (pad-left (parse-code-block (list-slice clause 1)) "        "))
+                (yield "    }"))
+
+            (const yield-else (clause)
+                (yield (~ "    else {"))
+                (yield (pad-left (parse-code-block (list-slice clause 1)) "        "))
+                (yield "    }"))
+
+            (loop 1)
+
+            (yield "})()")))
+
+    (list-join outputs "\n")))
+
+
 ; (when test-expr
 ;     expr+)
 (alist-add forms "when" (λ (expr)

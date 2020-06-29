@@ -1372,14 +1372,11 @@ class CoreLib {
     }
     evalScalarEqual(expr, env) {
         if (expr.length === 3) {
-            const [obj1, obj2] = this.inter.evalArgs(["scalar", "scalar"], expr, env);
+            const [obj1, obj2] = this.inter.evalArgs(["any", "any"], expr, env);
             return obj1 === obj2;
         }
         if (expr.length > 3) {
             const first = this.inter.evalExpr(expr[1], env);
-            if (!this.inter.assertType(first, "scalar")) {
-                throw `Error: 'equal' requires a scalar value. Given: ${first}`;
-            }
             for (let i = 1; i < expr.length; i++) {
                 if (this.inter.evalExpr(expr[i], env) !== first) {
                     return false;
