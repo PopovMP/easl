@@ -7,6 +7,13 @@
              (~ "(" a " && " b ")")))))
 
 
+; (apply proc args)
+(alist-add forms "apply" (λ (expr)
+    (const (proc args) (parse-args expr))
+
+    (~ proc ".apply(null, " args ")")))
+
+
 ; (or a b)
 (alist-add forms "or" (λ (expr)
     (case (list-length expr)
@@ -134,7 +141,7 @@
                 (yield "    }"))
 
             (const yield-else (clause)
-                (yield (~ "    else {"))
+                (yield "    else {")
                 (yield (pad-left (parse-code-block (list-slice clause 1)) "        "))
                 (yield "    }"))
 
