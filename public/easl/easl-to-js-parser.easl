@@ -6,9 +6,11 @@
                             (yield (parse-code line)))))
 
     (const last-index (- (list-length js-lines) 1))
-    (list-set js-lines
-              last-index
-              (~ "return " (list-get js-lines last-index) ";"))
+    (unless (and (equal (type-of (list-get js-lines last-index)) "string")
+                 (string-ends-with (list-get js-lines last-index) "\n"))
+        (list-set js-lines
+                  last-index
+                  (~ "return " (list-get js-lines last-index) ";")))
 
     (list-join js-lines ";\n"))
 
@@ -37,7 +39,9 @@
                 (else
                     (const form (list-get expr 0))
                     (if (equal (type-of form) "string")
-                        ((alist-get forms form) expr)
+                        (if (alist-has forms form)
+                            ((alist-get forms form) expr)
+                            (application expr))
                         (parse-code-list expr)))))))
 
 (const parse-args (expr)
@@ -52,3 +56,20 @@
                                   ""
                                   (~ pad line)))))
                "\n"))
+
+(const parse-list-destructuring (params)
+    (~ "("
+      (list-join
+          (collect
+              (for par params
+                  (if (equal (type-of par) "string")
+                      (yield par)
+                      (yield (~ (list-get par 0) " = " (list-get par 1))))))
+          ", ")
+      ")"))
+
+
+(const application (expr)
+    (const name   (list-get expr 0))
+    (const params (list-join (parse-code-lines (list-slice expr 1)) ", "))
+    (~ name "(" params ")"))

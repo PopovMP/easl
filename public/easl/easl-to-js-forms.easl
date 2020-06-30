@@ -55,23 +55,61 @@
             (~ "(" test-expr " ? " then-expr " : " else-expr ")")))))
 
 
-; (let symbol expr)
+; (lambda (par*) expr+)
+(alist-add forms "lambda" (λ (expr)
+    (const params (parse-list-destructuring (list-get expr 1)))
+
+    (if (= (list-length expr) 3)
+        (~ params " => " (parse-code (list-get expr 2)))
+        (block
+            (const lambda-body (parse-code-block (list-slice expr 2)))
+            (~ params " => {\n"
+                   (pad-left lambda-body "    ") "\n"
+               "}\n")))))
+
+
+; (let symbol expr)    ; variable definition
+; (let (par+) (expr+)) ; list destructuring
+; (let symbol (par*)   ; procedure definition
+;     expr+)
 (alist-add forms "let" (λ (expr)
-    (const (symbol value) (parse-args expr))
+    (parse-let-const expr "let")))
 
-    (~ "let " symbol " = " value ";\n")))
 
-; (const symbol expr)
+; (const symbol expr)    ; variable definition
+; (const (par+) (expr+)) ; list destructuring
+; (const symbol (par*)   ; procedure definition
+;     expr+)
 (alist-add forms "const" (λ (expr)
-    (const (symbol value) (parse-args expr))
+    (parse-let-const expr "const")))
 
-    (~ "const " symbol " = " value ";\n")))
+
+(const parse-let-const (expr modifier)
+    (cond
+        ((and (= (list-length expr) 3)
+              (equal (type-of (list-get expr 1)) "list"))
+            ; list destructuring
+            (const params (parse-list-destructuring (list-get expr 1)))
+            (const values (parse-code (list-get expr 2)))
+            (~ modifier params " = " values ";\n"))
+        ((= (list-length expr) 3)
+            ; variable definition
+            (const symbol (list-get expr 1))
+            (const value  (parse-code (list-get expr 2)))
+            (~ modifier " " symbol " = " value ";\n"))
+        (else
+            ; procedure definition
+            (const symbol (list-get expr 1))
+            (const params (parse-list-destructuring (list-get expr 2)))
+            (const proc-body (parse-code-block (list-slice expr 3)))
+            (~ "function " symbol params " {\n"
+                   (pad-left proc-body "    ") "\n"
+               "}\n"))))
 
 
 ; (set symbol expr)
 (alist-add forms "set" (λ (expr)
     (const (symbol value) (parse-args expr))
-
     (~ symbol " = " value ";\n")))
 
 
@@ -146,9 +184,7 @@
                 (yield "    }"))
 
             (loop 1)
-
             (yield "})()")))
-
     (list-join outputs "\n")))
 
 
@@ -156,10 +192,11 @@
 ;     expr+)
 (alist-add forms "when" (λ (expr)
     (const test-expr (parse-code (list-get expr 1)))
-    (const when-body (parse-code-list (list-slice expr 2)))
-
+    (const when-body (list-join (list-map (parse-code-lines (list-slice expr 2))
+                                          (λ (line) (~ line ";\n")))
+                                ""))
     (~ "if (" test-expr ") {\n"
-           (pad-left when-body "    ") "\n"
+           (pad-left when-body "    ")
        "}\n")))
 
 
@@ -168,7 +205,6 @@
 (alist-add forms "while" (λ (expr)
     (const test-expr  (parse-code (list-get expr 1)))
     (const while-body (parse-code-list (list-slice expr 2)))
-
     (~ "while (" test-expr ") {\n"
            (pad-left while-body "    ") "\n"
        "}\n")))
@@ -180,7 +216,6 @@
     (const last-index (- (list-length expr) 1))
     (const do-body    (parse-code-list (list-slice expr 1 last-index)))
     (const test-expr  (parse-code (list-get expr last-index)))
-
     (~ "do {\n"
            (pad-left do-body "    ") "\n"
        "} while (" test-expr ");\n")))
@@ -191,7 +226,6 @@
 (alist-add forms "unless" (λ (expr)
     (const test-expr   (parse-code (list-get   expr 1)))
     (const unless-body (parse-code-list (list-slice expr 2)))
-
     (~ "if (!" test-expr ") {\n"
            (pad-left unless-body "    ") "\n"
        "}\n")))
@@ -203,7 +237,6 @@
     (const symbol   (parse-code (list-get   expr 1)))
     (const range    (parse-code (list-get   expr 2)))
     (const for-body (parse-code-list (list-slice expr 3)))
-
     (~ "for (const " symbol " of " range ") {\n"
            (pad-left for-body "    ") "\n"
        "}\n")))
@@ -214,7 +247,6 @@
 (alist-add forms "repeat" (λ (expr)
     (const count (parse-code (list-get expr 1)))
     (const repeat-body (parse-code-list (list-slice expr 2)))
-
     (~ "for (let __i = 0; __i < " count "; __i++) {\n"
            (pad-left repeat-body "    ") "\n"
        "}\n")))
@@ -224,7 +256,6 @@
 ;     expr+)
 (alist-add forms "collect" (λ (expr)
     (const collect-body (parse-code-list (list-slice expr 1)))
-
     (~ "(() => {\n"
        (pad-left (~ "const __collect = [];\n"
                     collect-body
@@ -236,7 +267,6 @@
 ; (yield expr)
 (alist-add forms "yield" (λ (expr)
     (const (yield-value) (parse-args expr))
-
     (~ "__collect.push(" yield-value ");")))
 
 
@@ -246,14 +276,12 @@
         ((1)  "")
         ((2)  (parse-code (list-get expr 1)))
         (else (list-join (parse-code-lines (list-slice expr 1)) ", "))))
-
     (~ "console.log(" text ");\n")))
 
 
 ; (display expr)
 (alist-add forms "display" (λ (expr)
     (const (text) (parse-args expr))
-
     (~ "console.log(" text ");\n")))
 
 
@@ -265,5 +293,4 @@
 ; (string expr)
 (alist-add forms "string" (λ (expr)
     (const (text) (parse-args expr))
-
     (~ "\"" text "\"")))
