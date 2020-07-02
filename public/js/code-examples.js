@@ -392,6 +392,23 @@ const examplesList = [
     },
 
     {
+        name: "Partial function application",
+        code: `;; Partial function application
+
+(const partial (func . pargs)
+    (λ (. args)
+        (apply func (list-concat pargs args))))
+
+(const sum (m n)
+    (+ m n ))
+
+(const add2 (partial sum 2))
+
+(print (add2 3))
+`
+    },
+
+    {
         name: "Hanoi tower",
         code: `;; Hanoi tower
 
