@@ -366,6 +366,29 @@ const examplesList = [
     },
 
     {
+        name: "Hash lib",
+        code: `;; Hash lib
+
+(import "https://easl.forexsb.com/easl/hash.easl")
+
+(const alphabet (hash "a" 1
+                      "c" 5))
+
+(hash-add alphabet "b" 2)
+(hash-set alphabet "c" 3)
+
+(print "Alphabet items  :" (hash-to-string alphabet))
+(print "Alphabet length :" (hash-length    alphabet))
+(print "Alphabet has 'c':" (hash-has       alphabet "c"))
+(print "Alphabet has '@':" (hash-has       alphabet "@"))
+(print "Alphabet keys   :" (hash-keys      alphabet))
+(print "Alphabet values :" (hash-values    alphabet))
+
+
+`
+    },
+
+    {
         name: "Hanoi tower",
         code: `;; Hanoi tower
 

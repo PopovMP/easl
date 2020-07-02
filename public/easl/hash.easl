@@ -1,0 +1,66 @@
+(const hash (. key-values)
+    (const keys   (list))
+    (const values (list))
+    (const hash   (λ (f) (f keys values)))
+
+    (hash-fill hash key-values))
+
+(const hash-fill (hash key-values)
+	(when (= (% (list-length key-values) 2) 1)
+        (throw (~ "Error: 'hash' called with odd number of args. Given: "
+                  (to-string key-values))))
+
+    (hash (λ (keys values)
+        (const fill (i)
+            (when (<= i (- (list-length key-values) 2))
+                (hash-add hash
+                          (list-get key-values i)
+                          (list-get key-values (+ i 1)))
+                (fill (+ i 2))))
+
+        (fill 0)))
+
+    hash)
+
+(const hash-has (hash key)
+    (hash (λ (keys values)
+              (list-has keys key))))
+
+(const hash-keys (hash key)
+    (hash (λ (keys values)
+             keys)))
+
+(const hash-values (hash key)
+    (hash (λ (keys values)
+             values)))
+
+(const hash-length (hash key)
+    (hash (λ (keys values)
+             (list-length keys))))
+
+(const hash-add (hash key value)
+    (hash (λ (keys values)
+              (when (hash-has hash key)
+                  (throw (~ "Error: 'hash-add' key already exists. Given: " key " => " value)))
+              (list-push keys   key)
+              (list-push values value)))
+    hash)
+
+(const hash-set (hash key value)
+    (hash (λ (keys values)
+              (when (not (hash-has hash key))
+                  (throw (~ "Error: 'hash-set' called with a not existing key. Given: " key " => " value)))
+              (list-set values (list-index-of keys key) value)))
+    hash)
+
+
+(const hash-to-string (hash key value)
+    (hash (λ (keys values)
+              (const items (collect
+                               (const loop (i)
+                                   (when (< i (list-length keys))
+                                       (yield
+                                             (~ (list-get keys i) " => " (list-get values i)))
+                                       (loop (+ i 1))))
+                               (loop 0)))
+              (list-join (list-sort items) ", "))))
