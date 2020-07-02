@@ -377,13 +377,16 @@ const examplesList = [
 (hash-add alphabet "b" 2)
 (hash-set alphabet "c" 3)
 
-(print "Alphabet items  :" (hash-to-string alphabet))
+
 (print "Alphabet length :" (hash-length    alphabet))
 (print "Alphabet has 'c':" (hash-has       alphabet "c"))
 (print "Alphabet has '@':" (hash-has       alphabet "@"))
 (print "Alphabet keys   :" (hash-keys      alphabet))
-(print "Alphabet values :" (hash-values    alphabet))
-
+(print "Alphabet append :" (hash-to-string (hash-append alphabet (list "d" 4
+                                                                       "e" 5
+                                                                       "y" 13))))
+(print "Alphabet delete :" (hash-to-string (hash-delete alphabet "y")))
+(print "Alphabet items  :" (hash-to-string alphabet))
 
 `
     },

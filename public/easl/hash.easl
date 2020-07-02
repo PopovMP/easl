@@ -3,11 +3,11 @@
     (const values (list))
     (const hash   (λ (f) (f keys values)))
 
-    (hash-fill hash key-values))
+    (hash-append hash key-values "hash"))
 
-(const hash-fill (hash key-values)
+(const hash-append (hash key-values (func-name "hash-append"))
 	(when (= (% (list-length key-values) 2) 1)
-        (throw (~ "Error: 'hash' called with odd number of args. Given: "
+        (throw (~ "Error: '" func-name "' called with odd number of args. Given: "
                   (to-string key-values))))
 
     (hash (λ (keys values)
@@ -48,9 +48,18 @@
 
 (const hash-set (hash key value)
     (hash (λ (keys values)
-              (when (not (hash-has hash key))
+              (unless (hash-has hash key)
                   (throw (~ "Error: 'hash-set' called with a not existing key. Given: " key " => " value)))
               (list-set values (list-index-of keys key) value)))
+    hash)
+
+(const hash-delete (hash key)
+    (hash (λ (keys values)
+              (unless (hash-has hash key)
+                  (throw (~ "Error: 'hash-delete' called with a not existing key. Given: " key )))
+              (const index-key (list-index-of keys key))
+              (list-splice keys   index-key 1)
+              (list-splice values index-key 1)))
     hash)
 
 
@@ -60,7 +69,7 @@
                                (const loop (i)
                                    (when (< i (list-length keys))
                                        (yield
-                                             (~ (list-get keys i) " => " (list-get values i)))
+                                             (~ "\"" (list-get keys i) "\" : " (list-get values i)))
                                        (loop (+ i 1))))
                                (loop 0)))
-              (list-join (list-sort items) ", "))))
+              (~ "{" (list-join (list-sort items) ", ") "}"))))
