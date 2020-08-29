@@ -16,7 +16,7 @@
                              (and (= (type-of     obj) "list")
                                   (= (list.length obj) 0) ))))
 (let char?      (λ (obj) (and (string? obj)
-                              (= (str.length obj) 0) )))
+                              (= (str.length obj) 1) )))
 
 (let pair? (λ (obj) (and (= (type-of     obj) "list")
                          (> (list.length obj) 1) )))
