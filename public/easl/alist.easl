@@ -3,7 +3,7 @@
 (const alist-length list-length)
 
 ; (alist-has alist key)
-; Gets if an alsit contains a given key
+; Gets if an alist contains a given key
 (const alist-has (alist key)
     (const loop (index)
         (if (< index 0)
@@ -15,7 +15,7 @@
 
 ; (alist-add alist key value)
 ; Adds a key - value pair in the given alist-
-; Returns the modified alsit
+; Returns the modified alist
 ; Throws if the key already exists
 (const alist-add (alist key value)
     (when (alist-has alist key)
@@ -25,7 +25,7 @@
 ; (alist-add-or-set alist key value)
 ; Adds a key-value pair in the given alist-
 ; If the key already exists, sets the associated value
-; Returns the modified alsit
+; Returns the modified alist
 (const alist-add-or-set (alist key value)
     (const loop (index)
         (if (>= index 0)
